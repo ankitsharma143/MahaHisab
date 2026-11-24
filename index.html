@@ -14,6 +14,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-database-compat.js"></script>
@@ -144,6 +146,8 @@
           <button type="button" id="header-dark-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px]" title="डार्क / लाइट मोड">🌙</button>
           <button type="button" id="header-speak-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px] border-teal-300 text-teal-800" title="आज का हिसाब सुनें">🔊 <span class="hidden lg:inline">सुनें</span></button>
           <button type="button" id="header-lock-btn" class="hidden btn-secondary text-xs px-2.5 py-2 min-h-[38px] border-slate-300 text-slate-700" title="ऐप लॉक करें">🔒</button>
+          <button type="button" id="header-scan-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px] border-rose-300 text-rose-800 bg-rose-50" title="पर्ची / बिल कैमरा स्कैनर">📸 <span class="hidden lg:inline">स्कैन</span></button>
+          <button type="button" id="header-calc-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px]" title="स्मार्ट कैलकुलेटर">🧮</button>
           <button type="button" id="header-voice-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px] border-amber-300 text-amber-800 bg-amber-50" title="बोलकर एंट्री करें">🎙️ <span class="hidden sm:inline">बोलकर लिखें</span></button>
           <button type="button" id="quick-search-open-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px]" title="पूरे ऐप में खोजें">🔍 <span class="hidden sm:inline">खोजें</span></button>
         </div>
@@ -257,7 +261,7 @@
       "houseExpenses", "shopTransactions", "income", "accounts", "transfers",
       "loans", "loanPayments", "dairyProduction", "milkSales", "milkPurchases",
       "dairyExpenses", "dairyWaste", "customers", "suppliers", "animals",
-      "budgets", "recurringBills", "savingsGoals", "settings"
+      "budgets", "recurringBills", "savingsGoals", "friendTransactions", "settings"
     ];
 
     const REPORT_TYPES = [
@@ -487,6 +491,13 @@
           if (amt > 0) payables.push({ name, tag: "सप्लायर / डेयरी बाकी", amount: amt, mobile: "" });
         });
 
+        // Friends Khata balances (दोस्तों का हिसाब)
+        const friendBals = this.calcFriendBalances(data.friendTransactions || []);
+        friendBals.forEach(fb => {
+          if (fb.netBalance > 0) receivables.push({ name: fb.friendName, tag: "दोस्त खाता (लेने हैं)", amount: fb.netBalance, mobile: fb.mobile || "" });
+          else if (fb.netBalance < 0) payables.push({ name: fb.friendName, tag: "दोस्त खाता (देने हैं)", amount: Math.abs(fb.netBalance), mobile: fb.mobile || "" });
+        });
+
         const totalToReceive = this.round2(receivables.reduce((s, x) => s + x.amount, 0));
         const totalToPay = this.round2(payables.reduce((s, x) => s + x.amount, 0));
         const totalUdhaarPending = this.round2(loanSum.givenRemaining + loanSum.takenRemaining);
@@ -502,6 +513,60 @@
           receivables, payables,
           totalToReceive, totalToPay
         };
+      },
+      calcFriendBalances(friendTxns) {
+        const map = {};
+        (friendTxns || []).forEach(t => {
+          const name = (t.friendName || "दोस्त").trim();
+          const key = name.toLowerCase();
+          if (!map[key]) map[key] = { friendName: name, mobile: t.mobile || "", receivable: 0, payable: 0, netBalance: 0, count: 0, txns: [] };
+          if (t.mobile && !map[key].mobile) map[key].mobile = t.mobile;
+          const amt = this.round2(t.amount || 0);
+          // direction: 'receive' => friend owes user (+); 'pay' => user owes friend (-)
+          if (t.direction === "receive") map[key].receivable = this.round2(map[key].receivable + amt);
+          else map[key].payable = this.round2(map[key].payable + amt);
+          map[key].netBalance = this.round2(map[key].receivable - map[key].payable);
+          map[key].count++;
+          map[key].txns.push(t);
+        });
+        return Object.values(map).sort((a, b) => Math.abs(b.netBalance) - Math.abs(a.netBalance));
+      },
+      calcEqualSplit(totalAmount, participantCount) {
+        const tot = Number(totalAmount) || 0, n = Math.max(1, Math.floor(Number(participantCount) || 1));
+        return this.round2(tot / n);
+      },
+      extractBillNumbersFromOCR(text) {
+        const lines = String(text || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        let explicitTotal = 0;
+        const items = [];
+        let detectedDate = "";
+        let shopName = lines[0] ? lines[0].slice(0, 40) : "";
+
+        for (const line of lines) {
+          const dm = line.match(/(\d{4}-\d{2}-\d{2})|(\d{2}[\/\-]\d{2}[\/\-]\d{4})/);
+          if (dm && !detectedDate) {
+            if (dm[1]) detectedDate = dm[1];
+            else if (dm[2]) {
+              const parts = dm[2].split(/[\/\-]/);
+              if (parts.length === 3) detectedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+          }
+          if (/^\d{4}-\d{2}-\d{2}$|^\d{2}[\/\-]\d{2}[\/\-]\d{4}$/.test(line)) continue;
+          const nums = line.match(/(?:₹|rs\.?|inr)?\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)/gi);
+          if (!nums) continue;
+          const parsedVals = nums.map(s => Number(s.replace(/[^0-9.]/g, ""))).filter(v => Number.isFinite(v) && v > 0 && v < 10000000);
+          if (!parsedVals.length) continue;
+          const lineAmt = parsedVals[parsedVals.length - 1];
+          if (/grand\s*total|net\s*total|total\s*amt|total|कुल|योग|जोड़/i.test(line)) {
+            if (lineAmt > explicitTotal) explicitTotal = this.round2(lineAmt);
+          } else if (!/phone|mob|gst|tin|date|bill\s*no|invoice|तारीख|मोबाइल/i.test(line)) {
+            const label = line.replace(/(?:₹|rs\.?|inr)?\s*\d+(?:,\d{3})*(?:\.\d{1,2})?/gi, "").replace(/[\-:]+$/g, "").trim() || "सामान";
+            items.push({ label: label.slice(0, 45), amount: this.round2(lineAmt) });
+          }
+        }
+        const sumItems = this.round2(items.reduce((s, i) => s + i.amount, 0));
+        const finalTotal = explicitTotal > 0 ? explicitTotal : sumItems;
+        return { shopName, detectedDate, items, sumItems, explicitTotal, finalTotal };
       },
       validateEntry({ date, amount, requiredFields = [] }) {
         for (const f of requiredFields) {
@@ -564,7 +629,7 @@
         houseExpenses: [], shopTransactions: [], income: [], accounts: [], transfers: [],
         loans: [], loanPayments: [], dairyProduction: [], milkSales: [], milkPurchases: [],
         dairyExpenses: [], dairyWaste: [], customers: [], suppliers: [], animals: [],
-        budgets: [], recurringBills: [], savingsGoals: [], settings: []
+        budgets: [], recurringBills: [], savingsGoals: [], friendTransactions: [], settings: []
       }
     };
 
@@ -1200,6 +1265,7 @@
             <div><label class="block text-[11px] font-bold text-slate-500 mb-1">वर्ष (Year)</label><select id="dash-year" class="input-field py-2 text-xs">${years.map(y => `<option value="${y}" ${y === yStr ? "selected" : ""}>${y}</option>`).join("")}</select></div>
           </div>
           <div class="flex flex-wrap gap-2">
+            <button type="button" id="qa-scan-parchi" class="btn-primary text-xs py-2 px-3 min-h-[40px] bg-rose-600 hover:bg-rose-700">📸 पर्ची / बिल स्कैन</button>
             <button type="button" id="qa-voice-entry" class="btn-primary text-xs py-2 px-3 min-h-[40px] bg-amber-600 hover:bg-amber-700">🎙️ बोलकर एंट्री करें</button>
             <button type="button" id="qa-add-house-exp" class="btn-primary text-xs py-2 px-3 min-h-[40px]">+ घरेलू खर्च</button>
             <button type="button" id="qa-add-milk-sale" class="btn-secondary text-xs py-2 px-3 min-h-[40px] border-teal-300 text-teal-800">+ दूध बिक्री</button>
@@ -1209,6 +1275,7 @@
 
         ${renderDailyDigestCardOnDashboard()}
         ${renderSmartRemindersBanner()}
+        ${renderSmartInsightsBanner()}
 
         ${budgetStatus.overBudget ? `<div class="bg-red-50 border border-red-300 text-red-800 rounded-xl px-4 py-3 text-sm font-semibold">🚨 चेतावनी: इस महीने का घरेलू खर्च (${fmtRs(budgetStatus.totalActual)}) आपके तय बजट (${fmtRs(budgetStatus.totalPlanned)}) से अधिक हो गया है!</div>` : ""}
         ${todayDairyPL.mismatch ? `<div class="bg-amber-50 border border-amber-300 text-amber-900 rounded-xl px-4 py-3 text-sm font-semibold">⚠️ दूध मिलान चेतावनी (${dStr}): उपलब्ध दूध (${fmtL(todayDairyPL.available)}) से अधिक दूध बिक्री/नुकसान (${fmtL(todayDairyPL.sold + todayDairyPL.waste)}) दर्ज है!</div>` : ""}
@@ -1245,6 +1312,7 @@
         renderCurrentView();
       });
       document.getElementById("dash-year").addEventListener("change", (e) => { state.selectedYear = e.target.value; renderCurrentView(); });
+      document.getElementById("qa-scan-parchi").addEventListener("click", () => openParchiScannerModal());
       document.getElementById("qa-voice-entry").addEventListener("click", () => openVoiceEntryModal());
       document.getElementById("qa-add-house-exp").addEventListener("click", () => openHouseExpenseModal());
       document.getElementById("qa-add-milk-sale").addEventListener("click", () => openMilkSaleModal());
@@ -1313,11 +1381,20 @@
         { id: "income", label: "💰 आय (Income)" },
         { id: "accounts", label: "🏦 Cash/Bank/UPI" },
         { id: "loans", label: "🤝 उधार (Lend/Borrow)" },
+        { id: "friends", label: "👥 दोस्त खाता (Split)" },
         { id: "bills", label: "🔔 फिक्स बिल" },
         { id: "goals", label: "🎯 बचत लक्ष्य" },
         { id: "vault", label: "🧾 रसीद गैलरी" }
       ];
-      container.innerHTML = `<div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">${subtabs.map(t => `<button type="button" data-house-tab="${t.id}" class="subtab-btn ${state.activeHouseTab === t.id ? "active" : ""}">${t.label}</button>`).join("")}</div><div id="house-sub-content" class="space-y-4"></div>`;
+      container.innerHTML = `<div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">${subtabs.map(t => `<button type="button" data-house-tab="${t.id}" class="subtab-btn ${state.activeHouseTab === t.id ? "active" : ""}">${t.label}</button>`).join("")}</div><div class="flex flex-wrap items-center justify-between gap-2 bg-white rounded-xl border border-slate-200 px-3 py-2">
+          <span class="text-xs font-bold text-slate-600">इस मॉड्यूल का सीधा एक्सपोर्ट / इम्पोर्ट:</span>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" id="mod-export-pdf-btn" class="btn-secondary text-xs py-1.5 px-2.5 min-h-[34px] border-teal-300 text-teal-800">📄 PDF / Print</button>
+            <button type="button" id="mod-export-xlsx-btn" class="btn-secondary text-xs py-1.5 px-2.5 min-h-[34px] border-emerald-300 text-emerald-800">📊 Excel (.xlsx)</button>
+            <button type="button" id="mod-import-xlsx-btn" class="btn-secondary text-xs py-1.5 px-2.5 min-h-[34px] border-amber-300 text-amber-800">📥 Excel Import</button>
+          </div>
+        </div>
+        <div id="house-sub-content" class="space-y-4"></div>`;
       container.querySelectorAll("[data-house-tab]").forEach(btn => btn.addEventListener("click", () => { state.activeHouseTab = btn.dataset.houseTab; renderCurrentView(); }));
       const sub = document.getElementById("house-sub-content");
       if (state.activeHouseTab === "expenses") renderHouseExpensesTab(sub);
@@ -1326,9 +1403,11 @@
       else if (state.activeHouseTab === "income") renderIncomeTab(sub);
       else if (state.activeHouseTab === "accounts") renderAccountsTab(sub);
       else if (state.activeHouseTab === "loans") renderLoansTab(sub);
+      else if (state.activeHouseTab === "friends") renderFriendsKhataTab(sub);
       else if (state.activeHouseTab === "bills") renderRecurringBillsTab(sub);
       else if (state.activeHouseTab === "goals") renderSavingsGoalsTab(sub);
       else if (state.activeHouseTab === "vault") renderBillsVaultTab(sub);
+      wireModuleExportButtons("house", state.activeHouseTab);
     }
 
     function renderHouseExpensesTab(container) {
@@ -1672,10 +1751,14 @@
         <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
           <table class="data-table">
             <thead><tr><th>प्रकार</th><th>व्यक्ति / मोबाइल</th><th>तारीख</th><th>मूल राशि</th><th>वापस हुआ</th><th>बाकी</th><th>वापसी तारीख</th><th>क्रिया</th></tr></thead>
-            <tbody>${rows.length ? rows.map(l => `<tr><td><span class="px-2 py-0.5 rounded-full text-xs font-bold ${l.type === "given" ? "bg-indigo-100 text-indigo-800" : "bg-purple-100 text-purple-800"}">${l.type === "given" ? "उधार दिया" : "उधार लिया"}</span></td><td><div class="font-bold">${escHtml(l.personName)}</div><div class="text-[11px] text-slate-500">${escHtml(l.mobile || "")} • ${escHtml(l.reason || "")}</div></td><td class="whitespace-nowrap">${escHtml(l.date)}</td><td class="font-bold">${fmtRs(l.amount)}</td><td class="text-emerald-700 font-semibold">${fmtRs(l.returned)}</td><td class="font-bold ${l.remaining > 0 ? "text-red-600" : "text-emerald-700"}">${fmtRs(l.remaining)}</td><td class="text-xs">${escHtml(l.dueDate || "-")}</td><td class="whitespace-nowrap">${l.remaining > 0 ? `<button type="button" data-pay-loan="${l.id}" class="text-xs font-bold text-emerald-700 mr-2">+ वापसी</button><button type="button" data-wa-loan="${l.id}" class="text-xs font-bold text-green-700 mr-2">WhatsApp</button>` : ""}<button type="button" data-hist-loan="${l.id}" class="text-xs font-bold text-teal-700 mr-2">इतिहास</button><button type="button" data-edit-loan="${l.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button><button type="button" data-del-loan="${l.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`).join("") : `<tr><td colspan="8" class="text-center py-8 text-slate-400">अभी कोई उधार लेन-देन नहीं है।</td></tr>`}</tbody>
+            <tbody>${rows.length ? rows.map(l => `<tr><td><span class="px-2 py-0.5 rounded-full text-xs font-bold ${l.type === "given" ? "bg-indigo-100 text-indigo-800" : "bg-purple-100 text-purple-800"}">${l.type === "given" ? "उधार दिया" : "उधार लिया"}</span></td><td><div class="font-bold">${escHtml(l.personName)}</div><div class="text-[11px] text-slate-500">${escHtml(l.mobile || "")} • ${escHtml(l.reason || "")}</div></td><td class="whitespace-nowrap">${escHtml(l.date)}</td><td class="font-bold">${fmtRs(l.amount)}</td><td class="text-emerald-700 font-semibold">${fmtRs(l.returned)}</td><td class="font-bold ${l.remaining > 0 ? "text-red-600" : "text-emerald-700"}">${fmtRs(l.remaining)}</td><td class="text-xs">${escHtml(l.dueDate || "-")}</td><td class="whitespace-nowrap">${l.remaining > 0 ? `<button type="button" data-pay-loan="${l.id}" class="text-xs font-bold text-emerald-700 mr-2">+ वापसी</button><button type="button" data-wa-loan="${l.id}" class="text-xs font-bold text-green-700 mr-2">WhatsApp</button>${l.type === "given" ? `<button type="button" data-qr-loan="${l.id}" class="text-xs font-bold text-indigo-700 mr-2">QR</button>` : ""}` : ""}<button type="button" data-hist-loan="${l.id}" class="text-xs font-bold text-teal-700 mr-2">इतिहास</button><button type="button" data-edit-loan="${l.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button><button type="button" data-del-loan="${l.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`).join("") : `<tr><td colspan="8" class="text-center py-8 text-slate-400">अभी कोई उधार लेन-देन नहीं है।</td></tr>`}</tbody>
           </table>
         </div>`;
       document.getElementById("add-loan-btn").addEventListener("click", () => openLoanModal());
+      container.querySelectorAll("[data-qr-loan]").forEach(b => b.addEventListener("click", () => {
+        const l = rows.find(x => x.id === b.dataset.qrLoan);
+        if (l) openUpiQrModal({ name: l.personName, amount: l.remaining, note: l.reason || "Udhaar Payment", mobile: l.mobile || "" });
+      }));
       container.querySelectorAll("[data-wa-loan]").forEach(b => b.addEventListener("click", () => {
         const l = rows.find(x => x.id === b.dataset.waLoan); if (!l) return;
         const upi = getSavedUpiId();
@@ -1766,7 +1849,15 @@
         { id: "animals", label: "🐃 पशु प्रबंधन" },
         { id: "pl", label: "📈 डेयरी P&L" }
       ];
-      container.innerHTML = `<div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">${subtabs.map(t => `<button type="button" data-dairy-tab="${t.id}" class="subtab-btn ${state.activeDairyTab === t.id ? "active" : ""}">${t.label}</button>`).join("")}</div><div id="dairy-sub-content" class="space-y-4"></div>`;
+      container.innerHTML = `<div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">${subtabs.map(t => `<button type="button" data-dairy-tab="${t.id}" class="subtab-btn ${state.activeDairyTab === t.id ? "active" : ""}">${t.label}</button>`).join("")}</div><div class="flex flex-wrap items-center justify-between gap-2 bg-white rounded-xl border border-slate-200 px-3 py-2">
+          <span class="text-xs font-bold text-slate-600">इस डेयरी मॉड्यूल का सीधा एक्सपोर्ट / इम्पोर्ट:</span>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" id="mod-export-pdf-btn" class="btn-secondary text-xs py-1.5 px-2.5 min-h-[34px] border-teal-300 text-teal-800">📄 PDF / Print</button>
+            <button type="button" id="mod-export-xlsx-btn" class="btn-secondary text-xs py-1.5 px-2.5 min-h-[34px] border-emerald-300 text-emerald-800">📊 Excel (.xlsx)</button>
+            <button type="button" id="mod-import-xlsx-btn" class="btn-secondary text-xs py-1.5 px-2.5 min-h-[34px] border-amber-300 text-amber-800">📥 Excel Import</button>
+          </div>
+        </div>
+        <div id="dairy-sub-content" class="space-y-4"></div>`;
       container.querySelectorAll("[data-dairy-tab]").forEach(btn => btn.addEventListener("click", () => { state.activeDairyTab = btn.dataset.dairyTab; renderCurrentView(); }));
       const sub = document.getElementById("dairy-sub-content");
       if (state.activeDairyTab === "bulk_delivery") renderBulkMilkDeliveryTab(sub);
@@ -1779,6 +1870,7 @@
       else if (state.activeDairyTab === "expenses") renderDairyExpensesTab(sub);
       else if (state.activeDairyTab === "animals") renderAnimalsTab(sub);
       else if (state.activeDairyTab === "pl") renderDairyPLTab(sub);
+      wireModuleExportButtons("dairy", state.activeDairyTab);
     }
 
     function renderMilkProductionTab(container) {
@@ -1978,10 +2070,14 @@
           <div><div class="text-xs text-slate-500">दूध ग्राहक खाता (${ledger.length} ग्राहक • माह ${mStr})</div><div class="text-lg font-bold">कुल ग्राहक बाकी: <span class="text-red-600">${fmtRs(ledger.reduce((s, c) => s + Math.max(0, c.remaining), 0))}</span></div></div>
           <button type="button" id="add-cust-btn" class="btn-primary">+ नया ग्राहक जोड़ें</button>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto"><table class="data-table"><thead><tr><th>ग्राहक / मोबाइल</th><th>डिफ़ॉल्ट दूध &amp; दर</th><th>माह दूध</th><th>माह बिल</th><th>प्राप्त</th><th>बाकी</th><th>क्रिया</th></tr></thead><tbody>${ledger.length ? ledger.map(c => `<tr><td><div class="font-bold">${escHtml(c.name)}</div><div class="text-[11px] text-slate-500">${escHtml(c.mobile || "-")}</div></td><td class="text-xs">${fmtL(c.defaultQty || 0)} @ ₹${c.defaultRate || 0}/L</td><td class="font-semibold text-teal-700">${fmtL(c.totalL)}</td><td class="font-bold">${fmtRs(c.monthAmt)}</td><td class="text-emerald-700 font-semibold">${fmtRs(c.allPaid)}</td><td class="font-bold ${c.remaining > 0 ? "text-red-600" : "text-emerald-700"}">${fmtRs(c.remaining)}</td><td class="whitespace-nowrap"><button type="button" data-wa-cust="${c.id}" class="text-xs font-bold text-green-700 mr-2">WhatsApp</button><button type="button" data-pdf-cust="${c.id}" class="text-xs font-bold text-teal-700 mr-2">PDF बिल</button><button type="button" data-edit-cust="${c.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button><button type="button" data-del-cust="${c.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`).join("") : `<tr><td colspan="7" class="text-center py-8 text-slate-400">कोई दूध ग्राहक नहीं है।</td></tr>`}</tbody></table></div>`;
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto"><table class="data-table"><thead><tr><th>ग्राहक / मोबाइल</th><th>डिफ़ॉल्ट दूध &amp; दर</th><th>माह दूध</th><th>माह बिल</th><th>प्राप्त</th><th>बाकी</th><th>क्रिया</th></tr></thead><tbody>${ledger.length ? ledger.map(c => `<tr><td><div class="font-bold">${escHtml(c.name)}</div><div class="text-[11px] text-slate-500">${escHtml(c.mobile || "-")}</div></td><td class="text-xs">${fmtL(c.defaultQty || 0)} @ ₹${c.defaultRate || 0}/L</td><td class="font-semibold text-teal-700">${fmtL(c.totalL)}</td><td class="font-bold">${fmtRs(c.monthAmt)}</td><td class="text-emerald-700 font-semibold">${fmtRs(c.allPaid)}</td><td class="font-bold ${c.remaining > 0 ? "text-red-600" : "text-emerald-700"}">${fmtRs(c.remaining)}</td><td class="whitespace-nowrap"><button type="button" data-wa-cust="${c.id}" class="text-xs font-bold text-green-700 mr-2">WhatsApp</button><button type="button" data-qr-cust="${c.id}" class="text-xs font-bold text-indigo-700 mr-2">QR</button><button type="button" data-pdf-cust="${c.id}" class="text-xs font-bold text-teal-700 mr-2">PDF बिल</button><button type="button" data-edit-cust="${c.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button><button type="button" data-del-cust="${c.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`).join("") : `<tr><td colspan="7" class="text-center py-8 text-slate-400">कोई दूध ग्राहक नहीं है।</td></tr>`}</tbody></table></div>`;
       document.getElementById("add-cust-btn").addEventListener("click", () => openCustomerModal());
       container.querySelectorAll("[data-edit-cust]").forEach(b => b.addEventListener("click", () => { const it = custs.find(x => x.id === b.dataset.editCust); if (it) openCustomerModal(it); }));
       container.querySelectorAll("[data-del-cust]").forEach(b => b.addEventListener("click", () => deleteDocById("customers", b.dataset.delCust, "ग्राहक")));
+      container.querySelectorAll("[data-qr-cust]").forEach(b => b.addEventListener("click", () => {
+        const c = ledger.find(x => x.id === b.dataset.qrCust);
+        if (c) openUpiQrModal({ name: c.name, amount: Math.max(0, c.remaining), note: `Milk Bill ${mStr}`, mobile: c.mobile || "" });
+      }));
       container.querySelectorAll("[data-wa-cust]").forEach(b => b.addEventListener("click", () => {
         const c = ledger.find(x => x.id === b.dataset.waCust); if (!c) return;
         const upi = getSavedUpiId();
@@ -2657,6 +2753,436 @@
     function lockAppWithPin() { if (!getSavedAppPin()) return; document.getElementById("pin-unlock-input").value = ""; document.getElementById("pin-unlock-err").classList.add("hidden"); document.getElementById("pin-lock-overlay").classList.remove("hidden"); }
 
     // =========================================================================
+    // 11E. CAMERA / PARCHI AUTO-OCR, FRIENDS KHATA & SPLIT, UPI QR, CALCULATOR, SMART INSIGHTS & MODULE EXPORTS
+    // =========================================================================
+    function renderSmartInsightsBanner() {
+      const mStr = state.selectedMonth, prevM = getPrevMonth(mStr), d = state.data;
+      const curMap = {}, prevMap = {};
+      (d.houseExpenses || []).forEach(x => {
+        const m = (x.date || "").slice(0, 7), c = x.category || "अन्य खर्च";
+        if (m === mStr) curMap[c] = AccountingEngine.round2((curMap[c] || 0) + (Number(x.amount) || 0));
+        if (m === prevM) prevMap[c] = AccountingEngine.round2((prevMap[c] || 0) + (Number(x.amount) || 0));
+      });
+      let topJump = null;
+      Object.keys(curMap).forEach(c => {
+        const cur = curMap[c], prev = prevMap[c] || 0;
+        if (prev > 0) {
+          const pct = Math.round(((cur - prev) / prev) * 100);
+          if (!topJump || Math.abs(pct) > Math.abs(topJump.pct)) topJump = { cat: c, pct, cur, prev };
+        }
+      });
+      const digest = AccountingEngine.calcDailyNotificationDigest(d, todayStr());
+      const topRec = [...digest.receivables].sort((a, b) => b.amount - a.amount).slice(0, 3);
+      if (!topJump && !topRec.length) return "";
+      return `
+        <div class="bg-white border border-slate-200 rounded-2xl p-3.5 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-200">
+            <div class="font-bold text-slate-800 mb-1">📈 स्मार्ट खर्च तुलना (${mStr} बनाम ${prevM})</div>
+            ${topJump ? `<div><b>${escHtml(topJump.cat)}</b> पिछले माह से <span class="font-bold ${topJump.pct > 0 ? "text-red-600" : "text-emerald-700"}">${topJump.pct > 0 ? "+" + topJump.pct + "% बढ़ा" : topJump.pct + "% घटा"}</span> (${fmtRs(topJump.prev)} → ${fmtRs(topJump.cur)})</div>` : `<div class="text-slate-500">अगले महीने से स्वचालित प्रतिशत तुलना दिखाई देगी।</div>`}
+          </div>
+          <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-200">
+            <div class="font-bold text-slate-800 mb-1">👥 सबसे अधिक बकाया (लेने हैं — Top Pending)</div>
+            ${topRec.length ? `<div class="flex flex-wrap gap-1.5">${topRec.map(r => `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-semibold">${escHtml(r.name)}: ${fmtRs(r.amount)}</span>`).join("")}</div>` : `<div class="text-slate-500">अभी किसी पर कोई बकाया नहीं है।</div>`}
+          </div>
+        </div>`;
+    }
+
+    function wireModuleExportButtons(group, tab) {
+      const pdfBtn = document.getElementById("mod-export-pdf-btn");
+      const xlsxBtn = document.getElementById("mod-export-xlsx-btn");
+      const impBtn = document.getElementById("mod-import-xlsx-btn");
+      if (!pdfBtn || !xlsxBtn) return;
+
+      const buildTabRep = () => {
+        const d = state.data;
+        if (group === "house") {
+          if (tab === "expenses") return { ...buildReportData("house_expense", "2000-01-01", "2099-12-31", "", ""), importTarget: "houseExpenses" };
+          if (tab === "shops") return { ...buildReportData("shop", "2000-01-01", "2099-12-31", "", ""), importTarget: "shopTransactions" };
+          if (tab === "budget") return { ...buildReportData("budget", state.selectedMonth + "-01", state.selectedMonth + "-31", "", ""), importTarget: "budgets" };
+          if (tab === "income") return { ...buildReportData("income", "2000-01-01", "2099-12-31", "", ""), importTarget: "income" };
+          if (tab === "accounts") {
+            const accs = Object.values(AccountingEngine.calcAccountBalances(d));
+            return { title: "सभी खातों की रिपोर्ट (Cash / Bank / UPI)", dateRange: todayStr(), headers: ["खाता", "प्रकार", "Opening (₹)", "आवक (₹)", "जावक (₹)", "Closing (₹)"], rows: accs.map(a => [a.name, a.type, a.openingBalance, a.inflow + a.transferIn, a.outflow + a.transferOut, a.closingBalance]), summaryLines: [`कुल बैलेंस: ${fmtRs(accs.reduce((s, a) => s + a.closingBalance, 0))}`], importTarget: "income" };
+          }
+          if (tab === "loans") return { ...buildReportData("loan", "2000-01-01", "2099-12-31", "", ""), importTarget: "loans" };
+          if (tab === "friends") {
+            const bals = AccountingEngine.calcFriendBalances(d.friendTransactions);
+            return { title: "दोस्तों का हिसाब-किताब (Friends Khata Report)", dateRange: todayStr(), headers: ["दोस्त का नाम", "मोबाइल", "लेने हैं (₹)", "देने हैं (₹)", "शुद्ध बैलेंस (₹)", "स्थिति"], rows: bals.map(f => [f.friendName, f.mobile || "-", f.receivable, f.payable, Math.abs(f.netBalance), f.netBalance > 0 ? "लेने हैं" : f.netBalance < 0 ? "देने हैं" : "चुक्ता"]), summaryLines: [`कुल लेने हैं: ${fmtRs(bals.filter(f => f.netBalance > 0).reduce((s, f) => s + f.netBalance, 0))}`, `कुल देने हैं: ${fmtRs(bals.filter(f => f.netBalance < 0).reduce((s, f) => s + Math.abs(f.netBalance), 0))}`], importTarget: "houseExpenses" };
+          }
+          if (tab === "bills") {
+            const list = d.recurringBills || [];
+            return { title: "मासिक फिक्स बिल सूची", dateRange: state.selectedMonth, headers: ["बिल का नाम", "श्रेणी", "राशि (₹)", "तारीख"], rows: list.map(b => [b.name, b.category, b.amount, `हर माह ${b.dueDay} तारीख`]), summaryLines: [`कुल मासिक बिल: ${fmtRs(list.reduce((s, b) => s + (Number(b.amount) || 0), 0))}`], importTarget: "houseExpenses" };
+          }
+          if (tab === "goals") {
+            const list = d.savingsGoals || [];
+            return { title: "पारिवारिक बचत लक्ष्य रिपोर्ट", dateRange: todayStr(), headers: ["लक्ष्य", "लक्ष्य राशि (₹)", "बचत हुई (₹)", "बाकी (₹)", "तारीख"], rows: list.map(g => [g.name, g.targetAmount, g.savedAmount || 0, Math.max(0, (g.targetAmount || 0) - (g.savedAmount || 0)), g.targetDate || "-"]), summaryLines: [`कुल बचत: ${fmtRs(list.reduce((s, g) => s + (Number(g.savedAmount) || 0), 0))}`], importTarget: "houseExpenses" };
+          }
+          return { ...buildReportData("house_expense", "2000-01-01", "2099-12-31", "", ""), importTarget: "houseExpenses" };
+        } else {
+          if (tab === "production") return { ...buildReportData("dairy_prod", "2000-01-01", "2099-12-31", "", ""), importTarget: "dairyProduction" };
+          if (tab === "sales" || tab === "bulk_delivery") return { ...buildReportData("dairy_sales", "2000-01-01", "2099-12-31", "", ""), importTarget: "milkSales" };
+          if (tab === "purchase") return { ...buildReportData("dairy_purchase", "2000-01-01", "2099-12-31", "", ""), importTarget: "milkPurchases" };
+          if (tab === "customers") return { ...buildReportData("customer_ledger", "2000-01-01", "2099-12-31", "", ""), importTarget: "milkSales" };
+          if (tab === "suppliers") return { ...buildReportData("supplier_ledger", "2000-01-01", "2099-12-31", "", ""), importTarget: "milkPurchases" };
+          if (tab === "expenses") return { ...buildReportData("dairy_expense", "2000-01-01", "2099-12-31", "", ""), importTarget: "dairyExpenses" };
+          if (tab === "animals") {
+            const list = d.animals || [];
+            return { title: "पशु प्रबंधन रिपोर्ट (Animals)", dateRange: todayStr(), headers: ["ID", "पशु का नाम", "प्रकार", "स्थिति", "खरीद तारीख", "खरीद राशि (₹)"], rows: list.map(a => [a.animalId || "-", a.name, a.type, a.status, a.purchaseDate || "-", a.purchaseAmount || 0]), summaryLines: [`कुल पशु: ${list.length}`], importTarget: "dairyProduction" };
+          }
+          return { ...buildReportData("dairy_profit", state.selectedMonth + "-01", state.selectedMonth + "-31", "", ""), importTarget: "dairyExpenses" };
+        }
+      };
+
+      pdfBtn.addEventListener("click", () => exportTableToPDF(buildTabRep()));
+      xlsxBtn.addEventListener("click", () => exportSingleReportExcel(buildTabRep()));
+      if (impBtn) impBtn.addEventListener("click", () => openExcelImportModal(buildTabRep().importTarget || "houseExpenses"));
+    }
+
+    // --- 1. CAMERA & PARCHI OCR SCANNER (AUTO-READ + AUTO-TOTAL + AUTO-FEED) ---
+    function openParchiScannerModal() {
+      let scannedImageData = "";
+      let lastParsed = null;
+
+      openModal("📸 पर्ची / बिल कैमरा स्कैनर (Auto-OCR व जोड़)", `
+        <div class="space-y-3 text-xs">
+          <p class="text-slate-600 leading-relaxed">मोबाइल कैमरे से पर्ची/बिल की फोटो खींचें या गैलरी से चुनें। ऐप <b>Tesseract OCR</b> से उसमें लिखी सभी राशियाँ पढ़कर अपने आप कुल जोड़ बना देगा और सीधे एंट्री फॉर्म में भर देगा।</p>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="btn-primary text-xs cursor-pointer bg-rose-600 hover:bg-rose-700">
+              📷 कैमरे से फोटो खींचें
+              <input type="file" id="scan-cam-input" accept="image/*" capture="environment" class="hidden" />
+            </label>
+            <label class="btn-secondary text-xs cursor-pointer">
+              🖼️ गैलरी से पर्ची चुनें
+              <input type="file" id="scan-gal-input" accept="image/*" class="hidden" />
+            </label>
+          </div>
+          <div id="scan-preview-wrap" class="hidden space-y-2">
+            <img id="scan-img-preview" alt="Scanned Bill" class="max-h-48 rounded-xl border border-slate-300 mx-auto" />
+            <div id="scan-progress" class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 font-bold text-amber-900 text-center">पर्ची स्कैन करने के लिए तैयार...</div>
+          </div>
+          <div id="scan-result-wrap" class="hidden space-y-2.5">
+            <div class="grid grid-cols-2 gap-2">
+              <div><label class="block font-bold mb-1">दुकान / शीर्षक</label><input type="text" id="scan-shop" class="input-field text-xs" /></div>
+              <div><label class="block font-bold mb-1">तारीख</label><input type="date" id="scan-date" value="${state.selectedDate}" class="input-field text-xs" /></div>
+            </div>
+            <div><label class="block font-bold mb-1">पहचाने गए आइटम / टेक्स्ट (आप एडिट कर सकते हैं)</label><textarea id="scan-items-txt" rows="3" class="input-field text-xs"></textarea></div>
+            <div class="bg-teal-50 border border-teal-200 rounded-xl p-3 flex items-center justify-between gap-2">
+              <span class="font-bold text-teal-900">ऑटो-कैलकुलेटेड कुल राशि (₹):</span>
+              <input type="number" step="any" id="scan-total-amt" class="input-field w-32 font-bold text-rose-700 text-right text-base py-1.5 min-h-[38px]" />
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+              <button type="button" id="scan-to-house" class="btn-primary text-xs">🏡 घरेलू खर्च में भरें</button>
+              <button type="button" id="scan-to-shop" class="btn-secondary text-xs border-orange-300 text-orange-800">🏪 दुकान खाते में भरें</button>
+              <button type="button" id="scan-to-dairy" class="btn-secondary text-xs border-amber-300 text-amber-800">🥛 डेयरी खर्च में भरें</button>
+            </div>
+          </div>
+        </div>
+      `);
+
+      const handleFile = (file) => {
+        if (!file) return;
+        const previewWrap = document.getElementById("scan-preview-wrap");
+        const progEl = document.getElementById("scan-progress");
+        const resWrap = document.getElementById("scan-result-wrap");
+        previewWrap.classList.remove("hidden");
+        resWrap.classList.add("hidden");
+        progEl.textContent = "⏳ पर्ची पढ़ी जा रही है (OCR Auto-Scan)... कृपया 5–10 सेकंड प्रतीक्षा करें";
+
+        compressImageFile(file, async (dataUrl) => {
+          scannedImageData = dataUrl;
+          document.getElementById("scan-img-preview").src = dataUrl;
+          if (typeof Tesseract === "undefined") {
+            progEl.textContent = "⚠️ ऑफ़लाइन मोड: OCR इंजन लोड नहीं हुआ — फोटो अटैच हो गई है, कृपया नीचे राशि लिखकर सेव करें।";
+            resWrap.classList.remove("hidden");
+            return;
+          }
+          try {
+            const res = await Tesseract.recognize(dataUrl, "eng+hin", {
+              logger: (m) => {
+                if (m.status === "recognizing text" && typeof m.progress === "number") {
+                  progEl.textContent = `🔍 पर्ची स्कैन हो रही है... ${Math.round(m.progress * 100)}%`;
+                }
+              }
+            });
+            const rawText = (res && res.data && res.data.text) || "";
+            lastParsed = AccountingEngine.extractBillNumbersFromOCR(rawText);
+            progEl.textContent = lastParsed.finalTotal > 0
+              ? `✅ स्कैन पूरा! कुल ${lastParsed.items.length} आइटम और राशि ${fmtRs(lastParsed.finalTotal)} पहचानी गई।`
+              : "✅ फोटो स्कैन हुई — कृपया नीचे सही राशि जांचें या भरें।";
+            document.getElementById("scan-shop").value = lastParsed.shopName || "";
+            if (lastParsed.detectedDate) document.getElementById("scan-date").value = lastParsed.detectedDate;
+            document.getElementById("scan-items-txt").value = lastParsed.items.length
+              ? lastParsed.items.map(i => `${i.label} - ₹${i.amount}`).join(", ")
+              : rawText.trim().slice(0, 220);
+            document.getElementById("scan-total-amt").value = lastParsed.finalTotal || "";
+            resWrap.classList.remove("hidden");
+          } catch (err) {
+            progEl.textContent = "⚠️ टेक्स्ट स्पष्ट नहीं पढ़ा जा सका—आप फोटो के साथ नीचे राशि सीधे भर सकते हैं।";
+            resWrap.classList.remove("hidden");
+          }
+        });
+      };
+
+      document.getElementById("scan-cam-input").addEventListener("change", (e) => handleFile(e.target.files?.[0]));
+      document.getElementById("scan-gal-input").addEventListener("change", (e) => handleFile(e.target.files?.[0]));
+
+      document.getElementById("scan-to-house").addEventListener("click", () => {
+        openHouseExpenseModal({
+          date: document.getElementById("scan-date").value || state.selectedDate,
+          category: "किराना",
+          itemName: document.getElementById("scan-items-txt").value.trim().slice(0, 80) || "स्कैन की गई पर्ची",
+          amount: AccountingEngine.round2(document.getElementById("scan-total-amt").value || 0),
+          shopName: document.getElementById("scan-shop").value.trim(),
+          note: "Camera/Parchi Auto-Scan",
+          billImage: scannedImageData
+        });
+      });
+      document.getElementById("scan-to-shop").addEventListener("click", () => {
+        const amt = AccountingEngine.round2(document.getElementById("scan-total-amt").value || 0);
+        openShopModal({
+          date: document.getElementById("scan-date").value || state.selectedDate,
+          shopName: document.getElementById("scan-shop").value.trim() || "दुकान पर्ची",
+          item: document.getElementById("scan-items-txt").value.trim().slice(0, 80) || "स्कैन बिल",
+          amount: amt, paid: amt, note: "Camera/Parchi Auto-Scan"
+        });
+      });
+      document.getElementById("scan-to-dairy").addEventListener("click", () => {
+        const amt = AccountingEngine.round2(document.getElementById("scan-total-amt").value || 0);
+        openDairyExpenseModal({
+          date: document.getElementById("scan-date").value || state.selectedDate,
+          category: "अन्य",
+          item: document.getElementById("scan-items-txt").value.trim().slice(0, 80) || "डेयरी पर्ची",
+          supplier: document.getElementById("scan-shop").value.trim(),
+          amount: amt, paid: amt, note: "Camera/Parchi Auto-Scan"
+        });
+      });
+    }
+
+    // --- 2. FRIENDS KHATA & GROUP SPLIT MODULE ---
+    function renderFriendsKhataTab(container) {
+      const txns = [...(state.data.friendTransactions || [])].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      const friends = AccountingEngine.calcFriendBalances(txns);
+      const totRec = AccountingEngine.round2(friends.filter(f => f.netBalance > 0).reduce((s, f) => s + f.netBalance, 0));
+      const totPay = AccountingEngine.round2(friends.filter(f => f.netBalance < 0).reduce((s, f) => s + Math.abs(f.netBalance), 0));
+
+      container.innerHTML = `
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div class="text-xs text-slate-500">दोस्तों का हिसाब-किताब (${friends.length} दोस्त)</div>
+            <div class="text-base sm:text-lg font-bold">लेने हैं: <span class="text-emerald-700">${fmtRs(totRec)}</span> | देने हैं: <span class="text-red-600">${fmtRs(totPay)}</span></div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" id="add-friend-split-btn" class="btn-primary text-xs bg-indigo-600 hover:bg-indigo-700">🍕 ग्रुप खर्च बाँटें (Split)</button>
+            <button type="button" id="add-friend-entry-btn" class="btn-primary text-xs">+ दोस्त एंट्री जोड़ें</button>
+          </div>
+        </div>
+
+        ${friends.length ? `
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            ${friends.map(f => `
+              <div class="kpi-card space-y-2">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <div class="font-bold text-base">👤 ${escHtml(f.friendName)}</div>
+                    <div class="text-[11px] text-slate-500">${escHtml(f.mobile || "मोबाइल नहीं")} • ${f.count} एंट्री</div>
+                  </div>
+                  <span class="text-xs px-2 py-0.5 rounded-full font-bold ${f.netBalance > 0 ? "bg-emerald-100 text-emerald-800" : f.netBalance < 0 ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-600"}">
+                    ${f.netBalance > 0 ? "लेने हैं: " + fmtRs(f.netBalance) : f.netBalance < 0 ? "देने हैं: " + fmtRs(Math.abs(f.netBalance)) : "चुक्ता ✓"}
+                  </span>
+                </div>
+                <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-100 text-xs">
+                  ${f.netBalance !== 0 ? `<button type="button" data-settle-fr="${escHtml(f.friendName)}" data-bal="${f.netBalance}" data-mob="${escHtml(f.mobile || "")}" class="font-bold text-teal-700">✓ सेटल करें</button>` : ""}
+                  ${f.netBalance > 0 ? `<button type="button" data-qr-fr="${escHtml(f.friendName)}" data-bal="${f.netBalance}" data-mob="${escHtml(f.mobile || "")}" class="font-bold text-indigo-700">📱 UPI QR</button>` : ""}
+                  <button type="button" data-wa-fr="${escHtml(f.friendName)}" data-bal="${f.netBalance}" data-mob="${escHtml(f.mobile || "")}" class="font-bold text-green-700">💬 WhatsApp</button>
+                </div>
+              </div>
+            `).join("")}
+          </div>` : ""}
+
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+          <table class="data-table">
+            <thead><tr><th>तारीख</th><th>दोस्त का नाम</th><th>विवरण / ग्रुप</th><th>प्रकार</th><th>राशि (₹)</th><th>क्रिया</th></tr></thead>
+            <tbody>
+              ${txns.length ? txns.map(t => `
+                <tr>
+                  <td class="whitespace-nowrap">${escHtml(t.date)}</td>
+                  <td class="font-bold">${escHtml(t.friendName)}</td>
+                  <td class="text-xs">${escHtml(t.description || "-")}</td>
+                  <td><span class="px-2 py-0.5 rounded-full text-xs font-bold ${t.direction === "receive" ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"}">${t.direction === "receive" ? "लेने हैं (+)" : "देने हैं (-)"}</span></td>
+                  <td class="font-bold">${fmtRs(t.amount)}</td>
+                  <td><button type="button" data-del-fr="${t.id}" class="text-xs font-bold text-red-600">Delete</button></td>
+                </tr>
+              `).join("") : `<tr><td colspan="6" class="text-center py-8 text-slate-400">अभी कोई दोस्त एंट्री नहीं है। "ग्रुप खर्च बाँटें (Split)" या "+ दोस्त एंट्री जोड़ें" दबाएं।</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      document.getElementById("add-friend-split-btn").addEventListener("click", () => openGroupSplitModal());
+      document.getElementById("add-friend-entry-btn").addEventListener("click", () => openFriendEntryModal());
+      container.querySelectorAll("[data-del-fr]").forEach(b => b.addEventListener("click", () => deleteDocById("friendTransactions", b.dataset.delFr, "दोस्त एंट्री")));
+      container.querySelectorAll("[data-settle-fr]").forEach(b => b.addEventListener("click", async () => {
+        const name = b.dataset.settleFr, bal = Number(b.dataset.bal), mob = b.dataset.mob;
+        if (!(await showConfirm("हिसाब सेटल करें", `क्या ${name} का ${fmtRs(Math.abs(bal))} हिसाब चुक्ता (Settle) हो गया है?`))) return;
+        await saveDoc("friendTransactions", { date: state.selectedDate, friendName: name, mobile: mob, direction: bal > 0 ? "pay" : "receive", amount: Math.abs(bal), description: "हिसाब सेटल (Settled)" });
+      }));
+      container.querySelectorAll("[data-qr-fr]").forEach(b => b.addEventListener("click", () => {
+        openUpiQrModal({ name: b.dataset.qrFr, amount: Number(b.dataset.bal), note: "Friends Hisab Split", mobile: b.dataset.mob });
+      }));
+      container.querySelectorAll("[data-wa-fr]").forEach(b => b.addEventListener("click", () => {
+        const name = b.dataset.waFr, bal = Number(b.dataset.bal), mob = b.dataset.mob, upi = getSavedUpiId();
+        const msg = bal > 0
+          ? `नमस्ते ${name} भाई,\n*MahaIndustries दोस्त हिसाब*\nआपकी तरफ ${fmtRs(bal)} बकाया (Pending) है।${upi ? `\nUPI ID: ${upi}` : ""}\nकृपया सुविधा अनुसार भेज दें। धन्यवाद!`
+          : bal < 0 ? `नमस्ते ${name} भाई, मेरी तरफ आपके ${fmtRs(Math.abs(bal))} बाकी हैं।` : `नमस्ते ${name} भाई, हमारा हिसाब चुक्ता है।`;
+        openWhatsAppMessage(mob, msg);
+      }));
+    }
+
+    function openFriendEntryModal(prefill = {}) {
+      openModal("दोस्त हिसाब एंट्री जोड़ें", `
+        <form id="fr-form" class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">तारीख*</label><input type="date" id="fr-date" value="${prefill.date || state.selectedDate}" required class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">प्रकार*</label>
+              <select id="fr-dir" class="input-field">
+                <option value="receive">दोस्त से लेने हैं (+)</option>
+                <option value="pay">दोस्त को देने हैं (-)</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">दोस्त का नाम*</label><input type="text" id="fr-name" required placeholder="उदा. राहुल, अमित" class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">मोबाइल (वैकल्पिक)</label><input type="tel" id="fr-mob" placeholder="10 अंक" class="input-field" /></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">राशि (₹)*</label><input type="number" step="any" min="0.01" id="fr-amt" value="${prefill.amount || ""}" required class="input-field font-bold" /></div>
+            <div><label class="block text-xs font-bold mb-1">विवरण (पार्टी / चाय / यात्रा)</label><input type="text" id="fr-desc" value="${escHtml(prefill.description || "")}" class="input-field" /></div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="fr-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">सेव करें</button></div>
+        </form>`);
+      document.getElementById("fr-cancel").addEventListener("click", closeModal);
+      document.getElementById("fr-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const payload = { date: document.getElementById("fr-date").value, direction: document.getElementById("fr-dir").value, friendName: document.getElementById("fr-name").value.trim(), mobile: document.getElementById("fr-mob").value.trim(), amount: AccountingEngine.round2(document.getElementById("fr-amt").value), description: document.getElementById("fr-desc").value.trim() || "दोस्त हिसाब" };
+        if (!payload.friendName || payload.amount <= 0) return;
+        if (await saveDoc("friendTransactions", payload)) closeModal();
+      });
+    }
+
+    function openGroupSplitModal(prefillAmount = "") {
+      openModal("🍕 ग्रुप खर्च बराबर बाँटें (Group Split)", `
+        <form id="gsplit-form" class="space-y-3 text-xs">
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block font-bold mb-1">तारीख*</label><input type="date" id="gs-date" value="${state.selectedDate}" required class="input-field" /></div>
+            <div><label class="block font-bold mb-1">कुल खर्च राशि (₹)*</label><input type="number" step="any" min="1" id="gs-total" value="${prefillAmount}" required placeholder="उदा. 1200" class="input-field font-bold" /></div>
+          </div>
+          <div><label class="block font-bold mb-1">खर्च का विवरण*</label><input type="text" id="gs-desc" required placeholder="उदा. डिनर पार्टी / ट्रिप पेट्रोल" class="input-field" /></div>
+          <div><label class="block font-bold mb-1">दोस्तों के नाम (कॉमा से अलग करें — अपने आप को छोड़कर)*</label><input type="text" id="gs-friends" required placeholder="उदा. अमित, राहुल, सोनू" class="input-field" /></div>
+          <label class="flex items-center gap-2 font-semibold"><input type="checkbox" id="gs-inc-me" checked class="w-4 h-4 accent-teal-700" /> इस खर्च में मेरा हिस्सा भी शामिल करें</label>
+          <div id="gs-preview" class="p-3 rounded-xl bg-indigo-50 border border-indigo-200 font-bold text-indigo-900">प्रति व्यक्ति हिस्सा यहाँ दिखेगा...</div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="gs-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary bg-indigo-600 hover:bg-indigo-700">सभी के खाते में जोड़ें</button></div>
+        </form>`);
+      const upd = () => {
+        const tot = Number(document.getElementById("gs-total").value) || 0;
+        const names = document.getElementById("gs-friends").value.split(",").map(s => s.trim()).filter(Boolean);
+        const incMe = document.getElementById("gs-inc-me").checked;
+        const count = names.length + (incMe ? 1 : 0);
+        const share = count > 0 ? AccountingEngine.calcEqualSplit(tot, count) : 0;
+        document.getElementById("gs-preview").textContent = names.length ? `कुल ${count} लोग • हर दोस्त से लेने हैं: ${fmtRs(share)}` : "कृपया दोस्तों के नाम लिखें।";
+      };
+      ["gs-total", "gs-friends", "gs-inc-me"].forEach(id => document.getElementById(id).addEventListener("input", upd));
+      document.getElementById("gs-cancel").addEventListener("click", closeModal);
+      document.getElementById("gsplit-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const tot = Number(document.getElementById("gs-total").value) || 0;
+        const names = document.getElementById("gs-friends").value.split(",").map(s => s.trim()).filter(Boolean);
+        const incMe = document.getElementById("gs-inc-me").checked;
+        if (!names.length || tot <= 0) { showToast("सही राशि और दोस्तों के नाम भरें।", "error"); return; }
+        const share = AccountingEngine.calcEqualSplit(tot, names.length + (incMe ? 1 : 0));
+        const dt = document.getElementById("gs-date").value, desc = document.getElementById("gs-desc").value.trim();
+        for (const nm of names) {
+          await saveDoc("friendTransactions", { date: dt, friendName: nm, mobile: "", direction: "receive", amount: share, description: `${desc} (Split ${fmtRs(tot)})` });
+        }
+        showToast(`${names.length} दोस्तों के खाते में ${fmtRs(share)} प्रति व्यक्ति जुड़ गया!`);
+        closeModal();
+      });
+    }
+
+    // --- 3. AUTOMATIC SCANNABLE UPI QR CODE GENERATOR ---
+    function openUpiQrModal({ name = "", amount = 0, note = "MahaIndustries Payment", mobile = "" }) {
+      const savedUpi = getSavedUpiId();
+      openModal(`📱 UPI QR पेमेंट — ${name}`, `
+        <div class="space-y-3 text-center text-xs">
+          <div class="grid grid-cols-2 gap-2 text-left">
+            <div><label class="block font-bold mb-1">आपका UPI ID*</label><input type="text" id="qr-upi-id" value="${escHtml(savedUpi)}" placeholder="उदा. 7500343487@ybl" class="input-field text-xs" /></div>
+            <div><label class="block font-bold mb-1">राशि (₹)*</label><input type="number" step="any" min="1" id="qr-amt" value="${AccountingEngine.round2(amount)}" class="input-field font-bold text-emerald-700 text-xs" /></div>
+          </div>
+          <div id="qr-canvas-box" class="bg-white border border-slate-200 rounded-2xl p-4 inline-flex flex-col items-center justify-center min-h-[200px] shadow-sm"></div>
+          <div class="flex flex-wrap justify-center gap-2 pt-1">
+            <button type="button" id="qr-refresh-btn" class="btn-primary text-xs">🔄 QR बनाएं / सेव UPI</button>
+            <button type="button" id="qr-wa-btn" class="btn-secondary text-xs border-emerald-300 text-emerald-800">💬 WhatsApp लिंक भेजें</button>
+          </div>
+        </div>`);
+
+      const renderQr = () => {
+        const upi = document.getElementById("qr-upi-id").value.trim();
+        const amt = AccountingEngine.round2(document.getElementById("qr-amt").value || 0);
+        const box = document.getElementById("qr-canvas-box");
+        if (!upi) { box.innerHTML = `<div class="text-slate-500 p-4">कृपया ऊपर अपना UPI ID दर्ज करें (जैसे 7500343487@ybl) और 'QR बनाएं' दबाएं।</div>`; return ""; }
+        try { localStorage.setItem(UPI_ID_KEY, upi); } catch (e) {}
+        const upiUri = `upi://pay?pa=${encodeURIComponent(upi)}&pn=${encodeURIComponent("MahaIndustries")}&am=${amt}&cu=INR&tn=${encodeURIComponent(note)}`;
+        if (typeof qrcode !== "undefined") {
+          const qr = qrcode(0, "M"); qr.addData(upiUri); qr.make();
+          box.innerHTML = `${qr.createSvgTag(5, 8)}<div class="font-bold text-teal-800 mt-2 text-sm">${fmtRs(amt)}</div><div class="text-[11px] text-slate-500">${escHtml(upi)}</div>`;
+        } else {
+          box.innerHTML = `<div class="p-3 font-mono text-[11px] break-all">${escHtml(upiUri)}</div>`;
+        }
+        return upiUri;
+      };
+
+      renderQr();
+      document.getElementById("qr-refresh-btn").addEventListener("click", () => { if (renderQr()) showToast("UPI QR कोड तैयार है!"); });
+      document.getElementById("qr-wa-btn").addEventListener("click", () => {
+        const upi = document.getElementById("qr-upi-id").value.trim(), amt = AccountingEngine.round2(document.getElementById("qr-amt").value || 0);
+        if (!upi) { showToast("पहले UPI ID लिखें।", "error"); return; }
+        openWhatsAppMessage(mobile, `नमस्ते ${name} जी,\n*MahaIndustries पेमेंट अनुरोध*\n• राशि: *${fmtRs(amt)}*\n• विवरण: ${note}\n• UPI ID: \`${upi}\`\nकृपया ऊपर दिए UPI ID पर भुगतान करें। धन्यवाद!`);
+      });
+    }
+
+    // --- 4. BUILT-IN SMART CALCULATOR -> DIRECT SAVE TO ENTRY ---
+    function openSmartCalculatorModal() {
+      let expr = "";
+      openModal("🧮 स्मार्ट कैलकुलेटर → सीधा एंट्री सेव", `
+        <div class="space-y-3">
+          <input type="text" id="calc-display" value="" placeholder="0" class="input-field text-right text-2xl font-bold font-mono bg-slate-50" />
+          <div class="grid grid-cols-4 gap-2">
+            ${["7","8","9","/","4","5","6","*","1","2","3","-","C","0",".","+"].map(k => `<button type="button" data-ck="${k}" class="${["/","*","-","+"].includes(k) ? "btn-secondary bg-teal-50 text-teal-800 font-bold" : k === "C" ? "btn-danger" : "btn-secondary"} text-lg font-bold">${k}</button>`).join("")}
+            <button type="button" id="calc-eq-btn" class="btn-primary col-span-4 text-lg">=</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t">
+            <button type="button" id="calc-to-house" class="btn-primary text-xs">🏡 खर्च में सेव करें</button>
+            <button type="button" id="calc-to-milk" class="btn-secondary text-xs border-teal-300 text-teal-800">🥛 दूध बिक्री में</button>
+            <button type="button" id="calc-to-split" class="btn-secondary text-xs border-indigo-300 text-indigo-800">🍕 दोस्त Split में</button>
+          </div>
+        </div>`);
+      const disp = document.getElementById("calc-display");
+      const evalCalc = () => {
+        const safe = disp.value.replace(/[^0-9+\-*/.() ]/g, "");
+        if (!safe) return 0;
+        try { const val = AccountingEngine.round2(Function(`"use strict"; return (${safe});`)()); disp.value = String(val); expr = String(val); return val; }
+        catch (e) { showToast("सही गणना लिखें।", "error"); return 0; }
+      };
+      document.querySelectorAll("[data-ck]").forEach(b => b.addEventListener("click", () => {
+        const k = b.dataset.ck;
+        if (k === "C") { expr = ""; disp.value = ""; } else { expr = disp.value + k; disp.value = expr; }
+      }));
+      document.getElementById("calc-eq-btn").addEventListener("click", evalCalc);
+      document.getElementById("calc-to-house").addEventListener("click", () => { const v = evalCalc(); openHouseExpenseModal({ date: state.selectedDate, amount: v || "" }); });
+      document.getElementById("calc-to-milk").addEventListener("click", () => { const v = evalCalc(); openMilkSaleModal({ date: state.selectedDate, amount: v || 0, paid: v || 0 }); });
+      document.getElementById("calc-to-split").addEventListener("click", () => { const v = evalCalc(); openGroupSplitModal(v || ""); });
+    }
+
+    // =========================================================================
     // 12. GLOBAL SEARCH MODAL
     // =========================================================================
     function openGlobalSearchModal() {
@@ -2961,6 +3487,8 @@
       document.getElementById("header-dark-btn").addEventListener("click", toggleDarkMode);
       document.getElementById("header-speak-btn").addEventListener("click", speakTodaySummary);
       document.getElementById("header-lock-btn").addEventListener("click", lockAppWithPin);
+      document.getElementById("header-scan-btn").addEventListener("click", () => openParchiScannerModal());
+      document.getElementById("header-calc-btn").addEventListener("click", () => openSmartCalculatorModal());
       document.getElementById("header-voice-btn").addEventListener("click", () => openVoiceEntryModal());
       document.getElementById("quick-search-open-btn").addEventListener("click", openGlobalSearchModal);
       document.getElementById("modal-close-btn").addEventListener("click", closeModal);
