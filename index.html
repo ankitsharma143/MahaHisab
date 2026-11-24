@@ -51,6 +51,12 @@
     #toast-container { position: fixed; top: 16px; right: 16px; z-index: 90; display: flex; flex-direction: column; gap: 8px; max-width: 340px; }
     .toast-item { padding: 12px 16px; border-radius: 12px; color: #fff; font-size: 13px; font-weight: 600; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18); animation: slideIn 0.2s ease; }
     @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .field-mic-wrap { position: relative; display: flex; align-items: center; width: 100%; }
+    .field-mic-btn { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border-radius: 8px; border: 0; background: transparent; color: #0f766e; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer; z-index: 2; transition: background 0.15s; }
+    .field-mic-btn:hover { background: #ccfbf1; }
+    .field-mic-btn.listening { background: #fee2e2; color: #dc2626; animation: micPulse 1s infinite; }
+    @keyframes micPulse { 0%, 100% { transform: translateY(-50%) scale(1); } 50% { transform: translateY(-50%) scale(1.12); } }
+    textarea + .field-mic-btn { top: 22px; }
 
     /* Dark Mode Theme */
     body.dark-mode { background: #0f172a !important; color: #f1f5f9 !important; }
@@ -132,25 +138,29 @@
 
     <!-- Main Content Column -->
     <div class="flex-1 md:ml-64 flex flex-col min-h-screen pb-20 md:pb-6">
-      <header class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200 px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
-        <div class="flex items-center gap-2 min-w-0">
-          <img src="data:image/png;base64,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" alt="MahaIndustries Logo" class="md:hidden h-9 w-auto max-w-[104px] rounded-lg bg-white px-1.5 py-0.5 border border-slate-200 shadow-sm object-contain shrink-0" />
-          <div class="min-w-0">
+      <header class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200 px-2.5 sm:px-4 py-2 flex items-center gap-2">
+        <!-- Fixed Logo & Title (Never overlaps or shrinks on mobile) -->
+        <div class="flex items-center gap-2 shrink-0 max-w-[44%] sm:max-w-none">
+          <img src="data:image/png;base64,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" alt="MahaIndustries Logo" class="md:hidden h-9 w-auto max-w-[96px] rounded-lg bg-white px-1.5 py-0.5 border border-slate-200 shadow-sm object-contain shrink-0" />
+          <div class="hidden sm:block min-w-0">
             <h2 id="page-title" class="font-bold text-sm sm:text-lg text-slate-900 truncate">मुख्य डैशबोर्ड</h2>
             <p id="header-user-email" class="text-[11px] text-emerald-700 font-semibold truncate">● फोन में सुरक्षित सेव (100% निजी)</p>
           </div>
         </div>
-        <div class="flex items-center gap-1.5 shrink-0">
-          <button type="button" id="pwa-install-btn" class="hidden btn-primary text-xs px-2.5 py-2 min-h-[38px]" title="Android App Install करें">📲 <span class="hidden sm:inline">Install</span></button>
-          <button type="button" id="header-notif-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px] border-indigo-300 text-indigo-800 bg-indigo-50" title="दैनिक 8 AM / 7 PM हिसाब नोटिफिकेशन">🔔</button>
-          <button type="button" id="header-dark-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px]" title="डार्क / लाइट मोड">🌙</button>
-          <button type="button" id="header-speak-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px] border-teal-300 text-teal-800" title="आज का हिसाब सुनें">🔊 <span class="hidden lg:inline">सुनें</span></button>
-          <button type="button" id="header-lock-btn" class="hidden btn-secondary text-xs px-2.5 py-2 min-h-[38px] border-slate-300 text-slate-700" title="ऐप लॉक करें">🔒</button>
-          <button type="button" id="header-scan-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px] border-rose-300 text-rose-800 bg-rose-50" title="पर्ची / बिल कैमरा स्कैनर">📸 <span class="hidden lg:inline">स्कैन</span></button>
-          <button type="button" id="header-calc-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px]" title="स्मार्ट कैलकुलेटर">🧮</button>
-          <button type="button" id="header-voice-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px] border-amber-300 text-amber-800 bg-amber-50" title="बोलकर एंट्री करें">🎙️ <span class="hidden sm:inline">बोलकर लिखें</span></button>
-          <button type="button" id="quick-search-open-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px]" title="पूरे ऐप में खोजें">🔍 <span class="hidden sm:inline">खोजें</span></button>
-          <button type="button" id="header-share-app-btn" class="btn-primary text-xs px-2.5 py-2 min-h-[38px]" title="ऐप शेयर करें">📤</button>
+        <!-- Horizontally Scrollable Action Toolbar -->
+        <div class="flex-1 min-w-0 overflow-x-auto no-scrollbar">
+          <div class="flex items-center justify-start sm:justify-end gap-1.5 w-max ml-auto py-0.5">
+            <button type="button" id="pwa-install-btn" class="hidden shrink-0 btn-primary text-xs px-2.5 py-1.5 min-h-[36px]" title="Android App Install करें">📲 <span class="hidden sm:inline">Install</span></button>
+            <button type="button" id="header-notif-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-indigo-300 text-indigo-800 bg-indigo-50" title="दैनिक 8 AM / 7 PM हिसाब नोटिफिकेशन">🔔</button>
+            <button type="button" id="header-dark-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px]" title="डार्क / लाइट मोड">🌙</button>
+            <button type="button" id="header-speak-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-teal-300 text-teal-800" title="आज का हिसाब सुनें">🔊 <span class="hidden lg:inline">सुनें</span></button>
+            <button type="button" id="header-lock-btn" class="hidden shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-slate-300 text-slate-700" title="ऐप लॉक करें">🔒</button>
+            <button type="button" id="header-scan-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-rose-300 text-rose-800 bg-rose-50" title="पर्ची / बिल कैमरा स्कैनर">📸 <span class="hidden lg:inline">स्कैन</span></button>
+            <button type="button" id="header-calc-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px]" title="स्मार्ट कैलकुलेटर">🧮</button>
+            <button type="button" id="header-voice-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-amber-300 text-amber-800 bg-amber-50" title="बोलकर एंट्री करें">🎙️ <span class="hidden sm:inline">बोलकर लिखें</span></button>
+            <button type="button" id="quick-search-open-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px]" title="पूरे ऐप में खोजें">🔍 <span class="hidden sm:inline">खोजें</span></button>
+            <button type="button" id="header-share-app-btn" class="shrink-0 btn-primary text-xs px-2.5 py-1.5 min-h-[36px]" title="ऐप शेयर करें">📤</button>
+          </div>
         </div>
       </header>
 
@@ -210,6 +220,7 @@
     const DARK_MODE_KEY = "maha_hisab_dark_mode";
     const NOTIF_SETTINGS_KEY = "maha_hisab_notif_settings_v1";
     const NOTIF_SENT_LOG_KEY = "maha_hisab_notif_sent_log_v1";
+    const PERMS_DONE_KEY = "maha_hisab_permissions_done_v1";
 
     const DEFAULT_FIREBASE_CONFIG = {
       apiKey: "AIzaSyAgHNLkbafBRmXyVQf5LDI5sExCi8VwAxE",
@@ -669,10 +680,127 @@
       });
     }
 
+    let activeFieldRecognition = null;
+
+    function parseSpokenNumericValue(transcript) {
+      const raw = String(transcript || "").trim().toLowerCase();
+      // Direct digits first (e.g. "250", "10.5", "1,200")
+      const direct = raw.match(/\d+(?:,\d{3})*(?:\.\d+)?/);
+      if (direct) return direct[0].replace(/,/g, "");
+      // Common Hindi spoken number words fallback
+      const map = {
+        "आधा": 0.5, "aadha": 0.5, "डेढ़": 1.5, "dedh": 1.5, "ढाई": 2.5, "dhai": 2.5,
+        "एक": 1, "दो": 2, "तीन": 3, "चार": 4, "पांच": 5, "पाँच": 5, "छह": 6, "सात": 7, "आठ": 8, "नौ": 9, "दस": 10,
+        "बीस": 20, "तीस": 30, "चालीस": 40, "पचास": 50, "साठ": 60, "सत्तर": 70, "अस्सी": 80, "नब्बे": 90,
+        "सौ": 100, "हजार": 1000, "हज़ार": 1000
+      };
+      let total = 0, cur = 0, matched = false;
+      raw.split(/\s+/).forEach(w => {
+        if (map[w] !== undefined) {
+          matched = true;
+          const v = map[w];
+          if (v === 100 || v === 1000) { cur = (cur || 1) * v; total += cur; cur = 0; }
+          else cur += v;
+        }
+      });
+      total += cur;
+      return matched && total > 0 ? String(total) : "";
+    }
+
+    function attachVoiceMicsToContainer(rootEl) {
+      if (!rootEl) return;
+      const fields = rootEl.querySelectorAll('input, textarea');
+      fields.forEach(el => {
+        if (el.dataset.voiceMicBound === "1") return;
+        if (el.readOnly || el.disabled) return;
+        const tag = el.tagName.toLowerCase();
+        const type = (el.getAttribute("type") || "text").toLowerCase();
+        if (tag === "input" && !["text", "number", "tel", "search", "email"].includes(type)) return;
+        if (el.classList.contains("hidden") || el.id === "pin-unlock-input" || el.id === "set-app-pin" || el.id === "calc-display") return;
+
+        el.dataset.voiceMicBound = "1";
+        const wrap = document.createElement("div");
+        wrap.className = "field-mic-wrap";
+        // Preserve explicit compact width classes (like w-20 or max-w-xs) on the wrapper
+        ["w-20", "w-32", "w-40", "max-w-xs", "max-w-[180px]", "flex-1", "min-w-[180px]", "min-w-[200px]"].forEach(cls => {
+          if (el.classList.contains(cls)) { wrap.classList.add(cls); el.classList.remove(cls); }
+        });
+
+        el.parentNode.insertBefore(wrap, el);
+        wrap.appendChild(el);
+        el.style.paddingRight = "38px";
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "field-mic-btn";
+        btn.title = "बोलकर इस बॉक्स में लिखें";
+        btn.setAttribute("aria-label", "बोलकर लिखें");
+        btn.textContent = "🎙️";
+
+        btn.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+          if (!SR) {
+            showToast("यह ब्राउज़र माइक Voice API सपोर्ट नहीं करता। कृपया Android या Desktop Chrome उपयोग करें।", "warning");
+            return;
+          }
+          if (activeFieldRecognition) {
+            try { activeFieldRecognition.stop(); } catch (e) {}
+            activeFieldRecognition = null;
+          }
+          try {
+            const rec = new SR();
+            activeFieldRecognition = rec;
+            rec.lang = "hi-IN";
+            rec.interimResults = false;
+            rec.continuous = false;
+            btn.classList.add("listening");
+            btn.textContent = "🔴";
+            el.focus();
+            showToast("🎙️ बोलिए... (इस बॉक्स में लिखने के लिए सुन रहा है)");
+
+            rec.onresult = (event) => {
+              const spoken = (event.results[0] && event.results[0][0] && event.results[0][0].transcript || "").trim();
+              if (!spoken) return;
+              if (type === "number") {
+                const numStr = parseSpokenNumericValue(spoken);
+                if (numStr) el.value = numStr;
+                else showToast(`"${spoken}" में कोई संख्या नहीं मिली।`, "warning");
+              } else if (type === "tel") {
+                el.value = spoken.replace(/\D/g, "").slice(0, 12);
+              } else {
+                el.value = spoken;
+              }
+              el.dispatchEvent(new Event("input", { bubbles: true }));
+              el.dispatchEvent(new Event("change", { bubbles: true }));
+            };
+            rec.onerror = (err) => {
+              if (err && err.error === "not-allowed") showToast("कृपया ब्राउज़र में माइक की अनुमति (Allow Microphone) दें।", "error");
+            };
+            rec.onend = () => {
+              btn.classList.remove("listening");
+              btn.textContent = "🎙️";
+              if (activeFieldRecognition === rec) activeFieldRecognition = null;
+            };
+            rec.start();
+          } catch (err) {
+            btn.classList.remove("listening");
+            btn.textContent = "🎙️";
+            showToast("माइक शुरू नहीं हो सका।", "error");
+          }
+        });
+
+        wrap.appendChild(btn);
+      });
+    }
+
     function openModal(title, htmlContent) {
       document.getElementById("modal-title").textContent = title;
-      document.getElementById("modal-body").innerHTML = htmlContent;
+      const body = document.getElementById("modal-body");
+      body.innerHTML = htmlContent;
       document.getElementById("app-modal").classList.remove("hidden");
+      attachVoiceMicsToContainer(body);
     }
 
     function closeModal() {
@@ -1195,6 +1323,7 @@
       else if (state.activeMainTab === "dairy") renderDairyModule(main);
       else if (state.activeMainTab === "reports") renderReportsCenter(main);
       else if (state.activeMainTab === "settings") renderSettingsModule(main);
+      attachVoiceMicsToContainer(main);
     }
 
     function destroyCharts() {
@@ -1223,6 +1352,9 @@
 
       const budgetStatus = AccountingEngine.calcBudgetStatus(d.budgets, d.houseExpenses, mStr, getPrevMonth(mStr));
       const loanSummary = AccountingEngine.calcLoanSummary(d.loans, d.loanPayments);
+      const friendBals = AccountingEngine.calcFriendBalances(d.friendTransactions || []);
+      const friendsToReceive = AccountingEngine.round2(friendBals.filter(f => f.netBalance > 0).reduce((s, f) => s + f.netBalance, 0));
+      const friendsToPay = AccountingEngine.round2(friendBals.filter(f => f.netBalance < 0).reduce((s, f) => s + Math.abs(f.netBalance), 0));
       const accBalances = AccountingEngine.calcAccountBalances(d);
       let cashBal = 0, bankBal = 0, upiBal = 0;
       Object.values(accBalances).forEach(a => {
@@ -1255,7 +1387,9 @@
         { key: "loan_taken", label: "कुल उधार लिया (बाकी)", value: fmtRs(loanSummary.takenRemaining), color: "text-purple-700", sub: `कुल: ${fmtRs(loanSummary.totalTaken)}` },
         { key: "cash_bal", label: "आज का Cash Balance", value: fmtRs(cashBal), color: "text-emerald-800", sub: "नकद खाता" },
         { key: "bank_bal", label: "बैंक Balance", value: fmtRs(bankBal), color: "text-blue-700", sub: "बैंक खाता" },
-        { key: "upi_bal", label: "UPI Balance", value: fmtRs(upiBal), color: "text-cyan-700", sub: "UPI खाता" }
+        { key: "upi_bal", label: "UPI Balance", value: fmtRs(upiBal), color: "text-cyan-700", sub: "UPI खाता" },
+        { key: "friends_rec", label: "दोस्तों से लेने हैं (Friends)", value: fmtRs(friendsToReceive), color: "text-emerald-700", sub: `${friendBals.filter(f => f.netBalance > 0).length} दोस्त बाकी` },
+        { key: "friends_pay", label: "दोस्तों को देने हैं (Friends)", value: fmtRs(friendsToPay), color: "text-rose-700", sub: `${friendBals.filter(f => f.netBalance < 0).length} दोस्त बाकी` }
       ];
 
       container.innerHTML = `
@@ -1271,6 +1405,7 @@
             <button type="button" id="qa-add-house-exp" class="btn-primary text-xs py-2 px-3 min-h-[40px]">+ घरेलू खर्च</button>
             <button type="button" id="qa-add-milk-sale" class="btn-secondary text-xs py-2 px-3 min-h-[40px] border-teal-300 text-teal-800">+ दूध बिक्री</button>
             <button type="button" id="qa-add-milk-prod" class="btn-secondary text-xs py-2 px-3 min-h-[40px] border-amber-300 text-amber-800">+ दूध उत्पादन</button>
+            <button type="button" id="qa-friend-split" class="btn-secondary text-xs py-2 px-3 min-h-[40px] border-indigo-300 text-indigo-800 bg-indigo-50">👥 दोस्त हिसाब / Split</button>
           </div>
         </div>
 
@@ -1292,6 +1427,38 @@
               </div>
             </button>
           `).join("")}
+        </div>
+
+        <!-- Dashboard Friends Khata Section (दोस्तों का हिसाब-किताब) -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="font-bold text-sm sm:text-base text-slate-900">👥 दोस्तों का हिसाब-किताब (Friends Khata)</h3>
+              <div class="text-xs text-slate-500">लेने हैं: <b class="text-emerald-700">${fmtRs(friendsToReceive)}</b> | देने हैं: <b class="text-rose-700">${fmtRs(friendsToPay)}</b></div>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" id="dash-fr-split-btn" class="btn-primary text-xs py-1.5 px-3 min-h-[36px] bg-indigo-600 hover:bg-indigo-700">🍕 ग्रुप Split</button>
+              <button type="button" id="dash-fr-add-btn" class="btn-secondary text-xs py-1.5 px-3 min-h-[36px] border-teal-300 text-teal-800">+ दोस्त एंट्री</button>
+              <button type="button" id="dash-fr-open-all" class="btn-secondary text-xs py-1.5 px-3 min-h-[36px]">पूरा खाता →</button>
+            </div>
+          </div>
+          ${friendBals.length ? `
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              ${friendBals.slice(0, 6).map(f => `
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
+                  <div class="min-w-0">
+                    <div class="font-bold text-xs sm:text-sm truncate">👤 ${escHtml(f.friendName)}</div>
+                    <div class="text-[11px] font-bold ${f.netBalance > 0 ? "text-emerald-700" : f.netBalance < 0 ? "text-rose-700" : "text-slate-500"}">
+                      ${f.netBalance > 0 ? "लेने हैं: " + fmtRs(f.netBalance) : f.netBalance < 0 ? "देने हैं: " + fmtRs(Math.abs(f.netBalance)) : "चुक्ता ✓"}
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    ${f.netBalance > 0 ? `<button type="button" data-dash-qr-fr="${escHtml(f.friendName)}" data-bal="${f.netBalance}" data-mob="${escHtml(f.mobile || "")}" class="px-2 py-1 rounded-lg bg-indigo-100 text-indigo-800 text-[11px] font-bold">QR</button>` : ""}
+                    <button type="button" data-dash-wa-fr="${escHtml(f.friendName)}" data-bal="${f.netBalance}" data-mob="${escHtml(f.mobile || "")}" class="px-2 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-bold">WA</button>
+                  </div>
+                </div>
+              `).join("")}
+            </div>` : `<div class="text-xs text-slate-400 bg-slate-50 rounded-xl p-3 text-center">अभी कोई दोस्त एंट्री नहीं है — ऊपर <b>🍕 ग्रुप Split</b> या <b>+ दोस्त एंट्री</b> दबाकर तुरंत हिसाब शुरू करें।</div>`}
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -1318,6 +1485,16 @@
       document.getElementById("qa-add-house-exp").addEventListener("click", () => openHouseExpenseModal());
       document.getElementById("qa-add-milk-sale").addEventListener("click", () => openMilkSaleModal());
       document.getElementById("qa-add-milk-prod").addEventListener("click", () => openMilkProductionModal());
+      document.getElementById("qa-friend-split").addEventListener("click", () => openGroupSplitModal());
+      document.getElementById("dash-fr-split-btn").addEventListener("click", () => openGroupSplitModal());
+      document.getElementById("dash-fr-add-btn").addEventListener("click", () => openFriendEntryModal());
+      document.getElementById("dash-fr-open-all").addEventListener("click", () => { state.activeMainTab = "house"; state.activeHouseTab = "friends"; renderCurrentView(); });
+      container.querySelectorAll("[data-dash-qr-fr]").forEach(b => b.addEventListener("click", () => openUpiQrModal({ name: b.dataset.dashQrFr, amount: Number(b.dataset.bal), note: "Friends Hisab", mobile: b.dataset.mob })));
+      container.querySelectorAll("[data-dash-wa-fr]").forEach(b => b.addEventListener("click", () => {
+        const name = b.dataset.dashWaFr, bal = Number(b.dataset.bal), mob = b.dataset.mob, upi = getSavedUpiId();
+        const msg = bal > 0 ? `नमस्ते ${name} भाई, MahaIndustries दोस्त हिसाब में आपकी तरफ ${fmtRs(bal)} बाकी हैं।${upi ? ` UPI: ${upi}` : ""}` : bal < 0 ? `नमस्ते ${name} भाई, मेरी तरफ आपके ${fmtRs(Math.abs(bal))} बाकी हैं।` : `नमस्ते ${name} भाई, हमारा हिसाब चुक्ता है।`;
+        openWhatsAppMessage(mob, msg);
+      }));
       container.querySelectorAll("[data-dash-card]").forEach(btn => btn.addEventListener("click", () => openDashboardCardReport(btn.dataset.dashCard)));
       container.querySelectorAll("[data-pay-rec-bill]").forEach(btn => btn.addEventListener("click", () => payRecurringBillNow(btn.dataset.payRecBill)));
       const openNotifBtn = document.getElementById("dash-open-full-notif");
@@ -2513,6 +2690,18 @@
       else if (cardKey === "month_budget") { rep = buildReportData("budget", mStr + "-01", mStr + "-31", "", ""); rep.importTarget = "budgets"; }
       else if (cardKey === "loan_given" || cardKey === "loan_taken") { const ls = AccountingEngine.calcLoanSummary(d.loans, d.loanPayments); const t = cardKey === "loan_given" ? "given" : "taken"; const l = ls.items.filter(x => x.type === t); rep = { title: t === "given" ? "कुल उधार दिया (लेने हैं)" : "कुल उधार लिया (देने हैं)", dateRange: "संपूर्ण विवरण", headers: ["व्यक्ति","मोबाइल","तारीख","मूल (₹)","वापस (₹)","बाकी (₹)"], rows: l.map(x => [x.personName,x.mobile||"-",x.date,x.amount,x.returned,x.remaining]), summaryLines: [`कुल बाकी: ${fmtRs(t === "given" ? ls.givenRemaining : ls.takenRemaining)}`], importTarget: "loans" }; }
       else if (["cash_bal","bank_bal","upi_bal"].includes(cardKey)) { rep = buildReportData(cardKey === "cash_bal" ? "cash_book" : cardKey === "bank_bal" ? "bank_book" : "upi_book", "2000-01-01", "2099-12-31", "", ""); rep.importTarget = "income"; }
+      else if (cardKey === "friends_rec" || cardKey === "friends_pay") {
+        const bals = AccountingEngine.calcFriendBalances(d.friendTransactions || []);
+        const filtered = cardKey === "friends_rec" ? bals.filter(f => f.netBalance > 0) : bals.filter(f => f.netBalance < 0);
+        rep = {
+          title: cardKey === "friends_rec" ? "दोस्तों से लेने हैं (Friends Receivable)" : "दोस्तों को देने हैं (Friends Payable)",
+          dateRange: todayStr(),
+          headers: ["दोस्त का नाम", "मोबाइल", "कुल लेने (₹)", "कुल देने (₹)", "शेष राशि (₹)"],
+          rows: filtered.map(f => [f.friendName, f.mobile || "-", f.receivable, f.payable, Math.abs(f.netBalance)]),
+          summaryLines: [`कुल शेष: ${fmtRs(filtered.reduce((s, f) => s + Math.abs(f.netBalance), 0))}`],
+          importTarget: "houseExpenses"
+        };
+      }
       if (rep) exportTableToPDF(rep);
     }
 
@@ -3469,6 +3658,7 @@
     // =========================================================================
     let deferredInstallPrompt = null;
     window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); deferredInstallPrompt = e; document.getElementById("pwa-install-btn")?.classList.remove("hidden"); });
+    window.addEventListener("appinstalled", () => { deferredInstallPrompt = null; showToast("MahaIndustries ऐप इंस्टॉल हो गया!"); if (!hasCompletedOneTimePermissions()) setTimeout(openOneTimePermissionModal, 600); });
     function triggerPWAInstall() {
       if (deferredInstallPrompt) { deferredInstallPrompt.prompt(); deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; }); }
       else showToast("Chrome मेनू (⋮) → 'Add to Home screen' पर टैप करें।", "warning");
@@ -3522,6 +3712,85 @@
       document.getElementById("share-app-wa-btn").addEventListener("click", () => openWhatsAppMessage("", shareText));
     }
 
+    function hasCompletedOneTimePermissions() {
+      try { return localStorage.getItem(PERMS_DONE_KEY) === "1"; } catch (e) { return true; }
+    }
+
+    function markOneTimePermissionsDone() {
+      try { localStorage.setItem(PERMS_DONE_KEY, "1"); } catch (e) {}
+    }
+
+    function openOneTimePermissionModal() {
+      if (hasCompletedOneTimePermissions()) return;
+      openModal("✨ एक बार सेटअप — ऐप अनुमतियाँ (One-Time Setup)", `
+        <div class="space-y-4 text-xs">
+          <p class="text-slate-600 leading-relaxed">
+            <b>MahaIndustries Household Expenses</b> में आपका स्वागत है! सभी स्मार्ट सुविधाओं को बिना रुकावट चलाने के लिए केवल <b>एक बार</b> ये अनुमतियाँ दें — इसके बाद ऐप आपसे दोबारा कभी नहीं पूछेगा:
+          </p>
+          <div class="space-y-2 bg-slate-50 border border-slate-200 rounded-xl p-3">
+            <div class="flex items-center gap-2.5"><span class="text-lg">🔔</span><div><b>नोटिफिकेशन:</b> रोज़ सुबह 8 बजे और शाम 7 बजे हिसाब रिमाइंडर के लिए</div></div>
+            <div class="flex items-center gap-2.5"><span class="text-lg">🎙️</span><div><b>माइक (Microphone):</b> हर फॉर्म में बोलकर एंट्री लिखने के लिए</div></div>
+            <div class="flex items-center gap-2.5"><span class="text-lg">📸</span><div><b>कैमरा (Camera):</b> पर्ची और बिल स्कैन करके ऑटो-टोटल के लिए</div></div>
+          </div>
+          <div id="otp-status" class="hidden p-2.5 rounded-xl bg-teal-50 border border-teal-200 text-teal-900 font-semibold"></div>
+          <div class="flex flex-wrap gap-2 pt-1">
+            <button type="button" id="otp-allow-all-btn" class="btn-primary flex-1 text-xs">✅ सभी अनुमतियाँ दें (1 बार)</button>
+            <button type="button" id="otp-skip-btn" class="btn-secondary text-xs">बाद में (दोबारा न पूछें)</button>
+          </div>
+        </div>
+      `);
+
+      document.getElementById("otp-skip-btn").addEventListener("click", () => {
+        markOneTimePermissionsDone();
+        closeModal();
+        showToast("सेटअप सहेजा गया — अब दोबारा नहीं पूछा जाएगा।");
+      });
+
+      document.getElementById("otp-allow-all-btn").addEventListener("click", async (e) => {
+        const btn = e.currentTarget;
+        const statusEl = document.getElementById("otp-status");
+        btn.disabled = true;
+        btn.textContent = "अनुमतियाँ सेट हो रही हैं...";
+        statusEl.classList.remove("hidden");
+        const results = [];
+
+        // 1. Notification permission (one-time)
+        try {
+          if (typeof Notification !== "undefined" && Notification.permission === "default") {
+            const r = await Notification.requestPermission();
+            results.push("🔔 नोटिफिकेशन: " + (r === "granted" ? "चालू ✓" : "बंद"));
+          } else if (typeof Notification !== "undefined") {
+            results.push("🔔 नोटिफिकेशन: " + (Notification.permission === "granted" ? "चालू ✓" : "बंद"));
+          }
+        } catch (err) {}
+
+        // 2. Microphone & Camera permission (one-time, release tracks immediately!)
+        try {
+          if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+            stream.getTracks().forEach(t => t.stop());
+            results.push("🎙️ माइक व 📸 कैमरा: चालू ✓");
+          }
+        } catch (err) {
+          // Fallback: try audio-only if camera denied or unavailable
+          try {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+              const aStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+              aStream.getTracks().forEach(t => t.stop());
+              results.push("🎙️ माइक: चालू ✓");
+            }
+          } catch (e2) {
+            results.push("🎙️ माइक / कैमरा: ब्राउज़र सेटिंग से बदला जा सकता है");
+          }
+        }
+
+        markOneTimePermissionsDone();
+        statusEl.textContent = results.join(" | ") || "सेटअप पूरा हो गया!";
+        showToast("✅ सभी अनुमतियाँ एक बार सेट हो गईं — अब दोबारा नहीं पूछा जाएगा!");
+        setTimeout(() => closeModal(), 900);
+      });
+    }
+
     function bindStaticEvents() {
       document.querySelectorAll("[data-main-tab]").forEach(btn => btn.addEventListener("click", () => { state.activeMainTab = btn.dataset.mainTab; renderCurrentView(); }));
       document.getElementById("pwa-install-btn").addEventListener("click", triggerPWAInstall);
@@ -3554,6 +3823,9 @@
       initOptionalPrivateFirebase();
       checkScheduledDailyNotifications();
       setInterval(checkScheduledDailyNotifications, 30000);
+      if (!hasCompletedOneTimePermissions() && !getSavedAppPin()) {
+        setTimeout(openOneTimePermissionModal, 700);
+      }
     });
   </script>
 </body>
