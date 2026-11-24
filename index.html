@@ -122,6 +122,7 @@
       <nav class="flex-1 p-3 space-y-1.5 overflow-y-auto">
         <button type="button" data-main-tab="home" class="desktop-nav-btn active w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>📊</span><span>डैशबोर्ड (Home)</span></button>
         <button type="button" data-main-tab="house" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>🏡</span><span>घर का हिसाब (House)</span></button>
+        <button type="button" data-main-tab="parchuni" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>🏪</span><span>परचूनी दुकान (Kirana)</span></button>
         <button type="button" data-main-tab="dairy" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>🥛</span><span>डेयरी हिसाब (Dairy)</span></button>
         <button type="button" data-main-tab="reports" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>📑</span><span>रिपोर्ट सेंटर (Reports)</span></button>
         <button type="button" data-main-tab="settings" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>⚙️</span><span>सेटिंग्स (Settings)</span></button>
@@ -153,7 +154,7 @@
             <button type="button" id="pwa-install-btn" class="hidden shrink-0 btn-primary text-xs px-2.5 py-1.5 min-h-[36px]" title="Android App Install करें">📲 <span class="hidden sm:inline">Install</span></button>
             <button type="button" id="header-notif-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-indigo-300 text-indigo-800 bg-indigo-50" title="दैनिक 8 AM / 7 PM हिसाब नोटिफिकेशन">🔔</button>
             <button type="button" id="header-dark-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px]" title="डार्क / लाइट मोड">🌙</button>
-            <button type="button" id="header-speak-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-teal-300 text-teal-800" title="आज का हिसाब सुनें">🔊 <span class="hidden lg:inline">सुनें</span></button>
+            <button type="button" id="header-speak-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-teal-300 text-teal-800 bg-teal-50" title="बोलकर कोई भी हिसाब पूछें और सुनें">🗣️ <span class="hidden lg:inline">पूछें</span></button>
             <button type="button" id="header-lock-btn" class="hidden shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-slate-300 text-slate-700" title="ऐप लॉक करें">🔒</button>
             <button type="button" id="header-scan-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-rose-300 text-rose-800 bg-rose-50" title="पर्ची / बिल कैमरा स्कैनर">📸 <span class="hidden lg:inline">स्कैन</span></button>
             <button type="button" id="header-calc-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px]" title="स्मार्ट कैलकुलेटर">🧮</button>
@@ -168,9 +169,10 @@
     </div>
 
     <!-- Mobile Bottom Navigation -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-slate-200 grid grid-cols-5 py-1.5 px-1 shadow-lg">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-slate-200 grid grid-cols-6 py-1.5 px-0.5 shadow-lg">
       <button type="button" data-main-tab="home" class="nav-btn active flex flex-col items-center justify-center py-1 text-[11px] text-slate-600"><span class="nav-pill px-3 py-0.5 rounded-full text-base">📊</span><span>Home</span></button>
       <button type="button" data-main-tab="house" class="nav-btn flex flex-col items-center justify-center py-1 text-[11px] text-slate-600"><span class="nav-pill px-3 py-0.5 rounded-full text-base">🏡</span><span>House</span></button>
+      <button type="button" data-main-tab="parchuni" class="nav-btn flex flex-col items-center justify-center py-1 text-[10px] text-slate-600"><span class="nav-pill px-2.5 py-0.5 rounded-full text-base">🏪</span><span>परचूनी</span></button>
       <button type="button" data-main-tab="dairy" class="nav-btn flex flex-col items-center justify-center py-1 text-[11px] text-slate-600"><span class="nav-pill px-3 py-0.5 rounded-full text-base">🥛</span><span>Dairy</span></button>
       <button type="button" data-main-tab="reports" class="nav-btn flex flex-col items-center justify-center py-1 text-[11px] text-slate-600"><span class="nav-pill px-3 py-0.5 rounded-full text-base">📑</span><span>Reports</span></button>
       <button type="button" data-main-tab="settings" class="nav-btn flex flex-col items-center justify-center py-1 text-[11px] text-slate-600"><span class="nav-pill px-3 py-0.5 rounded-full text-base">⚙️</span><span>Settings</span></button>
@@ -273,7 +275,7 @@
       "houseExpenses", "shopTransactions", "income", "accounts", "transfers",
       "loans", "loanPayments", "dairyProduction", "milkSales", "milkPurchases",
       "dairyExpenses", "dairyWaste", "customers", "suppliers", "animals",
-      "budgets", "recurringBills", "savingsGoals", "friendTransactions", "settings"
+      "budgets", "recurringBills", "savingsGoals", "friendTransactions", "parchuniCustomers", "parchuniEntries", "parchuniSalesmen", "parchuniSalesmanEntries", "settings"
     ];
 
     const REPORT_TYPES = [
@@ -510,6 +512,14 @@
           else if (fb.netBalance < 0) payables.push({ name: fb.friendName, tag: "दोस्त खाता (देने हैं)", amount: Math.abs(fb.netBalance), mobile: fb.mobile || "" });
         });
 
+        // Parchuni Shop Customer Receivables & Salesman Payables
+        this.calcParchuniCustomerLedger(data.parchuniCustomers || [], data.parchuniEntries || []).forEach(pc => {
+          if (pc.balance > 0) receivables.push({ name: pc.name, tag: "परचूनी ग्राहक उधार", amount: pc.balance, mobile: pc.mobile || "" });
+        });
+        this.calcParchuniSalesmanLedger(data.parchuniSalesmen || [], data.parchuniSalesmanEntries || []).forEach(ps => {
+          if (ps.balance > 0) payables.push({ name: ps.name, tag: "सेल्समैन बाकी", amount: ps.balance, mobile: ps.mobile || "" });
+        });
+
         const totalToReceive = this.round2(receivables.reduce((s, x) => s + x.amount, 0));
         const totalToPay = this.round2(payables.reduce((s, x) => s + x.amount, 0));
         const totalUdhaarPending = this.round2(loanSum.givenRemaining + loanSum.takenRemaining);
@@ -525,6 +535,67 @@
           receivables, payables,
           totalToReceive, totalToPay
         };
+      },
+      calcParchuniCustomerLedger(customers, entries) {
+        const map = {};
+        (customers || []).forEach(c => {
+          const k = (c.name || "").trim().toLowerCase();
+          if (!k) return;
+          map[k] = { id: c.id, name: c.name.trim(), mobile: c.mobile || "", address: c.address || "", opening: this.round2(c.openingBalance || 0), totalUdhaar: 0, totalJama: 0, balance: this.round2(c.openingBalance || 0), entries: [] };
+        });
+        (entries || []).forEach(e => {
+          const nm = (e.customerName || "ग्राहक").trim();
+          const k = nm.toLowerCase();
+          if (!map[k]) map[k] = { id: null, name: nm, mobile: e.mobile || "", address: "", opening: 0, totalUdhaar: 0, totalJama: 0, balance: 0, entries: [] };
+          const amt = this.round2(e.amount || 0);
+          if (e.type === "jama") map[k].totalJama = this.round2(map[k].totalJama + amt);
+          else map[k].totalUdhaar = this.round2(map[k].totalUdhaar + amt);
+          map[k].balance = this.round2(map[k].opening + map[k].totalUdhaar - map[k].totalJama);
+          map[k].entries.push(e);
+        });
+        Object.values(map).forEach(c => c.entries.sort((a, b) => (b.date || "").localeCompare(a.date || "")));
+        return Object.values(map).sort((a, b) => b.balance - a.balance);
+      },
+      calcParchuniSalesmanLedger(salesmen, entries) {
+        const map = {};
+        (salesmen || []).forEach(s => {
+          const k = (s.name || "").trim().toLowerCase();
+          if (!k) return;
+          map[k] = { id: s.id, name: s.name.trim(), company: s.company || "", mobile: s.mobile || "", opening: this.round2(s.openingBalance || 0), totalPurchase: 0, totalPaid: 0, balance: this.round2(s.openingBalance || 0), entries: [] };
+        });
+        (entries || []).forEach(e => {
+          const nm = (e.salesmanName || "सेल्समैन").trim();
+          const k = nm.toLowerCase();
+          if (!map[k]) map[k] = { id: null, name: nm, company: "", mobile: e.mobile || "", opening: 0, totalPurchase: 0, totalPaid: 0, balance: 0, entries: [] };
+          const amt = this.round2(e.amount || 0);
+          if (e.type === "paid") map[k].totalPaid = this.round2(map[k].totalPaid + amt);
+          else if (e.type === "purchase") map[k].totalPurchase = this.round2(map[k].totalPurchase + amt);
+          map[k].balance = this.round2(map[k].opening + map[k].totalPurchase - map[k].totalPaid);
+          map[k].entries.push(e);
+        });
+        Object.values(map).forEach(s => s.entries.sort((a, b) => (b.date || "").localeCompare(a.date || "")));
+        return Object.values(map).sort((a, b) => b.balance - a.balance);
+      },
+      parseParchuniVoiceEntry(transcript) {
+        const raw = String(transcript || "").trim();
+        const low = raw.toLowerCase();
+        const nums = (raw.match(/\d+(?:\.\d+)?/g) || []).map(Number);
+        const amount = nums.length ? this.round2(nums[0]) : 0;
+        const isJama = /जमा|jama|दिए|diye|दी|diya|भुगतान|payment|paid|वापस|wapas|चुका/.test(low) && !/सामान|saman|लिया|liya|खरीद|उधार\s*लिया/.test(low);
+        const type = isJama ? "jama" : "udhaar";
+
+        // Extract Customer Name (words before "ने" / "ne" / "का" / "ka" / "को" / "ko")
+        let customerName = "";
+        const nmMatch = raw.match(/^([^\d,]+?)\s+(?:ने|ne|का|ka|की|ki|को|ko)(?:\s|$)/i);
+        if (nmMatch) {
+          customerName = nmMatch[1].replace(/^(?:ग्राहक|grahak|customer|दुकान|मेरा|मेरे)\s+/i, "").trim();
+        }
+        // Extract Items description (clean out customer name, amount, and filler words)
+        let items = raw;
+        if (customerName) items = items.replace(new RegExp("^" + customerName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*(?:ने|ne|का|ka|को|ko)?\\s*", "i"), "");
+        items = items.replace(/\d+(?:\.\d+)?\s*(?:रुपये|रुपए|रु\.?|₹|rupaye|rupees|rs\.?)?\s*(?:का|की|के|ka|ki|ke)?/gi, " ").replace(/(?:उधार\s*लिया|लिया|ली|लिए|liya|जमा\s*किए|जमा|दिए|diye|jama|कर\s*दो|लिख\s*दो)/gi, " ").replace(/\s+/g, " ").trim();
+        if (!items) items = type === "jama" ? "उधार भुगतान जमा" : "परचूनी सामान";
+        return { customerName, type, amount, items, raw };
       },
       calcFriendBalances(friendTxns) {
         const map = {};
@@ -625,6 +696,8 @@
       activeMainTab: "home",
       activeHouseTab: "expenses",
       activeDairyTab: "bulk_delivery",
+      activeParchuniTab: "customers",
+      parchuniSearch: "",
       selectedDate: todayStr(),
       selectedMonth: todayStr().slice(0, 7),
       selectedYear: todayStr().slice(0, 4),
@@ -641,7 +714,7 @@
         houseExpenses: [], shopTransactions: [], income: [], accounts: [], transfers: [],
         loans: [], loanPayments: [], dairyProduction: [], milkSales: [], milkPurchases: [],
         dairyExpenses: [], dairyWaste: [], customers: [], suppliers: [], animals: [],
-        budgets: [], recurringBills: [], savingsGoals: [], friendTransactions: [], settings: []
+        budgets: [], recurringBills: [], savingsGoals: [], friendTransactions: [], parchuniCustomers: [], parchuniEntries: [], parchuniSalesmen: [], parchuniSalesmanEntries: [], settings: []
       }
     };
 
@@ -1192,7 +1265,7 @@
       }
       if (!silentIfDenied) {
         openDailyNotificationModal(slotLabel);
-        showToast("इन-ऐप हिसाब रिमाइंडर खुल गया है (मोबाइल नोटिफिकेशन के लिए Permission Allow करें)।", "warning");
+        showToast("🔔 आज का हिसाब रिमाइंडर खुल गया है।");
       }
       return false;
     }
@@ -1310,6 +1383,7 @@
       const titles = {
         home: "मुख्य डैशबोर्ड (Dashboard)",
         house: "घर का हिसाब (House Management)",
+        parchuni: "परचूनी दुकान उधार व सेल्समैन (Kirana)",
         dairy: "डेयरी प्रबंधन (Dairy Hisab)",
         reports: "रिपोर्ट सेंटर (Reports Center)",
         settings: "सेटिंग्स, नोटिफिकेशन व सुरक्षा"
@@ -1320,6 +1394,7 @@
       const main = document.getElementById("main-content");
       if (state.activeMainTab === "home") renderDashboard(main);
       else if (state.activeMainTab === "house") renderHouseModule(main);
+      else if (state.activeMainTab === "parchuni") renderParchuniModule(main);
       else if (state.activeMainTab === "dairy") renderDairyModule(main);
       else if (state.activeMainTab === "reports") renderReportsCenter(main);
       else if (state.activeMainTab === "settings") renderSettingsModule(main);
@@ -1402,10 +1477,12 @@
           <div class="flex flex-wrap gap-2">
             <button type="button" id="qa-scan-parchi" class="btn-primary text-xs py-2 px-3 min-h-[40px] bg-rose-600 hover:bg-rose-700">📸 पर्ची / बिल स्कैन</button>
             <button type="button" id="qa-voice-entry" class="btn-primary text-xs py-2 px-3 min-h-[40px] bg-amber-600 hover:bg-amber-700">🎙️ बोलकर एंट्री करें</button>
+            <button type="button" id="qa-voice-ask" class="btn-primary text-xs py-2 px-3 min-h-[40px] bg-teal-600 hover:bg-teal-700">🗣️ बोलकर हिसाब पूछें</button>
             <button type="button" id="qa-add-house-exp" class="btn-primary text-xs py-2 px-3 min-h-[40px]">+ घरेलू खर्च</button>
             <button type="button" id="qa-add-milk-sale" class="btn-secondary text-xs py-2 px-3 min-h-[40px] border-teal-300 text-teal-800">+ दूध बिक्री</button>
             <button type="button" id="qa-add-milk-prod" class="btn-secondary text-xs py-2 px-3 min-h-[40px] border-amber-300 text-amber-800">+ दूध उत्पादन</button>
             <button type="button" id="qa-friend-split" class="btn-secondary text-xs py-2 px-3 min-h-[40px] border-indigo-300 text-indigo-800 bg-indigo-50">👥 दोस्त हिसाब / Split</button>
+            <button type="button" id="qa-parchuni-voice" class="btn-secondary text-xs py-2 px-3 min-h-[40px] border-orange-300 text-orange-800 bg-orange-50">🏪 परचूनी उधार (बोलकर)</button>
           </div>
         </div>
 
@@ -1482,10 +1559,12 @@
       document.getElementById("dash-year").addEventListener("change", (e) => { state.selectedYear = e.target.value; renderCurrentView(); });
       document.getElementById("qa-scan-parchi").addEventListener("click", () => openParchiScannerModal());
       document.getElementById("qa-voice-entry").addEventListener("click", () => openVoiceEntryModal());
+      document.getElementById("qa-voice-ask").addEventListener("click", () => openVoiceAssistantModal());
       document.getElementById("qa-add-house-exp").addEventListener("click", () => openHouseExpenseModal());
       document.getElementById("qa-add-milk-sale").addEventListener("click", () => openMilkSaleModal());
       document.getElementById("qa-add-milk-prod").addEventListener("click", () => openMilkProductionModal());
       document.getElementById("qa-friend-split").addEventListener("click", () => openGroupSplitModal());
+      document.getElementById("qa-parchuni-voice").addEventListener("click", () => openParchuniVoiceEntryModal());
       document.getElementById("dash-fr-split-btn").addEventListener("click", () => openGroupSplitModal());
       document.getElementById("dash-fr-add-btn").addEventListener("click", () => openFriendEntryModal());
       document.getElementById("dash-fr-open-all").addEventListener("click", () => { state.activeMainTab = "house"; state.activeHouseTab = "friends"; renderCurrentView(); });
@@ -2926,6 +3005,366 @@
       showToast("🔊 आज का हिसाब सुनाया जा रहा है...");
     }
 
+    // =========================================================================
+    // 11F. INTERACTIVE TWO-WAY HINDI VOICE HISAB ASSISTANT (बोलकर पूछें — बोलकर सुनें)
+    // =========================================================================
+    const VoiceHisabAssistant = {
+      ALIASES: [
+        ["आलू", "aalu", "aloo", "alu", "potato"],
+        ["प्याज", "pyaj", "pyaz", "onion"],
+        ["टमाटर", "tamatar", "tomato"],
+        ["सब्जी", "sabji", "sabzi", "vegetable"],
+        ["फल", "fal", "fruit"],
+        ["किराना", "kirana", "grocery", "राशन", "rashan"],
+        ["दूध", "doodh", "dudh", "milk"],
+        ["दवाई", "dawai", "medicine", "मेडिकल", "medical"],
+        ["बिजली", "bijli", "electricity"],
+        ["गैस", "gas", "सिलेंडर", "cylinder"],
+        ["पेट्रोल", "petrol", "डीजल", "diesel"],
+        ["कपड़े", "kapde", "clothes"],
+        ["शॉपिंग", "shopping"],
+        ["खल", "khal"],
+        ["भूसी", "bhusi"],
+        ["चारा", "chara"],
+        ["दाना", "dana"],
+        ["आटा", "aata", "atta"],
+        ["तेल", "tel", "oil"],
+        ["चीनी", "chini", "sugar"],
+        ["चावल", "chawal", "rice"],
+        ["पनीर", "paneer"],
+        ["मिठाई", "mithai"]
+      ],
+
+      detectTimeRange(query, refDateStr) {
+        const q = String(query || "").toLowerCase();
+        const ref = new Date(refDateStr + "T00:00:00");
+        const toIso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+        const daysMatch = q.match(/(?:last|पिछले|pichle|pichhle|बीते)\s*(\d+)\s*(?:दिन|din|days?)/i) || q.match(/(\d+)\s*(?:दिन|din|days?)/i);
+        if (daysMatch) {
+          const n = Math.max(1, Number(daysMatch[1]) || 7);
+          const fromD = new Date(ref); fromD.setDate(fromD.getDate() - (n - 1));
+          return { from: toIso(fromD), to: refDateStr, label: `पिछले ${n} दिनों में`, explicit: true };
+        }
+        if (/हफ्ते|हफ्ता|hafta|hafte|week/.test(q)) {
+          const fromD = new Date(ref); fromD.setDate(fromD.getDate() - 6);
+          return { from: toIso(fromD), to: refDateStr, label: "पिछले 7 दिनों में", explicit: true };
+        }
+        if (/कल|kal|yesterday/.test(q)) {
+          const yD = new Date(ref); yD.setDate(yD.getDate() - 1);
+          const ys = toIso(yD);
+          return { from: ys, to: ys, label: "कल", explicit: true };
+        }
+        if (/आज|aaj|today/.test(q)) {
+          return { from: refDateStr, to: refDateStr, label: "आज", explicit: true };
+        }
+        if (/पिछले\s*महीने|pichle\s*mahine|last\s*month/.test(q)) {
+          const pm = getPrevMonth(refDateStr.slice(0, 7));
+          return { from: pm + "-01", to: pm + "-31", label: `पिछले महीने (${pm}) में`, explicit: true };
+        }
+        if (/इस\s*महीने|is\s*month|this\s*month|mahine|महीने|month/.test(q)) {
+          const m = refDateStr.slice(0, 7);
+          return { from: m + "-01", to: m + "-31", label: "इस महीने में", explicit: true };
+        }
+        if (/इस\s*साल|is\s*saal|this\s*year|साल|year/.test(q)) {
+          const y = refDateStr.slice(0, 4);
+          return { from: y + "-01-01", to: y + "-12-31", label: `साल ${y} में`, explicit: true };
+        }
+        return { from: "2000-01-01", to: "2099-12-31", label: "कुल अब तक", explicit: false };
+      },
+
+      expandQueryTokens(query) {
+        const low = String(query || "").toLowerCase();
+        const expanded = new Set();
+        this.ALIASES.forEach(group => {
+          if (group.some(w => low.includes(w.toLowerCase()))) {
+            group.forEach(w => expanded.add(w.toLowerCase()));
+          }
+        });
+        const stopWords = new Set(["का","की","के","में","मे","से","को","है","हैं","था","थे","कितना","कितने","कितनी","क्या","किया","बताओ","बता","बताइए","मेरे","मेरा","मेरी","हिसाब","किताब","खरीदे","खरीदा","खरीद","खर्च","खर्चा","हुआ","हुए","इस","पिछले","लास्ट","दिन","महीने","साल","आज","कल","दोस्त","दोस्तों","दोस्तो","उधार","पैसे","रुपये","kitne","kitna","kya","kiya","batao","bta","mere","hisab","kitab","khareede","kharide","kharida","kharch","kharcha","is","month","last","din","days","me","mein","m","ka","ki","ke","hai","h","se","ko","friends","freinds","dost","doston","dostoin","total","aaj","kal","today"]);
+        low.replace(/[?.,!₹]/g, " ").split(/\s+/).forEach(w => {
+          if (w.length >= 2 && !/^\d+$/.test(w) && !stopWords.has(w)) expanded.add(w);
+        });
+        return Array.from(expanded);
+      },
+
+      answer(query, data, refDateStr) {
+        const raw = String(query || "").trim();
+        const low = raw.toLowerCase();
+        const range = this.detectTimeRange(raw, refDateStr);
+        const inR = (dt) => (dt || "") >= range.from && (dt || "") <= range.to;
+        const digest = AccountingEngine.calcDailyNotificationDigest(data, refDateStr);
+
+        // 1. Friends Khata (दोस्तों का हिसाब-किताब)
+        if (/दोस्त|dost|friend|freind|split|स्प्लिट/.test(low)) {
+          const friends = AccountingEngine.calcFriendBalances(data.friendTransactions || []);
+          const loanFriends = AccountingEngine.calcLoanSummary(data.loans, data.loanPayments).items.filter(l => l.remaining > 0);
+          if (!friends.length && !loanFriends.length) {
+            return { title: "दोस्तों का हिसाब-किताब", speech: "अभी आपके दोस्तों के खाते में कोई बकाया हिसाब दर्ज नहीं है।", details: [] };
+          }
+          const rec = friends.filter(f => f.netBalance > 0);
+          const pay = friends.filter(f => f.netBalance < 0);
+          const totRec = AccountingEngine.round2(rec.reduce((s, f) => s + f.netBalance, 0));
+          const totPay = AccountingEngine.round2(pay.reduce((s, f) => s + Math.abs(f.netBalance), 0));
+          const lines = [
+            ...rec.map(f => `${f.friendName} से ${fmtRs(f.netBalance)} लेने हैं`),
+            ...pay.map(f => `${f.friendName} को ${fmtRs(Math.abs(f.netBalance))} देने हैं`)
+          ];
+          const speech = `आपके दोस्तों के खाते में कुल ${totRec} रुपये लेने हैं और ${totPay} रुपये देने हैं। ${lines.slice(0, 5).join(", ") || "सभी दोस्तों का हिसाब चुक्ता है"}।`;
+          return { title: "दोस्तों का हिसाब-किताब", speech, details: lines };
+        }
+
+        // 2. Who to pay / Who to receive / Udhaar
+        if (/किसको.*देने|kisko.*dene|देने\s*हैं|dene\s*hai|payable/.test(low)) {
+          const lines = digest.payables.map(p => `${p.name} (${p.tag}): ${fmtRs(p.amount)}`);
+          const speech = digest.totalToPay > 0
+            ? `आपको कुल ${digest.totalToPay} रुपये देने हैं। ${digest.payables.slice(0, 5).map(p => `${p.name} को ${p.amount} रुपये`).join(", ")}।`
+            : "अभी आपको किसी को कोई पैसा देना बाकी नहीं है।";
+          return { title: "किसको कितने देने हैं", speech, details: lines };
+        }
+        if (/किससे.*लेने|kisse.*lene|लेने\s*हैं|lene\s*hai|receivable|बकाया|pending/.test(low)) {
+          const lines = digest.receivables.map(r => `${r.name} (${r.tag}): ${fmtRs(r.amount)}`);
+          const speech = digest.totalToReceive > 0
+            ? `आपको कुल ${digest.totalToReceive} रुपये लेने हैं। ${digest.receivables.slice(0, 5).map(r => `${r.name} से ${r.amount} रुपये`).join(", ")}।`
+            : "अभी किसी से कोई पैसा लेना बाकी नहीं है।";
+          return { title: "किससे कितने लेने हैं", speech, details: lines };
+        }
+        if (/उधार|udhar|udhaar|loan|कर्ज/.test(low)) {
+          const ls = AccountingEngine.calcLoanSummary(data.loans, data.loanPayments);
+          const speech = `कुल उधार में आपको ${ls.givenRemaining} रुपये लोगों से लेने हैं और ${ls.takenRemaining} रुपये वापस करने हैं।`;
+          const details = ls.items.filter(l => l.remaining > 0).map(l => `${l.personName} (${l.type === "given" ? "लेने हैं" : "देने हैं"}): ${fmtRs(l.remaining)}`);
+          return { title: "उधार हिसाब सारांश", speech, details };
+        }
+
+        // 3. Account Balances (Cash, Bank, UPI)
+        if (/बैलेंस|balance|कैश|cash|बैंक|bank|upi|यूपीआई/.test(low)) {
+          const accs = Object.values(AccountingEngine.calcAccountBalances(data));
+          const parts = accs.map(a => `${a.name} में ${a.closingBalance} रुपये`);
+          const tot = AccountingEngine.round2(accs.reduce((s, a) => s + a.closingBalance, 0));
+          return { title: "खाता बैलेंस (Cash / Bank / UPI)", speech: `आपके सभी खातों का कुल बैलेंस ${tot} रुपये है। ${parts.join(", ")}।`, details: accs.map(a => `${a.name}: ${fmtRs(a.closingBalance)}`) };
+        }
+
+        // 4. Budget Status
+        if (/बजट|budget/.test(low)) {
+          const m = refDateStr.slice(0, 7);
+          const b = AccountingEngine.calcBudgetStatus(data.budgets, data.houseExpenses, m, getPrevMonth(m));
+          const speech = b.totalPlanned > 0
+            ? `इस महीने का कुल बजट ${b.totalPlanned} रुपये है, जिसमें से ${b.totalActual} रुपये खर्च हो चुके हैं और ${b.totalRemaining} रुपये बचे हैं।`
+            : "इस महीने के लिए अभी कोई बजट सेट नहीं किया गया है।";
+          return { title: `मासिक बजट (${m})`, speech, details: b.rows.map(r => `${r.category}: बजट ${fmtRs(r.planned)}, खर्च ${fmtRs(r.actual)}, शेष ${fmtRs(r.remaining)}`) };
+        }
+
+        // 5. Dairy Milk Production / Sales / Profit
+        if (/डेयरी|dairy|दूध|doodh|dudh|milk/.test(low)) {
+          const eff = range.explicit ? range : { from: refDateStr.slice(0, 7) + "-01", to: refDateStr.slice(0, 7) + "-31", label: "इस महीने में" };
+          const inE = (dt) => (dt || "") >= eff.from && (dt || "") <= eff.to;
+          const pl = AccountingEngine.calcDairyProfitLoss(
+            (data.dairyProduction || []).filter(x => inE(x.date)),
+            (data.milkPurchases || []).filter(x => inE(x.date)),
+            (data.milkSales || []).filter(x => inE(x.date)),
+            (data.dairyExpenses || []).filter(x => inE(x.date)),
+            (data.dairyWaste || []).filter(x => inE(x.date))
+          );
+          const speech = `${eff.label} कुल दूध उत्पादन ${pl.produced} लीटर, दूध खरीद ${pl.purchased} लीटर और दूध बिक्री ${pl.sold} लीटर (${pl.salesAmount} रुपये) हुई है। डेयरी खर्च ${pl.totalDairyExpenses} रुपये और शुद्ध डेयरी लाभ ${pl.netProfit} रुपये है।`;
+          return { title: `डेयरी हिसाब (${eff.label})`, speech, details: [`उत्पादन: ${fmtL(pl.produced)}`, `बिक्री: ${fmtL(pl.sold)} (${fmtRs(pl.salesAmount)})`, `खरीद: ${fmtL(pl.purchased)} (${fmtRs(pl.purchaseAmount)})`, `डेयरी खर्च: ${fmtRs(pl.totalDairyExpenses)}`, `शुद्ध लाभ: ${fmtRs(pl.netProfit)}`] };
+        }
+
+        // 6. Specific Item / Category / Person / Shop Search (e.g. "aalu kitne ke khareede hai last 7 din m" or "राहुल का हिसाब")
+        const tokens = this.expandQueryTokens(raw);
+        if (tokens.length > 0) {
+          const eff = range.explicit ? range : { from: "2000-01-01", to: "2099-12-31", label: "कुल अब तक" };
+          const inE = (dt) => (dt || "") >= eff.from && (dt || "") <= eff.to;
+          const matchesText = (str) => { const s = String(str || "").toLowerCase(); return tokens.some(t => s.includes(t)); };
+
+          const matchedExp = [
+            ...(data.houseExpenses || []).filter(x => inE(x.date) && matchesText(`${x.category} ${x.itemName} ${x.shopName} ${x.note}`)).map(x => ({ date: x.date, label: `${x.itemName} (${x.category})`, amount: Number(x.amount) || 0 })),
+            ...(data.shopTransactions || []).filter(x => inE(x.date) && matchesText(`${x.shopName} ${x.item} ${x.note}`)).map(x => ({ date: x.date, label: `${x.item} (${x.shopName})`, amount: Number(x.amount) || 0 })),
+            ...(data.dairyExpenses || []).filter(x => inE(x.date) && matchesText(`${x.category} ${x.item} ${x.supplier} ${x.note}`)).map(x => ({ date: x.date, label: `${x.item} (${x.category})`, amount: Number(x.amount) || 0 }))
+          ];
+
+          // Check Parchuni Customer itemized history first!
+          const pLedger = AccountingEngine.calcParchuniCustomerLedger(data.parchuniCustomers || [], data.parchuniEntries || []);
+          const matchedPC = pLedger.find(pc => low.includes(pc.name.toLowerCase()) || tokens.some(t => pc.name.toLowerCase().includes(t)));
+          if (matchedPC) {
+            const filteredEntries = matchedPC.entries.filter(e => inE(e.date));
+            const uSum = AccountingEngine.round2(filteredEntries.filter(e => e.type !== "jama").reduce((s, e) => s + (Number(e.amount) || 0), 0));
+            const jSum = AccountingEngine.round2(filteredEntries.filter(e => e.type === "jama").reduce((s, e) => s + (Number(e.amount) || 0), 0));
+            const spokenLines = filteredEntries.slice(0, 6).map(e =>
+              e.type === "jama"
+                ? `${e.date} को ${e.amount} रुपये जमा किए`
+                : `${e.date} को ${e.items || "सामान"} ${e.amount} रुपये का लिया`
+            );
+            const speech = `परचूनी ग्राहक ${matchedPC.name} का कुल बकाया ${matchedPC.balance} रुपये है। ${eff.label} कुल ${uSum} रुपये का सामान लिया और ${jSum} रुपये जमा किए। ${spokenLines.join(", ") || "इस अवधि में कोई लेन-देन नहीं है"}।`;
+            return {
+              title: `परचूनी ग्राहक हिसाब — ${matchedPC.name} (${eff.label})`,
+              speech,
+              details: [
+                `कुल बाकी (Closing Balance): ${fmtRs(matchedPC.balance)}`,
+                ...filteredEntries.map(e => `${e.date} — ${e.type === "jama" ? "जमा (+)" : "उधार सामान"}: ${e.items || "-"} — ${fmtRs(e.amount)}`)
+              ]
+            };
+          }
+
+          // Check Parchuni Salesman ledger
+          const sLedger = AccountingEngine.calcParchuniSalesmanLedger(data.parchuniSalesmen || [], data.parchuniSalesmanEntries || []);
+          const matchedPS = sLedger.find(ps => low.includes(ps.name.toLowerCase()) || tokens.some(t => ps.name.toLowerCase().includes(t)));
+          if (matchedPS) {
+            const speech = `सेल्समैन ${matchedPS.name} का कुल बकाया ${matchedPS.balance} रुपये देना है। कुल खरीद ${matchedPS.totalPurchase} रुपये और भुगतान ${matchedPS.totalPaid} रुपये हुआ है।`;
+            return {
+              title: `सेल्समैन हिसाब — ${matchedPS.name}`,
+              speech,
+              details: matchedPS.entries.slice(0, 10).map(e => `${e.date} — ${e.type === "paid" ? "भुगतान" : e.type === "order" ? "ऑर्डर" : "बिल/खरीद"}: ${e.items || "-"} ${e.amount ? "— " + fmtRs(e.amount) : ""}`)
+            };
+          }
+
+          // Also check if user asked about a specific person/customer/friend by name
+          const matchedFriend = AccountingEngine.calcFriendBalances(data.friendTransactions || []).find(f => matchesText(f.friendName));
+          const matchedLoan = AccountingEngine.calcLoanSummary(data.loans, data.loanPayments).items.filter(l => matchesText(l.personName));
+          if (matchedFriend || matchedLoan.length) {
+            const det = [];
+            let sp = "";
+            if (matchedFriend) {
+              const st = matchedFriend.netBalance > 0 ? `${matchedFriend.netBalance} रुपये लेने हैं` : matchedFriend.netBalance < 0 ? `${Math.abs(matchedFriend.netBalance)} रुपये देने हैं` : "हिसाब चुक्ता है";
+              sp += `दोस्त खाते में ${matchedFriend.friendName} से ${st}। `;
+              det.push(`दोस्त खाता — ${matchedFriend.friendName}: ${st}`);
+            }
+            matchedLoan.forEach(l => {
+              const st = l.type === "given" ? `${l.remaining} रुपये लेने बाकी हैं` : `${l.remaining} रुपये देने बाकी हैं`;
+              sp += `उधार खाते में ${l.personName} के ${st}। `;
+              det.push(`उधार — ${l.personName}: ${st}`);
+            });
+            return { title: "व्यक्तिगत हिसाब खोज", speech: sp.trim(), details: det };
+          }
+
+          if (matchedExp.length > 0) {
+            const sum = AccountingEngine.round2(matchedExp.reduce((s, x) => s + x.amount, 0));
+            const labelWord = tokens[0];
+            const speech = `${eff.label} "${labelWord}" से जुड़ी कुल ${matchedExp.length} एंट्री मिलीं, जिनका कुल खर्च ${sum} रुपये है।`;
+            return { title: `"${labelWord}" खर्च विवरण (${eff.label})`, speech, details: matchedExp.slice(0, 12).map(x => `${x.date} — ${x.label}: ${fmtRs(x.amount)}`) };
+          } else if (!/खर्च|खर्चा|आय|कमाई|income|expense|सारांश/.test(low)) {
+            const labelWord = tokens[0];
+            return { title: `"${labelWord}" खोज परिणाम (${eff.label})`, speech: `${eff.label} "${labelWord}" की कोई एंट्री दर्ज नहीं मिली।`, details: [] };
+          }
+        }
+
+        // 7. General Income or Expense Summary for detected timeframe
+        const eff = range.explicit ? range : { from: refDateStr, to: refDateStr, label: "आज" };
+        const inE = (dt) => (dt || "") >= eff.from && (dt || "") <= eff.to;
+        const hExp = AccountingEngine.round2((data.houseExpenses || []).filter(x => inE(x.date)).reduce((s, x) => s + (Number(x.amount) || 0), 0));
+        const sExp = AccountingEngine.round2((data.shopTransactions || []).filter(x => inE(x.date)).reduce((s, x) => s + (Number(x.amount) || 0), 0));
+        const dExp = AccountingEngine.round2((data.dairyExpenses || []).filter(x => inE(x.date)).reduce((s, x) => s + (Number(x.amount) || 0), 0));
+        const totExp = AccountingEngine.round2(hExp + sExp + dExp);
+        const totInc = AccountingEngine.round2(
+          (data.income || []).filter(x => inE(x.date)).reduce((s, x) => s + (Number(x.amount) || 0), 0) +
+          (data.milkSales || []).filter(x => inE(x.date)).reduce((s, x) => s + (Number(x.amount) || 0), 0)
+        );
+        const speech = `${eff.label} कुल खर्च ${totExp} रुपये और कुल आय ${totInc} रुपये है। आपको कुल ${digest.totalToReceive} रुपये लेने हैं और ${digest.totalToPay} रुपये देने हैं।`;
+        return {
+          title: `संपूर्ण हिसाब (${eff.label})`,
+          speech,
+          details: [`घरेलू खर्च: ${fmtRs(hExp)}`, `दुकान खर्च: ${fmtRs(sExp)}`, `डेयरी खर्च: ${fmtRs(dExp)}`, `कुल आय + दूध बिक्री: ${fmtRs(totInc)}`, `लेने हैं: ${fmtRs(digest.totalToReceive)} | देने हैं: ${fmtRs(digest.totalToPay)}`]
+        };
+      }
+    };
+
+    function speakHindiText(text) {
+      if (typeof window.speechSynthesis === "undefined") return;
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "hi-IN";
+        u.rate = 0.96;
+        window.speechSynthesis.speak(u);
+      } catch (e) {}
+    }
+
+    function openVoiceAssistantModal() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      openModal("🗣️ बोलकर हिसाब पूछें — बोलकर जवाब सुनें", `
+        <div class="space-y-3 text-xs">
+          <div class="bg-teal-50 border border-teal-200 rounded-xl p-3 text-teal-900 leading-relaxed">
+            <b>आप कुछ भी बोलकर पूछ सकते हैं:</b><br/>
+            • "मेरे दोस्तों का क्या हिसाब किताब है?"<br/>
+            • "आलू कितने के खरीदे हैं इस महीने में?" या "पिछले 7 दिन में"<br/>
+            • "किसको कितने देने हैं?" / "किससे कितने लेने हैं?"<br/>
+            • "आज का कुल खर्च और आय कितनी है?" / "कैश बैलेंस कितना है?"
+          </div>
+          <div class="text-center">
+            <button type="button" id="va-mic-btn" class="btn-primary bg-teal-700 hover:bg-teal-800 text-sm px-6 py-3 rounded-full shadow-lg">
+              🎙️ सवाल पूछने के लिए दबाएं
+            </button>
+            <div id="va-status" class="text-[11px] text-slate-500 mt-1.5">${SR ? "माइक दबाकर अपना सवाल हिंदी या Hinglish में बोलें।" : "नीचे अपना सवाल लिखें और 'पूछें' दबाएं।"}</div>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" id="va-query-inp" placeholder="अपना सवाल बोलें या यहाँ लिखें..." class="input-field text-xs" />
+            <button type="button" id="va-ask-btn" class="btn-primary text-xs shrink-0">पूछें</button>
+          </div>
+          <div id="va-answer-box" class="hidden bg-white border-2 border-teal-500 rounded-2xl p-3.5 space-y-2 shadow-sm">
+            <div class="flex items-center justify-between gap-2">
+              <div id="va-ans-title" class="font-bold text-sm text-teal-800"></div>
+              <div class="flex gap-1.5">
+                <button type="button" id="va-replay-btn" class="text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-lg">🔊 फिर सुनें</button>
+                <button type="button" id="va-stop-btn" class="text-xs font-bold text-red-700 bg-red-50 px-2.5 py-1 rounded-lg">⏹️ रोकें</button>
+              </div>
+            </div>
+            <div id="va-ans-speech" class="text-sm font-semibold text-slate-800 leading-relaxed"></div>
+            <div id="va-ans-details" class="space-y-1 pt-1 border-t border-slate-100 text-xs text-slate-600"></div>
+          </div>
+        </div>
+      `);
+
+      let lastSpeech = "";
+      let rec = null;
+      const qInp = document.getElementById("va-query-inp");
+      const statusEl = document.getElementById("va-status");
+      const micBtn = document.getElementById("va-mic-btn");
+
+      const runQuery = () => {
+        const q = qInp.value.trim();
+        if (!q) { showToast("कृपया कोई सवाल बोलें या लिखें।", "warning"); return; }
+        const res = VoiceHisabAssistant.answer(q, state.data, state.selectedDate);
+        lastSpeech = res.speech;
+        document.getElementById("va-answer-box").classList.remove("hidden");
+        document.getElementById("va-ans-title").textContent = res.title;
+        document.getElementById("va-ans-speech").textContent = res.speech;
+        document.getElementById("va-ans-details").innerHTML = res.details.length
+          ? res.details.map(d => `<div>• ${escHtml(d)}</div>`).join("")
+          : "";
+        speakHindiText(res.speech);
+      };
+
+      document.getElementById("va-ask-btn").addEventListener("click", runQuery);
+      qInp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); runQuery(); } });
+      document.getElementById("va-replay-btn").addEventListener("click", () => { if (lastSpeech) speakHindiText(lastSpeech); });
+      document.getElementById("va-stop-btn").addEventListener("click", () => { if (window.speechSynthesis) window.speechSynthesis.cancel(); });
+
+      micBtn.addEventListener("click", () => {
+        if (!SR) { showToast("इस ब्राउज़र में माइक उपलब्ध नहीं है—नीचे सवाल लिखें।", "warning"); return; }
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+        try {
+          rec = new SR();
+          rec.lang = "hi-IN";
+          rec.interimResults = false;
+          rec.continuous = false;
+          micBtn.textContent = "🔴 सुन रहा है... सवाल पूछिए";
+          statusEl.textContent = "बोलिए... जैसे 'आलू कितने के खरीदे इस महीने में?'";
+          rec.onresult = (ev) => {
+            const spoken = (ev.results[0] && ev.results[0][0] && ev.results[0][0].transcript || "").trim();
+            if (spoken) {
+              qInp.value = spoken;
+              statusEl.textContent = "सवाल सुन लिया गया — जवाब बोला जा रहा है...";
+              runQuery();
+            }
+          };
+          rec.onend = () => { micBtn.textContent = "🎙️ नया सवाल पूछें"; };
+          rec.onerror = () => { micBtn.textContent = "🎙️ दोबारा पूछें"; };
+          rec.start();
+        } catch (err) {
+          micBtn.textContent = "🎙️ दोबारा पूछें";
+        }
+      });
+    }
+
     function renderRecentAuditTable() {
       const logs = [];
       const add = (m, a, l, amt) => (a || []).forEach(x => logs.push({ ts: x.updatedAt || x.createdAt || x.date || "", mod: m, title: l(x), amt: amt(x), by: x.updatedBy || x.createdBy || "Phone" }));
@@ -3373,6 +3812,486 @@
     }
 
     // =========================================================================
+    // 11G. PARCHUNI (KIRANA) SHOP MODULE — CUSTOMER UDHAAR + VOICE + PDF/WA + SALESMAN ORDERS
+    // =========================================================================
+    function renderParchuniModule(container) {
+      const subtabs = [
+        { id: "customers", label: "👥 ग्राहक उधार खाता" },
+        { id: "entries", label: "📒 सभी उधार / जमा एंट्री" },
+        { id: "salesmen", label: "🚚 सेल्समैन ऑर्डर व हिसाब" }
+      ];
+      container.innerHTML = `
+        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+          ${subtabs.map(t => `<button type="button" data-par-tab="${t.id}" class="subtab-btn ${state.activeParchuniTab === t.id ? "active" : ""}">${t.label}</button>`).join("")}
+        </div>
+        <div id="parchuni-sub-content" class="space-y-4"></div>`;
+
+      container.querySelectorAll("[data-par-tab]").forEach(btn => btn.addEventListener("click", () => {
+        state.activeParchuniTab = btn.dataset.parTab;
+        renderCurrentView();
+      }));
+
+      const sub = document.getElementById("parchuni-sub-content");
+      if (state.activeParchuniTab === "customers") renderParchuniCustomersTab(sub);
+      else if (state.activeParchuniTab === "entries") renderParchuniEntriesTab(sub);
+      else if (state.activeParchuniTab === "salesmen") renderParchuniSalesmenTab(sub);
+    }
+
+    function renderParchuniCustomersTab(container) {
+      const ledger = AccountingEngine.calcParchuniCustomerLedger(state.data.parchuniCustomers, state.data.parchuniEntries);
+      const q = (state.parchuniSearch || "").toLowerCase();
+      const filtered = ledger.filter(c => !q || `${c.name} ${c.mobile} ${c.address}`.toLowerCase().includes(q));
+      const totalDue = AccountingEngine.round2(ledger.reduce((s, c) => s + Math.max(0, c.balance), 0));
+
+      container.innerHTML = `
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div class="text-xs font-semibold text-slate-500">परचूनी दुकान कुल ग्राहक बकाया (${ledger.length} ग्राहक)</div>
+            <div class="text-2xl font-bold text-rose-700">${fmtRs(totalDue)}</div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" id="par-voice-btn" class="btn-primary text-xs bg-amber-600 hover:bg-amber-700">🎙️ बोलकर एंट्री करें</button>
+            <button type="button" id="par-add-entry-btn" class="btn-primary text-xs">+ उधार / जमा लिखें</button>
+            <button type="button" id="par-add-cust-btn" class="btn-secondary text-xs border-teal-300 text-teal-800">+ नया ग्राहक</button>
+            <button type="button" id="par-all-xlsx-btn" class="btn-secondary text-xs border-emerald-300 text-emerald-800">📊 Excel</button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-3">
+          <input type="search" id="par-cust-search" value="${escHtml(state.parchuniSearch)}" placeholder="ग्राहक का नाम, मोबाइल या गाँव खोजें..." class="input-field text-xs" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          ${filtered.length ? filtered.map(c => `
+            <div class="kpi-card space-y-2.5">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <div class="font-bold text-base text-slate-900">👤 ${escHtml(c.name)}</div>
+                  <div class="text-[11px] text-slate-500">${escHtml(c.mobile || "मोबाइल नहीं")} ${c.address ? "• " + escHtml(c.address) : ""}</div>
+                </div>
+                <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${c.balance > 0 ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-800"}">
+                  ${c.balance > 0 ? "बाकी: " + fmtRs(c.balance) : "चुक्ता ✓"}
+                </span>
+              </div>
+              <div class="grid grid-cols-2 gap-1 text-xs bg-slate-50 rounded-lg p-2 border border-slate-100">
+                <span>कुल उधार: <b class="text-rose-700">${fmtRs(c.totalUdhaar + c.opening)}</b></span>
+                <span>कुल जमा: <b class="text-emerald-700">${fmtRs(c.totalJama)}</b></span>
+              </div>
+              <div class="flex flex-wrap gap-1.5 pt-1 border-t border-slate-100 text-xs">
+                <button type="button" data-pc-add="${escHtml(c.name)}" data-mob="${escHtml(c.mobile || "")}" class="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 font-bold">+ उधार/जमा</button>
+                <button type="button" data-pc-hist="${escHtml(c.name)}" class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 font-bold">📄 हिसाब व PDF</button>
+                <button type="button" data-pc-wa="${escHtml(c.name)}" class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold">💬 WhatsApp PDF</button>
+                ${c.balance > 0 ? `<button type="button" data-pc-qr="${escHtml(c.name)}" data-bal="${c.balance}" data-mob="${escHtml(c.mobile || "")}" class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-800 font-bold">QR</button>` : ""}
+                ${c.id ? `<button type="button" data-pc-del="${c.id}" class="ml-auto text-red-600 font-bold px-1">Delete</button>` : ""}
+              </div>
+            </div>
+          `).join("") : `<div class="col-span-full bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-sm">अभी कोई परचूनी ग्राहक नहीं है। ऊपर <b>🎙️ बोलकर एंट्री करें</b> या <b>+ नया ग्राहक</b> दबाएं।</div>`}
+        </div>`;
+
+      document.getElementById("par-cust-search").addEventListener("input", (e) => { state.parchuniSearch = e.target.value; renderParchuniCustomersTab(container); });
+      document.getElementById("par-voice-btn").addEventListener("click", () => openParchuniVoiceEntryModal());
+      document.getElementById("par-add-entry-btn").addEventListener("click", () => openParchuniEntryModal());
+      document.getElementById("par-add-cust-btn").addEventListener("click", () => openParchuniCustomerModal());
+      document.getElementById("par-all-xlsx-btn").addEventListener("click", () => {
+        exportSingleReportExcel({
+          title: "परचूनी दुकान ग्राहक उधार सूची",
+          dateRange: todayStr(),
+          headers: ["ग्राहक", "मोबाइल", "पता", "पिछला बाकी (₹)", "कुल उधार (₹)", "कुल जमा (₹)", "शेष बाकी (₹)"],
+          rows: ledger.map(c => [c.name, c.mobile || "-", c.address || "-", c.opening, c.totalUdhaar, c.totalJama, c.balance]),
+          summaryLines: [`कुल ग्राहक: ${ledger.length}`, `कुल बकाया: ${fmtRs(totalDue)}`]
+        });
+      });
+
+      container.querySelectorAll("[data-pc-add]").forEach(b => b.addEventListener("click", () => openParchuniEntryModal({ customerName: b.dataset.pcAdd, mobile: b.dataset.mob })));
+      container.querySelectorAll("[data-pc-hist]").forEach(b => b.addEventListener("click", () => {
+        const c = ledger.find(x => x.name === b.dataset.pcHist);
+        if (c) openParchuniCustomerStatementModal(c);
+      }));
+      container.querySelectorAll("[data-pc-wa]").forEach(b => b.addEventListener("click", () => {
+        const c = ledger.find(x => x.name === b.dataset.pcWa);
+        if (c) openParchuniCustomerStatementModal(c, true);
+      }));
+      container.querySelectorAll("[data-pc-qr]").forEach(b => b.addEventListener("click", () => openUpiQrModal({ name: b.dataset.pcQr, amount: Number(b.dataset.bal), note: "Parchuni Udhaar", mobile: b.dataset.mob })));
+      container.querySelectorAll("[data-pc-del]").forEach(b => b.addEventListener("click", () => deleteDocById("parchuniCustomers", b.dataset.pcDel, "परचूनी ग्राहक")));
+    }
+
+    function openParchuniCustomerStatementModal(cust, autoFocusWhatsApp = false) {
+      let filterMonth = "";
+      openModal(`📄 ${cust.name} — परचूनी खाता विवरण व PDF / WhatsApp`, `
+        <div class="space-y-3 text-xs">
+          <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <div>
+              <div class="font-bold text-sm">${escHtml(cust.name)} (${escHtml(cust.mobile || "-")})</div>
+              <div>कुल उधार: <b class="text-rose-700">${fmtRs(cust.totalUdhaar + cust.opening)}</b> | कुल जमा: <b class="text-emerald-700">${fmtRs(cust.totalJama)}</b> | शेष बाकी: <b class="text-red-700">${fmtRs(cust.balance)}</b></div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <input type="month" id="pcs-month" class="input-field py-1.5 min-h-[36px] text-xs w-36" />
+              <button type="button" id="pcs-all-btn" class="btn-secondary text-xs py-1.5 min-h-[36px]">सभी</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button type="button" id="pcs-wa-pdf-btn" class="btn-primary text-xs bg-emerald-600 hover:bg-emerald-700">💬 WhatsApp PDF शेयर</button>
+            <button type="button" id="pcs-dl-pdf-btn" class="btn-primary text-xs">⬇️ PDF सेव करें</button>
+            <button type="button" id="pcs-dl-xlsx-btn" class="btn-secondary text-xs border-emerald-300 text-emerald-800">📊 Excel सेव</button>
+            <button type="button" id="pcs-speak-btn" class="btn-secondary text-xs border-teal-300 text-teal-800">🔊 बोलकर सुनें</button>
+          </div>
+          <div id="pcs-table-wrap" class="max-h-80 overflow-y-auto border border-slate-200 rounded-xl"></div>
+        </div>
+      `);
+
+      const getFiltered = () => cust.entries.filter(e => !filterMonth || (e.date || "").startsWith(filterMonth));
+      const buildRep = () => {
+        const rows = getFiltered();
+        const u = AccountingEngine.round2(rows.filter(e => e.type !== "jama").reduce((s, e) => s + (Number(e.amount) || 0), 0));
+        const j = AccountingEngine.round2(rows.filter(e => e.type === "jama").reduce((s, e) => s + (Number(e.amount) || 0), 0));
+        return {
+          title: `परचूनी ग्राहक खाता — ${cust.name}`,
+          dateRange: filterMonth ? `माह: ${filterMonth}` : `संपूर्ण खाता (${todayStr()})`,
+          headers: ["तारीख", "प्रकार", "सामान / विवरण", "राशि (₹)"],
+          rows: rows.map(e => [e.date, e.type === "jama" ? "जमा (भुगतान मिला)" : "उधार सामान", e.items || "-", e.amount]),
+          summaryLines: [
+            `पिछला बकाया (Opening): ${fmtRs(cust.opening)}`,
+            `अवधि का कुल उधार सामान: ${fmtRs(u)}`,
+            `अवधि में कुल जमा: ${fmtRs(j)}`,
+            `कुल शेष बकाया (Grand Due): ${fmtRs(cust.balance)}`
+          ]
+        };
+      };
+
+      const renderList = () => {
+        const list = getFiltered();
+        document.getElementById("pcs-table-wrap").innerHTML = `
+          <table class="data-table">
+            <thead><tr><th>तारीख</th><th>प्रकार</th><th>सामान / विवरण</th><th>राशि</th><th>क्रिया</th></tr></thead>
+            <tbody>${list.length ? list.map(e => `<tr><td class="whitespace-nowrap">${escHtml(e.date)}</td><td><span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${e.type === "jama" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}">${e.type === "jama" ? "जमा (+)" : "उधार"}</span></td><td>${escHtml(e.items || "-")}</td><td class="font-bold">${fmtRs(e.amount)}</td><td><button type="button" data-del-pe="${e.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`).join("") : `<tr><td colspan="5" class="text-center py-6 text-slate-400">इस अवधि में कोई एंट्री नहीं।</td></tr>`}</tbody>
+          </table>`;
+        document.querySelectorAll("[data-del-pe]").forEach(b => b.addEventListener("click", async () => {
+          if (await deleteDocById("parchuniEntries", b.dataset.delPe, "परचूनी एंट्री")) closeModal();
+        }));
+      };
+      renderList();
+
+      document.getElementById("pcs-month").addEventListener("change", (e) => { filterMonth = e.target.value; renderList(); });
+      document.getElementById("pcs-all-btn").addEventListener("click", () => { filterMonth = ""; document.getElementById("pcs-month").value = ""; renderList(); });
+      document.getElementById("pcs-dl-pdf-btn").addEventListener("click", () => exportTableToPDF(buildRep()));
+      document.getElementById("pcs-dl-xlsx-btn").addEventListener("click", () => exportSingleReportExcel(buildRep()));
+      document.getElementById("pcs-speak-btn").addEventListener("click", () => {
+        const list = getFiltered();
+        const spoken = list.slice(0, 6).map(e => e.type === "jama" ? `${e.date} को ${e.amount} रुपये जमा किए` : `${e.date} को ${e.items} ${e.amount} रुपये का लिया`).join(", ");
+        speakHindiText(`परचूनी ग्राहक ${cust.name} का कुल बकाया ${cust.balance} रुपये है। ${spoken || "कोई एंट्री नहीं"}।`);
+      });
+
+      const doWhatsAppPdf = async () => {
+        const rep = buildRep();
+        const upi = getSavedUpiId();
+        const linesText = getFiltered().slice(0, 10).map(e => `• ${e.date}: ${e.type === "jama" ? "जमा" : e.items} — ${fmtRs(e.amount)}`).join("\n");
+        const waMsg = `नमस्ते ${cust.name} जी,\n*MahaIndustries परचूनी स्टोर — खाता विवरण*\n${linesText}\n\n*कुल शेष बकाया: ${fmtRs(cust.balance)}*${upi ? `\nUPI ID: ${upi}` : ""}\nसंपर्क: 7500343487`;
+
+        // Generate real PDF blob and share via Android native Share (WhatsApp PDF attachment), else download PDF + open WhatsApp!
+        const holder = document.createElement("div");
+        holder.style.position = "fixed"; holder.style.left = "-9999px"; holder.style.width = "794px";
+        holder.innerHTML = buildReportPrintableHTML(rep);
+        document.body.appendChild(holder);
+        try {
+          const fname = safeFileName(`Parchuni_${cust.name}`, "pdf");
+          const blob = await generatePDFBlobFromElement(holder, fname);
+          if (blob && navigator.share) {
+            const pdfFile = new File([blob], fname, { type: "application/pdf" });
+            if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+              await navigator.share({ title: rep.title, text: waMsg, files: [pdfFile] });
+              holder.remove();
+              return;
+            }
+          }
+          if (blob) triggerBlobDownload(blob, fname);
+          openWhatsAppMessage(cust.mobile, waMsg);
+          showToast("PDF डाउनलोड हो गई और WhatsApp खुल गया है!");
+        } catch (err) {
+          openWhatsAppMessage(cust.mobile, waMsg);
+        } finally {
+          holder.remove();
+        }
+      };
+
+      document.getElementById("pcs-wa-pdf-btn").addEventListener("click", doWhatsAppPdf);
+      if (autoFocusWhatsApp) setTimeout(doWhatsAppPdf, 250);
+    }
+
+    function openParchuniVoiceEntryModal() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      openModal("🎙️ बोलकर परचूनी एंट्री करें (हिंदी में)", `
+        <div class="space-y-3 text-xs">
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-900 leading-relaxed">
+            <b>उदाहरण जो आप बोल सकते हैं:</b><br/>
+            • "रमेश ने 250 रुपये का आटा और तेल लिया"<br/>
+            • "सुरेश ने 120 रुपये की चीनी और चायपत्ती ली"<br/>
+            • "रमेश ने 500 रुपये जमा किए"
+          </div>
+          <div class="text-center">
+            <button type="button" id="pv-mic-btn" class="btn-primary bg-amber-600 hover:bg-amber-700 text-sm px-6 py-3 rounded-full shadow-lg">🎙️ बोलकर एंट्री लिखें</button>
+            <div id="pv-status" class="text-[11px] text-slate-500 mt-1.5">${SR ? "माइक दबाकर ग्राहक का नाम, राशि और सामान बोलें।" : "नीचे वाक्य लिखें।"}</div>
+          </div>
+          <textarea id="pv-raw" rows="2" class="input-field" placeholder="उदा. रमेश ने 250 रुपये का आटा और तेल लिया"></textarea>
+          <div id="pv-preview" class="hidden bg-teal-50 border border-teal-200 rounded-xl p-3 space-y-1"></div>
+          <div class="flex justify-end gap-2">
+            <button type="button" id="pv-cancel" class="btn-secondary text-xs">रद्द करें</button>
+            <button type="button" id="pv-direct-save" class="btn-primary text-xs bg-emerald-600 hover:bg-emerald-700">✅ सीधे सेव करें</button>
+            <button type="button" id="pv-edit-btn" class="btn-secondary text-xs border-teal-300 text-teal-800">फॉर्म में जांचें →</button>
+          </div>
+        </div>`);
+
+      const rawEl = document.getElementById("pv-raw"), prevEl = document.getElementById("pv-preview"), micBtn = document.getElementById("pv-mic-btn");
+      const upd = () => {
+        const v = rawEl.value.trim(); if (!v) { prevEl.classList.add("hidden"); return null; }
+        const p = AccountingEngine.parseParchuniVoiceEntry(v);
+        prevEl.classList.remove("hidden");
+        prevEl.innerHTML = `<div><b>ग्राहक:</b> ${escHtml(p.customerName || "(नाम स्पष्ट करें)")} | <b>प्रकार:</b> ${p.type === "jama" ? "जमा (भुगतान मिला)" : "उधार सामान"}</div><div><b>सामान:</b> ${escHtml(p.items)} | <b>राशि:</b> <b class="text-rose-700">${fmtRs(p.amount)}</b></div>`;
+        return p;
+      };
+      rawEl.addEventListener("input", upd);
+      document.getElementById("pv-cancel").addEventListener("click", closeModal);
+
+      micBtn.addEventListener("click", () => {
+        if (!SR) return;
+        const rec = new SR(); rec.lang = "hi-IN"; rec.interimResults = false;
+        micBtn.textContent = "🔴 सुन रहा है... बोलिए";
+        rec.onresult = (ev) => { rawEl.value = (ev.results[0]?.[0]?.transcript || "").trim(); upd(); };
+        rec.onend = () => { micBtn.textContent = "🎙️ दोबारा बोलें"; };
+        rec.start();
+      });
+
+      document.getElementById("pv-direct-save").addEventListener("click", async () => {
+        const p = upd();
+        if (!p || !p.customerName || p.amount <= 0) {
+          showToast("ग्राहक का नाम या राशि अधूरी है — फॉर्म में जांचकर सेव करें।", "warning");
+          openParchuniEntryModal(p || {});
+          return;
+        }
+        // Auto-create customer record if not yet in parchuniCustomers
+        const exists = (state.data.parchuniCustomers || []).some(c => c.name.toLowerCase() === p.customerName.toLowerCase());
+        if (!exists) await saveDoc("parchuniCustomers", { name: p.customerName, mobile: "", address: "", openingBalance: 0 });
+        await saveDoc("parchuniEntries", { date: state.selectedDate, customerName: p.customerName, type: p.type, items: p.items, amount: p.amount, note: "Voice Entry" });
+        closeModal();
+      });
+      document.getElementById("pv-edit-btn").addEventListener("click", () => { const p = upd() || {}; openParchuniEntryModal(p); });
+    }
+
+    function openParchuniEntryModal(prefill = {}) {
+      const custs = state.data.parchuniCustomers || [];
+      openModal("परचूनी उधार / जमा एंट्री जोड़ें", `
+        <form id="pe-form" class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">तारीख*</label><input type="date" id="pe-date" value="${prefill.date || state.selectedDate}" required class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">प्रकार*</label>
+              <select id="pe-type" class="input-field">
+                <option value="udhaar" ${(prefill.type || "udhaar") === "udhaar" ? "selected" : ""}>सामान उधार लिया (-)</option>
+                <option value="jama" ${prefill.type === "jama" ? "selected" : ""}>रुपये जमा किए (+)</option>
+              </select>
+            </div>
+          </div>
+          <div><label class="block text-xs font-bold mb-1">ग्राहक का नाम*</label><input type="text" list="par-cust-dl" id="pe-cust" value="${escHtml(prefill.customerName || "")}" required placeholder="ग्राहक का नाम बोलें या लिखें" class="input-field" /><datalist id="par-cust-dl">${custs.map(c => `<option value="${escHtml(c.name)}"></option>`).join("")}</datalist></div>
+          <div><label class="block text-xs font-bold mb-1">सामान का विवरण (हिंदी में)*</label><input type="text" id="pe-items" value="${escHtml(prefill.items || "")}" required placeholder="उदा. आटा 5kg, चीनी 2kg, सरसों तेल" class="input-field" /></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">राशि (₹)*</label><input type="number" step="any" min="0.01" id="pe-amt" value="${prefill.amount || ""}" required class="input-field font-bold text-rose-700" /></div>
+            <div><label class="block text-xs font-bold mb-1">नोट</label><input type="text" id="pe-note" value="${escHtml(prefill.note || "")}" class="input-field" /></div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="pe-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">सेव करें</button></div>
+        </form>`);
+      document.getElementById("pe-cancel").addEventListener("click", closeModal);
+      document.getElementById("pe-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const customerName = document.getElementById("pe-cust").value.trim();
+        const amount = AccountingEngine.round2(document.getElementById("pe-amt").value);
+        if (!customerName || amount <= 0) return;
+        const exists = (state.data.parchuniCustomers || []).some(c => c.name.toLowerCase() === customerName.toLowerCase());
+        if (!exists) await saveDoc("parchuniCustomers", { name: customerName, mobile: prefill.mobile || "", address: "", openingBalance: 0 });
+        if (await saveDoc("parchuniEntries", { date: document.getElementById("pe-date").value, customerName, type: document.getElementById("pe-type").value, items: document.getElementById("pe-items").value.trim(), amount, note: document.getElementById("pe-note").value.trim() })) closeModal();
+      });
+    }
+
+    function openParchuniCustomerModal(existing = null) {
+      openModal(existing ? "परचूनी ग्राहक संपादित करें" : "नया परचूनी ग्राहक जोड़ें", `
+        <form id="pc-form" class="space-y-3">
+          <div><label class="block text-xs font-bold mb-1">ग्राहक का नाम*</label><input type="text" id="pc-name" value="${escHtml(existing?.name || "")}" required class="input-field" /></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">मोबाइल नंबर (WhatsApp)</label><input type="tel" id="pc-mob" value="${escHtml(existing?.mobile || "")}" placeholder="10 अंक" class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">पिछला बाकी (₹)</label><input type="number" step="any" id="pc-open" value="${existing?.openingBalance ?? 0}" class="input-field" /></div>
+          </div>
+          <div><label class="block text-xs font-bold mb-1">गाँव / पता</label><input type="text" id="pc-addr" value="${escHtml(existing?.address || "")}" class="input-field" /></div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="pc-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">सेव करें</button></div>
+        </form>`);
+      document.getElementById("pc-cancel").addEventListener("click", closeModal);
+      document.getElementById("pc-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("pc-name").value.trim(); if (!name) return;
+        if (await saveDoc("parchuniCustomers", { name, mobile: document.getElementById("pc-mob").value.trim(), address: document.getElementById("pc-addr").value.trim(), openingBalance: AccountingEngine.round2(document.getElementById("pc-open").value || 0) }, existing?.id || null)) closeModal();
+      });
+    }
+
+    function renderParchuniEntriesTab(container) {
+      const rows = [...(state.data.parchuniEntries || [])].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      container.innerHTML = `
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-wrap justify-between items-center gap-2">
+          <div class="text-sm font-bold">सभी परचूनी उधार व जमा एंट्री (${rows.length})</div>
+          <div class="flex gap-2">
+            <button type="button" id="pe-tab-voice" class="btn-primary text-xs bg-amber-600 hover:bg-amber-700">🎙️ बोलकर लिखें</button>
+            <button type="button" id="pe-tab-add" class="btn-primary text-xs">+ नई एंट्री</button>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+          <table class="data-table">
+            <thead><tr><th>तारीख</th><th>ग्राहक</th><th>प्रकार</th><th>सामान / विवरण</th><th>राशि (₹)</th><th>क्रिया</th></tr></thead>
+            <tbody>${rows.length ? rows.map(r => `<tr><td class="whitespace-nowrap">${escHtml(r.date)}</td><td class="font-bold">${escHtml(r.customerName)}</td><td><span class="px-2 py-0.5 rounded-full text-xs font-bold ${r.type === "jama" ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}">${r.type === "jama" ? "जमा (+)" : "उधार"}</span></td><td>${escHtml(r.items || "-")}</td><td class="font-bold">${fmtRs(r.amount)}</td><td><button type="button" data-del-pent="${r.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`).join("") : `<tr><td colspan="6" class="text-center py-8 text-slate-400">अभी कोई परचूनी एंट्री नहीं है।</td></tr>`}</tbody>
+          </table>
+        </div>`;
+      document.getElementById("pe-tab-voice").addEventListener("click", () => openParchuniVoiceEntryModal());
+      document.getElementById("pe-tab-add").addEventListener("click", () => openParchuniEntryModal());
+      container.querySelectorAll("[data-del-pent]").forEach(b => b.addEventListener("click", () => deleteDocById("parchuniEntries", b.dataset.delPent, "परचूनी एंट्री")));
+    }
+
+    // --- SALESMAN ORDER (WHATSAPP) & LEDGER ---
+    function renderParchuniSalesmenTab(container) {
+      const ledger = AccountingEngine.calcParchuniSalesmanLedger(state.data.parchuniSalesmen, state.data.parchuniSalesmanEntries);
+      const totalPayable = AccountingEngine.round2(ledger.reduce((s, x) => s + Math.max(0, x.balance), 0));
+
+      container.innerHTML = `
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div class="text-xs font-semibold text-slate-500">सेल्समैन / सप्लायर कुल बकाया (${ledger.length} सेल्समैन)</div>
+            <div class="text-2xl font-bold text-amber-700">${fmtRs(totalPayable)}</div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" id="sm-order-wa-btn" class="btn-primary text-xs bg-emerald-600 hover:bg-emerald-700">📝 सामान ऑर्डर WhatsApp भेजें</button>
+            <button type="button" id="sm-add-entry-btn" class="btn-primary text-xs">+ बिल / भुगतान लिखें</button>
+            <button type="button" id="sm-add-new-btn" class="btn-secondary text-xs border-teal-300 text-teal-800">+ नया सेल्समैन</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          ${ledger.length ? ledger.map(s => `
+            <div class="kpi-card space-y-2.5">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <div class="font-bold text-base">🚚 ${escHtml(s.name)}</div>
+                  <div class="text-[11px] text-slate-500">${escHtml(s.company || "एजेंसी / होलसेल")} • ${escHtml(s.mobile || "मोबाइल नहीं")}</div>
+                </div>
+                <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${s.balance > 0 ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}">
+                  ${s.balance > 0 ? "देना है: " + fmtRs(s.balance) : "चुक्ता ✓"}
+                </span>
+              </div>
+              <div class="grid grid-cols-2 gap-1 text-xs bg-slate-50 rounded-lg p-2 border border-slate-100">
+                <span>कुल बिल: <b class="text-amber-700">${fmtRs(s.totalPurchase + s.opening)}</b></span>
+                <span>भुगतान: <b class="text-emerald-700">${fmtRs(s.totalPaid)}</b></span>
+              </div>
+              <div class="flex flex-wrap gap-1.5 pt-1 border-t border-slate-100 text-xs">
+                <button type="button" data-sm-ord="${escHtml(s.name)}" data-mob="${escHtml(s.mobile || "")}" class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold">💬 ऑर्डर भेजें</button>
+                <button type="button" data-sm-pay="${escHtml(s.name)}" data-mob="${escHtml(s.mobile || "")}" class="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 font-bold">+ बिल/भुगतान</button>
+                <button type="button" data-sm-pdf="${escHtml(s.name)}" class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 font-bold">📄 PDF</button>
+                ${s.id ? `<button type="button" data-sm-del="${s.id}" class="ml-auto text-red-600 font-bold px-1">Delete</button>` : ""}
+              </div>
+            </div>
+          `).join("") : `<div class="col-span-full bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-sm">अभी कोई सेल्समैन नहीं जोड़ा गया है। "+ नया सेल्समैन" या "📝 सामान ऑर्डर WhatsApp भेजें" दबाएं।</div>`}
+        </div>`;
+
+      document.getElementById("sm-order-wa-btn").addEventListener("click", () => openSalesmanOrderModal());
+      document.getElementById("sm-add-entry-btn").addEventListener("click", () => openSalesmanEntryModal());
+      document.getElementById("sm-add-new-btn").addEventListener("click", () => openSalesmanModal());
+      container.querySelectorAll("[data-sm-ord]").forEach(b => b.addEventListener("click", () => openSalesmanOrderModal(b.dataset.smOrd, b.dataset.mob)));
+      container.querySelectorAll("[data-sm-pay]").forEach(b => b.addEventListener("click", () => openSalesmanEntryModal({ salesmanName: b.dataset.smPay, mobile: b.dataset.mob })));
+      container.querySelectorAll("[data-sm-pdf]").forEach(b => b.addEventListener("click", () => {
+        const s = ledger.find(x => x.name === b.dataset.smPdf);
+        if (!s) return;
+        exportTableToPDF({
+          title: `सेल्समैन हिसाब स्टेटमेंट — ${s.name}`,
+          dateRange: todayStr(),
+          headers: ["तारीख", "प्रकार", "सामान / ऑर्डर विवरण", "राशि (₹)"],
+          rows: s.entries.map(e => [e.date, e.type === "paid" ? "भुगतान किया" : e.type === "order" ? "WhatsApp ऑर्डर" : "सामान बिल", e.items || "-", e.amount || 0]),
+          summaryLines: [`कुल खरीद: ${fmtRs(s.totalPurchase + s.opening)}`, `कुल भुगतान: ${fmtRs(s.totalPaid)}`, `शेष बकाया: ${fmtRs(s.balance)}`]
+        });
+      }));
+      container.querySelectorAll("[data-sm-del]").forEach(b => b.addEventListener("click", () => deleteDocById("parchuniSalesmen", b.dataset.smDel, "सेल्समैन")));
+    }
+
+    function openSalesmanModal() {
+      openModal("नया सेल्समैन / होलसेलर जोड़ें", `
+        <form id="sm-new-form" class="space-y-3">
+          <div><label class="block text-xs font-bold mb-1">सेल्समैन का नाम*</label><input type="text" id="sm-name" required placeholder="उदा. राजू सेल्समैन" class="input-field" /></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">कंपनी / एजेंसी</label><input type="text" id="sm-comp" placeholder="उदा. अग्रवाल एजेंसी" class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">मोबाइल नंबर (WhatsApp)*</label><input type="tel" id="sm-mob" required placeholder="10 अंक" class="input-field" /></div>
+          </div>
+          <div><label class="block text-xs font-bold mb-1">पिछला बकाया (₹)</label><input type="number" step="any" id="sm-open" value="0" class="input-field" /></div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="sm-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">सेव करें</button></div>
+        </form>`);
+      document.getElementById("sm-cancel").addEventListener("click", closeModal);
+      document.getElementById("sm-new-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("sm-name").value.trim(); if (!name) return;
+        if (await saveDoc("parchuniSalesmen", { name, company: document.getElementById("sm-comp").value.trim(), mobile: document.getElementById("sm-mob").value.trim(), openingBalance: AccountingEngine.round2(document.getElementById("sm-open").value || 0) })) closeModal();
+      });
+    }
+
+    function openSalesmanOrderModal(prefillName = "", prefillMob = "") {
+      const list = state.data.parchuniSalesmen || [];
+      openModal("📝 सेल्समैन को सामान ऑर्डर WhatsApp भेजें", `
+        <form id="sm-ord-form" class="space-y-3 text-xs">
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block font-bold mb-1">सेल्समैन का नाम*</label><input type="text" list="sm-dl" id="smo-name" value="${escHtml(prefillName)}" required class="input-field" /><datalist id="sm-dl">${list.map(s => `<option value="${escHtml(s.name)}"></option>`).join("")}</datalist></div>
+            <div><label class="block font-bold mb-1">मोबाइल (WhatsApp)</label><input type="tel" id="smo-mob" value="${escHtml(prefillMob)}" placeholder="10 अंक" class="input-field" /></div>
+          </div>
+          <div><label class="block font-bold mb-1">कौन-कौन सा सामान चाहिए? (बोलकर या लिखकर बताएं)*</label><textarea id="smo-items" rows="4" required placeholder="उदा. 5 पेटी सरसों तेल, 2 बोरी चीनी, 10 पैकेट चायपत्ती, 1 बोरी मैदा" class="input-field"></textarea></div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="smo-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary bg-emerald-600 hover:bg-emerald-700">💬 सेव करें और WhatsApp भेजें</button></div>
+        </form>`);
+      document.getElementById("smo-name").addEventListener("change", (e) => {
+        const found = list.find(s => s.name.toLowerCase() === e.target.value.trim().toLowerCase());
+        if (found && found.mobile) document.getElementById("smo-mob").value = found.mobile;
+      });
+      document.getElementById("smo-cancel").addEventListener("click", closeModal);
+      document.getElementById("sm-ord-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const salesmanName = document.getElementById("smo-name").value.trim(), mobile = document.getElementById("smo-mob").value.trim(), items = document.getElementById("smo-items").value.trim();
+        if (!salesmanName || !items) return;
+        const exists = list.some(s => s.name.toLowerCase() === salesmanName.toLowerCase());
+        if (!exists) await saveDoc("parchuniSalesmen", { name: salesmanName, company: "", mobile, openingBalance: 0 });
+        await saveDoc("parchuniSalesmanEntries", { date: state.selectedDate, salesmanName, mobile, type: "order", items, amount: 0 });
+        const msg = `नमस्ते ${salesmanName} जी,\n*MahaIndustries परचूनी स्टोर — नया सामान ऑर्डर (${state.selectedDate})*\n\nकृपया यह सामान भिजवा दें:\n${items}\n\nप्रो. अंकित शर्मा • 7500343487`;
+        openWhatsAppMessage(mobile, msg);
+        closeModal();
+      });
+    }
+
+    function openSalesmanEntryModal(prefill = {}) {
+      const list = state.data.parchuniSalesmen || [];
+      openModal("सेल्समैन बिल / भुगतान एंट्री", `
+        <form id="sm-ent-form" class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">तारीख*</label><input type="date" id="sme-date" value="${state.selectedDate}" required class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">प्रकार*</label>
+              <select id="sme-type" class="input-field">
+                <option value="purchase">सामान बिल आया (+बाकी)</option>
+                <option value="paid">भुगतान किया (-बाकी)</option>
+              </select>
+            </div>
+          </div>
+          <div><label class="block text-xs font-bold mb-1">सेल्समैन का नाम*</label><input type="text" list="sm-dl-2" id="sme-name" value="${escHtml(prefill.salesmanName || "")}" required class="input-field" /><datalist id="sm-dl-2">${list.map(s => `<option value="${escHtml(s.name)}"></option>`).join("")}</datalist></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">राशि (₹)*</label><input type="number" step="any" min="0.01" id="sme-amt" required class="input-field font-bold" /></div>
+            <div><label class="block text-xs font-bold mb-1">सामान / विवरण</label><input type="text" id="sme-items" placeholder="बिल नं / सामान विवरण" class="input-field" /></div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="sme-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">सेव करें</button></div>
+        </form>`);
+      document.getElementById("sme-cancel").addEventListener("click", closeModal);
+      document.getElementById("sm-ent-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const salesmanName = document.getElementById("sme-name").value.trim(), amount = AccountingEngine.round2(document.getElementById("sme-amt").value);
+        if (!salesmanName || amount <= 0) return;
+        const exists = list.some(s => s.name.toLowerCase() === salesmanName.toLowerCase());
+        if (!exists) await saveDoc("parchuniSalesmen", { name: salesmanName, company: "", mobile: prefill.mobile || "", openingBalance: 0 });
+        if (await saveDoc("parchuniSalesmanEntries", { date: document.getElementById("sme-date").value, salesmanName, mobile: prefill.mobile || "", type: document.getElementById("sme-type").value, items: document.getElementById("sme-items").value.trim() || "बिल/भुगतान", amount })) closeModal();
+      });
+    }
+
+    // =========================================================================
     // 12. GLOBAL SEARCH MODAL
     // =========================================================================
     function openGlobalSearchModal() {
@@ -3406,7 +4325,7 @@
         <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h3 class="font-bold text-base text-slate-900">🔔 दैनिक नोटिफिकेशन (सुबह 8:00 बजे व शाम 7:00 बजे)</h3>
-            <span class="text-xs px-2.5 py-1 rounded-full font-bold ${notifPerm === "granted" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}">${notifPerm === "granted" ? "● नोटिफिकेशन चालू" : "● Permission आवश्यक"}</span>
+            <span class="text-xs px-2.5 py-1 rounded-full font-bold ${notifPerm === "granted" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}">${nCfg.enabled ? "● दैनिक रिमाइंडर चालू" : "● बंद"}</span>
           </div>
           <p class="text-xs text-slate-600 leading-relaxed">रोज़ सुबह <b>8:00 AM</b> और शाम <b>7:00 PM</b> पर आपको आज का कुल खर्च, कुल आय, कुल उधार, दोस्तों पर Pending, किसको कितने देने हैं और किससे कितने लेने हैं — इसकी पूरी रिपोर्ट नोटिफिकेशन और डैशबोर्ड कार्ड पर मिलेगी।</p>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs items-end">
@@ -3417,7 +4336,7 @@
             <div><label class="block font-bold mb-1">शाम का समय (Evening)</label><input type="time" id="notif-eve-time" value="${escHtml(nCfg.eveningTime)}" class="input-field text-xs" /></div>
           </div>
           <div class="flex flex-wrap gap-2">
-            <button type="button" id="save-notif-btn" class="btn-primary text-xs">🔔 सेव करें &amp; Permission लें</button>
+            <button type="button" id="save-notif-btn" class="btn-primary text-xs">🔔 समय सेव करें</button>
             <button type="button" id="test-notif-btn" class="btn-secondary text-xs border-indigo-300 text-indigo-800">📨 Test नोटिफिकेशन अभी भेजें</button>
             <button type="button" id="view-notif-summary-btn" class="btn-secondary text-xs border-teal-300 text-teal-800">📋 आज की पूरी रिपोर्ट देखें</button>
           </div>
@@ -3542,14 +4461,14 @@
       document.getElementById("save-notif-btn").addEventListener("click", async () => {
         const obj = { enabled: document.getElementById("notif-enabled-chk").checked, morningTime: document.getElementById("notif-morn-time").value || "08:00", eveningTime: document.getElementById("notif-eve-time").value || "19:00" };
         saveNotifSettings(obj);
-        if (obj.enabled && typeof Notification !== "undefined" && Notification.permission === "default") {
-          await Notification.requestPermission();
+        if (obj.enabled && !hasCompletedOneTimePermissions() && typeof Notification !== "undefined" && Notification.permission === "default") {
+          await Notification.requestPermission(); markOneTimePermissionsDone();
         }
         showToast(`दैनिक नोटिफिकेशन सेव हो गया (${obj.morningTime} व ${obj.eveningTime})!`);
         renderCurrentView();
       });
       document.getElementById("test-notif-btn").addEventListener("click", async () => {
-        if (typeof Notification !== "undefined" && Notification.permission === "default") await Notification.requestPermission();
+        if (!hasCompletedOneTimePermissions() && typeof Notification !== "undefined" && Notification.permission === "default") { await Notification.requestPermission(); markOneTimePermissionsDone(); }
         sendBrowserNotificationNow("टेस्ट हिसाब नोटिफिकेशन", false);
       });
       document.getElementById("view-notif-summary-btn").addEventListener("click", () => openDailyNotificationModal("आज का संपूर्ण हिसाब व लेन-देन"));
@@ -3796,7 +4715,7 @@
       document.getElementById("pwa-install-btn").addEventListener("click", triggerPWAInstall);
       document.getElementById("header-notif-btn").addEventListener("click", () => openDailyNotificationModal("आज का दैनिक हिसाब रिमाइंडर"));
       document.getElementById("header-dark-btn").addEventListener("click", toggleDarkMode);
-      document.getElementById("header-speak-btn").addEventListener("click", speakTodaySummary);
+      document.getElementById("header-speak-btn").addEventListener("click", () => openVoiceAssistantModal());
       document.getElementById("header-lock-btn").addEventListener("click", lockAppWithPin);
       document.getElementById("header-scan-btn").addEventListener("click", () => openParchiScannerModal());
       document.getElementById("header-calc-btn").addEventListener("click", () => openSmartCalculatorModal());
