@@ -150,6 +150,7 @@
           <button type="button" id="header-calc-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px]" title="स्मार्ट कैलकुलेटर">🧮</button>
           <button type="button" id="header-voice-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px] border-amber-300 text-amber-800 bg-amber-50" title="बोलकर एंट्री करें">🎙️ <span class="hidden sm:inline">बोलकर लिखें</span></button>
           <button type="button" id="quick-search-open-btn" class="btn-secondary text-xs px-2.5 py-2 min-h-[38px]" title="पूरे ऐप में खोजें">🔍 <span class="hidden sm:inline">खोजें</span></button>
+          <button type="button" id="header-share-app-btn" class="btn-primary text-xs px-2.5 py-2 min-h-[38px]" title="ऐप शेयर करें">📤</button>
         </div>
       </header>
 
@@ -3480,6 +3481,47 @@
       } catch (e) {}
     }
 
+    async function shareAppAction() {
+      const currentHref = window.location.href || "";
+      const liveUrl = /^https?:\/\//i.test(currentHref) ? currentHref.split("#")[0] : "https://ankitsharma143.github.io/MahaHisab/";
+      const shareText = `MahaIndustries Household Expenses — घर, दुकान, बजट, दोस्त खाता और डेयरी का मुफ्त स्मार्ट अकाउंटिंग ऐप (Pro. Ankit Sharma • 7500343487)\nयहाँ खोलें: ${liveUrl}`;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "MahaIndustries Household Expenses",
+            text: "घर, दुकान, बजट, दोस्त खाता और डेयरी का मुफ्त स्मार्ट अकाउंटिंग ऐप — MahaIndustries",
+            url: liveUrl
+          });
+          return;
+        } catch (err) {
+          if (err && err.name === "AbortError") return;
+        }
+      }
+
+      openModal("📤 ऐप शेयर करें (Share App)", `
+        <div class="space-y-3 text-center text-xs">
+          <p class="text-slate-600">नीचे दिए लिंक या QR कोड से यह ऐप अपने दोस्तों और परिवार के साथ शेयर करें:</p>
+          <div class="flex gap-2">
+            <input type="text" id="share-app-url-inp" value="${escHtml(liveUrl)}" readonly class="input-field text-xs font-mono bg-slate-50" />
+            <button type="button" id="share-app-copy-btn" class="btn-primary text-xs shrink-0">📋 कॉपी</button>
+          </div>
+          <div id="share-app-qr" class="inline-flex flex-col items-center justify-center bg-white border border-slate-200 rounded-2xl p-3"></div>
+          <div class="flex flex-wrap justify-center gap-2 pt-1">
+            <button type="button" id="share-app-wa-btn" class="btn-primary text-xs bg-emerald-600 hover:bg-emerald-700">💬 WhatsApp पर शेयर करें</button>
+          </div>
+        </div>
+      `);
+
+      const qrBox = document.getElementById("share-app-qr");
+      if (typeof qrcode !== "undefined" && qrBox) {
+        const qr = qrcode(0, "M"); qr.addData(liveUrl); qr.make();
+        qrBox.innerHTML = qr.createSvgTag(4, 6) + `<div class="text-[11px] font-bold text-teal-800 mt-1">स्कैन करके ऐप खोलें</div>`;
+      }
+      document.getElementById("share-app-copy-btn").addEventListener("click", () => copyText(liveUrl, "ऐप का लिंक कॉपी हो गया!"));
+      document.getElementById("share-app-wa-btn").addEventListener("click", () => openWhatsAppMessage("", shareText));
+    }
+
     function bindStaticEvents() {
       document.querySelectorAll("[data-main-tab]").forEach(btn => btn.addEventListener("click", () => { state.activeMainTab = btn.dataset.mainTab; renderCurrentView(); }));
       document.getElementById("pwa-install-btn").addEventListener("click", triggerPWAInstall);
@@ -3491,6 +3533,7 @@
       document.getElementById("header-calc-btn").addEventListener("click", () => openSmartCalculatorModal());
       document.getElementById("header-voice-btn").addEventListener("click", () => openVoiceEntryModal());
       document.getElementById("quick-search-open-btn").addEventListener("click", openGlobalSearchModal);
+      document.getElementById("header-share-app-btn").addEventListener("click", shareAppAction);
       document.getElementById("modal-close-btn").addEventListener("click", closeModal);
       document.getElementById("app-modal").addEventListener("click", (e) => { if (e.target.id === "app-modal") closeModal(); });
       document.getElementById("pin-unlock-form").addEventListener("submit", (e) => {
