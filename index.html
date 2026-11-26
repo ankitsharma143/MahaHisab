@@ -275,7 +275,7 @@
       "houseExpenses", "shopTransactions", "income", "accounts", "transfers",
       "loans", "loanPayments", "dairyProduction", "milkSales", "milkPurchases",
       "dairyExpenses", "dairyWaste", "customers", "suppliers", "animals",
-      "budgets", "recurringBills", "savingsGoals", "friendTransactions", "parchuniCustomers", "parchuniEntries", "parchuniSalesmen", "parchuniSalesmanEntries", "settings"
+      "budgets", "recurringBills", "savingsGoals", "friendTransactions", "parchuniCustomers", "parchuniEntries", "parchuniSalesmen", "parchuniSalesmanEntries", "dairyCenters", "dairySupplies", "dairyCenterPurchases", "settings"
     ];
 
     const REPORT_TYPES = [
@@ -408,6 +408,8 @@
         (data.houseExpenses || []).forEach(e => addEntry(resolveAcc(e.paymentMode), { date: e.date, type: "घरेलू खर्च", desc: `${e.category || ""} - ${e.itemName || ""}`.trim(), amount: this.round2(e.amount), kind: "out" }));
         (data.shopTransactions || []).forEach(s => { const p = this.round2(s.paid || 0); if (p > 0) addEntry(resolveAcc(s.paymentMode), { date: s.date, type: "दुकान भुगतान", desc: `${s.shopName || ""} - ${s.item || ""}`.trim(), amount: p, kind: "out" }); });
         (data.milkSales || []).forEach(s => { const p = this.round2(s.paid || 0); if (p > 0) addEntry(resolveAcc(s.paymentMode), { date: s.date, type: "दूध बिक्री प्राप्ति", desc: `${s.customerName || ""} (${s.quantity || 0}L)`, amount: p, kind: "in" }); });
+        (data.dairySupplies || []).forEach(s => { const p = this.round2(s.paid || 0); if (p > 0) addEntry(resolveAcc(s.paymentMode), { date: s.date, type: "डेयरी सप्लाई प्राप्ति", desc: `${s.dairyName || ""} (${s.quantity || 0}L ${s.milkType || ""})`, amount: p, kind: "in" }); });
+        (data.dairyCenterPurchases || []).forEach(p => { const pd = this.round2(p.paid || 0); if (pd > 0) addEntry(resolveAcc(p.paymentMode), { date: p.date, type: "डेयरी सामान खरीद", desc: `${p.dairyName || ""} - ${p.productName || ""}`, amount: pd, kind: "out" }); });
         (data.milkPurchases || []).forEach(p => { const pd = this.round2(p.paid || 0); if (pd > 0) addEntry(resolveAcc(p.paymentMode), { date: p.date, type: "दूध खरीद भुगतान", desc: `${p.supplierName || ""} (${p.quantity || 0}L)`, amount: pd, kind: "out" }); });
         (data.dairyExpenses || []).forEach(d => { const pd = this.round2(d.paid || 0); if (pd > 0) addEntry(resolveAcc(d.paymentMode), { date: d.date, type: "डेयरी खर्च", desc: `${d.category || ""} - ${d.item || ""}`.trim(), amount: pd, kind: "out" }); });
         (data.loans || []).forEach(l => { const amt = this.round2(l.amount || 0); if (amt > 0) addEntry(resolveAcc(l.paymentMode), { date: l.date, type: l.type === "given" ? "उधार दिया" : "उधार लिया", desc: `${l.personName || ""}`, amount: amt, kind: l.type === "given" ? "out" : "in" }); });
@@ -512,6 +514,12 @@
           else if (fb.netBalance < 0) payables.push({ name: fb.friendName, tag: "दोस्त खाता (देने हैं)", amount: Math.abs(fb.netBalance), mobile: fb.mobile || "" });
         });
 
+        // Dairy Supply Center Receivables
+        this.calcDairySupplyLedger(data.dairyCenters || [], data.dairySupplies || [], data.dairyCenterPurchases || []).forEach(dc => {
+          if (dc.balance > 0) receivables.push({ name: dc.name, tag: "डेयरी सप्लाई बाकी", amount: dc.balance, mobile: dc.mobile || "" });
+          else if (dc.balance < 0) payables.push({ name: dc.name, tag: "डेयरी सामान बाकी", amount: Math.abs(dc.balance), mobile: dc.mobile || "" });
+        });
+
         // Parchuni Shop Customer Receivables & Salesman Payables
         this.calcParchuniCustomerLedger(data.parchuniCustomers || [], data.parchuniEntries || []).forEach(pc => {
           if (pc.balance > 0) receivables.push({ name: pc.name, tag: "परचूनी ग्राहक उधार", amount: pc.balance, mobile: pc.mobile || "" });
@@ -575,6 +583,109 @@
         });
         Object.values(map).forEach(s => s.entries.sort((a, b) => (b.date || "").localeCompare(a.date || "")));
         return Object.values(map).sort((a, b) => b.balance - a.balance);
+      },
+      calcDairySupplyLedger(centers, supplies, centerPurchases = []) {
+        const map = {};
+        const ensure = (nm, extra = {}) => {
+          const k = (nm || "डेयरी").trim().toLowerCase();
+          if (!map[k]) {
+            map[k] = {
+              id: extra.id || null, name: (nm || "डेयरी").trim(), mobile: extra.mobile || "",
+              cowRate: this.round2(extra.cowRate || 45), buffaloRate: this.round2(extra.buffaloRate || 60),
+              opening: this.round2(extra.openingBalance || 0),
+              totalLiters: 0, cowLiters: 0, buffaloLiters: 0,
+              totalAmount: 0, totalPaid: 0,
+              totalProductBought: 0, totalProductCashPaid: 0, totalProductAdjusted: 0,
+              balance: this.round2(extra.openingBalance || 0),
+              entries: [], purchases: []
+            };
+          }
+          return map[k];
+        };
+        (centers || []).forEach(c => { if ((c.name || "").trim()) ensure(c.name, c); });
+        (supplies || []).forEach(s => {
+          const dc = ensure(s.dairyName, { mobile: s.mobile });
+          const qty = this.round2(s.quantity || 0), amt = this.round2(s.amount || 0), paid = this.round2(s.paid || 0);
+          dc.totalLiters = this.round2(dc.totalLiters + qty);
+          if (s.milkType === "गाय") dc.cowLiters = this.round2(dc.cowLiters + qty);
+          else dc.buffaloLiters = this.round2(dc.buffaloLiters + qty);
+          dc.totalAmount = this.round2(dc.totalAmount + amt);
+          dc.totalPaid = this.round2(dc.totalPaid + paid);
+          dc.entries.push(s);
+        });
+        (centerPurchases || []).forEach(p => {
+          const dc = ensure(p.dairyName);
+          const amt = this.round2(p.amount || 0), cashPaid = this.round2(p.paid || 0);
+          const adjusted = this.round2(Math.max(0, amt - cashPaid));
+          dc.totalProductBought = this.round2(dc.totalProductBought + amt);
+          dc.totalProductCashPaid = this.round2(dc.totalProductCashPaid + cashPaid);
+          dc.totalProductAdjusted = this.round2(dc.totalProductAdjusted + adjusted);
+          dc.purchases.push(p);
+        });
+        Object.values(map).forEach(dc => {
+          // Final Net Balance = Opening + Milk Sold - Products Adjusted in Milk Bill - Cash Received from Dairy
+          dc.balance = this.round2(dc.opening + dc.totalAmount - dc.totalProductAdjusted - dc.totalPaid);
+          dc.entries.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+          dc.purchases.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+        });
+        return Object.values(map).sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance));
+      },
+      parseDairySlipOCR(text) {
+        const raw = String(text || "");
+        const norm = raw.replace(/[|]/g, " ");
+        const low = norm.toLowerCase();
+
+        // Date (DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD, DD/MM/YY)
+        let date = "";
+        const isoM = norm.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+        const dmyM = norm.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+        if (isoM) {
+          date = `${isoM[1]}-${String(isoM[2]).padStart(2, "0")}-${String(isoM[3]).padStart(2, "0")}`;
+        } else if (dmyM) {
+          const yr = dmyM[3].length === 2 ? "20" + dmyM[3] : dmyM[3];
+          date = `${yr}-${String(dmyM[2]).padStart(2, "0")}-${String(dmyM[1]).padStart(2, "0")}`;
+        }
+
+        // Shift & Milk Type
+        const shift = /\b(?:eve|evening|pm|e)\b|शाम/i.test(norm) ? "शाम" : "सुबह";
+        const milkType = /\b(?:cow|c)\b|गाय/i.test(norm) ? "गाय" : /\b(?:mix)\b|मिक्स/i.test(norm) ? "मिक्स" : "भैंस";
+
+        // Numeric field extractors tuned for Indian dairy machine slips
+        const grabNum = (rx) => {
+          const m = norm.match(rx);
+          if (!m) return 0;
+          const v = Number(String(m[1]).replace(/,/g, ""));
+          return Number.isFinite(v) ? this.round2(v) : 0;
+        };
+
+        const fat = grabNum(/(?:fat|फैट)\s*[:=\-]?\s*(\d{1,2}(?:\.\d{1,2})?)/i);
+        const snf = grabNum(/(?:snf|clr|एसएनएफ)\s*[:=\-]?\s*(\d{1,2}(?:\.\d{1,2})?)/i);
+        const quantity = grabNum(/(?:qty|quantity|ltr|liter|litre|wt|weight|milk|मात्रा|दूध)\s*[:=\-]?\s*(\d+(?:\.\d{1,2})?)/i)
+          || grabNum(/(\d+(?:\.\d{1,2})?)\s*(?:ltr|l\b|liter|लीटर)/i);
+        const rate = grabNum(/(?:rate|rt|दर|रेट)\s*[:=\-]?\s*(?:rs\.?|₹)?\s*(\d+(?:\.\d{1,2})?)/i);
+        let amount = grabNum(/(?:amt|amount|total|net\s*amt|राशि|कुल)\s*[:=\-]?\s*(?:rs\.?|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)/i);
+        if (!amount && quantity > 0 && rate > 0) amount = this.calcLineAmount(quantity, rate, 0);
+
+        const firstLine = norm.split(/\r?\n/).map(l => l.trim()).find(l => l.length >= 3 && !/^\d/.test(l)) || "";
+        return { dairyName: firstLine.slice(0, 36), date, shift, milkType, quantity, fat, snf, rate, amount, raw };
+      },
+      parseDairySupplyVoiceEntry(transcript) {
+        const raw = String(transcript || "").trim();
+        const low = raw.toLowerCase();
+        const milkType = /गाय|gay|gaay|cow/.test(low) ? "गाय" : /मिक्स|mix/.test(low) ? "मिक्स" : "भैंस";
+        const shift = /शाम|sham|evening/.test(low) ? "शाम" : "सुबह";
+
+        let dairyName = "";
+        const dMatch = raw.match(/^([^\d,]+?)\s+(?:को|पर|में|मे|ko|par|me|mein)(?:\s|$)/i) || raw.match(/^([^\d,]*?(?:डेयरी|dairy))/i);
+        if (dMatch) dairyName = dMatch[1].replace(/^(?:मेरा|हमारा|दूध)\s+/i, "").trim();
+
+        const nums = (raw.match(/\d+(?:\.\d+)?/g) || []).map(Number);
+        const qtyMatch = raw.match(/(\d+(?:\.\d+)?)\s*(?:लीटर|लिटर|liter|litre|l\b)/i);
+        const rateMatch = raw.match(/(\d+(?:\.\d+)?)\s*(?:रेट|दर|rate|रुपये|रु)/i) || raw.match(/(?:रेट|दर|rate)\s*(?:से\s*)?(\d+(?:\.\d+)?)/i);
+        let quantity = qtyMatch ? Number(qtyMatch[1]) : (nums[0] || 0);
+        let rate = rateMatch ? Number(rateMatch[1]) : (nums.length >= 2 ? nums[1] : 0);
+        const amount = this.calcLineAmount(quantity, rate, 0);
+        return { dairyName, milkType, shift, quantity: this.round2(quantity), rate: this.round2(rate), amount, raw };
       },
       parseParchuniVoiceEntry(transcript) {
         const raw = String(transcript || "").trim();
@@ -714,7 +825,7 @@
         houseExpenses: [], shopTransactions: [], income: [], accounts: [], transfers: [],
         loans: [], loanPayments: [], dairyProduction: [], milkSales: [], milkPurchases: [],
         dairyExpenses: [], dairyWaste: [], customers: [], suppliers: [], animals: [],
-        budgets: [], recurringBills: [], savingsGoals: [], friendTransactions: [], parchuniCustomers: [], parchuniEntries: [], parchuniSalesmen: [], parchuniSalesmanEntries: [], settings: []
+        budgets: [], recurringBills: [], savingsGoals: [], friendTransactions: [], parchuniCustomers: [], parchuniEntries: [], parchuniSalesmen: [], parchuniSalesmanEntries: [], dairyCenters: [], dairySupplies: [], dairyCenterPurchases: [], settings: []
       }
     };
 
@@ -2095,6 +2206,7 @@
     // =========================================================================
     function renderDairyModule(container) {
       const subtabs = [
+        { id: "dairy_supply", label: "🚚 डेयरी पर दूध भेजें" },
         { id: "bulk_delivery", label: "⚡ 1-Tap डिलीवरी" },
         { id: "production", label: "🐄 दूध उत्पादन" },
         { id: "sales", label: "🥛 दूध बिक्री" },
@@ -2117,7 +2229,8 @@
         <div id="dairy-sub-content" class="space-y-4"></div>`;
       container.querySelectorAll("[data-dairy-tab]").forEach(btn => btn.addEventListener("click", () => { state.activeDairyTab = btn.dataset.dairyTab; renderCurrentView(); }));
       const sub = document.getElementById("dairy-sub-content");
-      if (state.activeDairyTab === "bulk_delivery") renderBulkMilkDeliveryTab(sub);
+      if (state.activeDairyTab === "dairy_supply") renderDairySupplyTab(sub);
+      else if (state.activeDairyTab === "bulk_delivery") renderBulkMilkDeliveryTab(sub);
       else if (state.activeDairyTab === "production") renderMilkProductionTab(sub);
       else if (state.activeDairyTab === "sales") renderMilkSalesTab(sub);
       else if (state.activeDairyTab === "purchase") renderMilkPurchaseTab(sub);
@@ -3158,6 +3271,24 @@
         if (/डेयरी|dairy|दूध|doodh|dudh|milk/.test(low)) {
           const eff = range.explicit ? range : { from: refDateStr.slice(0, 7) + "-01", to: refDateStr.slice(0, 7) + "-31", label: "इस महीने में" };
           const inE = (dt) => (dt || "") >= eff.from && (dt || "") <= eff.to;
+          const dsLed5 = AccountingEngine.calcDairySupplyLedger(data.dairyCenters || [], data.dairySupplies || [], data.dairyCenterPurchases || []);
+          const matchedDC5 = dsLed5.find(dc => low.includes(dc.name.toLowerCase()));
+          if (matchedDC5) {
+            const list = matchedDC5.entries.filter(e => inE(e.date));
+            const lit = AccountingEngine.round2(list.reduce((s, e) => s + (Number(e.quantity) || 0), 0));
+            const amt = AccountingEngine.round2(list.reduce((s, e) => s + (Number(e.amount) || 0), 0));
+            const pd = AccountingEngine.round2(list.reduce((s, e) => s + (Number(e.paid) || 0), 0));
+            const pBought = AccountingEngine.round2(matchedDC5.purchases.filter(p => inE(p.date)).reduce((s, p) => s + (Number(p.amount) || 0), 0));
+            const speech = `${matchedDC5.name} पर ${eff.label} कुल ${lit} लीटर दूध (${amt} रुपये) भेजा गया, डेयरी से ${pBought} रुपये का सामान (खल/भूसी/घी) खरीदा गया और ${pd} रुपये प्राप्त हुए। कुल फाइनल बकाया ${matchedDC5.balance} रुपये है।`;
+            return {
+              title: `डेयरी सप्लाई हिसाब — ${matchedDC5.name} (${eff.label})`,
+              speech,
+              details: [
+                `कुल दूध: ${fmtL(lit)} | कुल राशि: ${fmtRs(amt)} | कुल बाकी: ${fmtRs(matchedDC5.balance)}`,
+                ...list.slice(0, 10).map(e => `${e.date} (${e.shift || "सुबह"}) — ${e.milkType}: ${fmtL(e.quantity)} × ₹${e.rate} = ${fmtRs(e.amount)}`)
+              ]
+            };
+          }
           const pl = AccountingEngine.calcDairyProfitLoss(
             (data.dairyProduction || []).filter(x => inE(x.date)),
             (data.milkPurchases || []).filter(x => inE(x.date)),
@@ -3181,6 +3312,25 @@
             ...(data.shopTransactions || []).filter(x => inE(x.date) && matchesText(`${x.shopName} ${x.item} ${x.note}`)).map(x => ({ date: x.date, label: `${x.item} (${x.shopName})`, amount: Number(x.amount) || 0 })),
             ...(data.dairyExpenses || []).filter(x => inE(x.date) && matchesText(`${x.category} ${x.item} ${x.supplier} ${x.note}`)).map(x => ({ date: x.date, label: `${x.item} (${x.category})`, amount: Number(x.amount) || 0 }))
           ];
+
+          // Check Dairy Supply Center ledger first when a saved dairy center name is asked
+          const dsLedger = AccountingEngine.calcDairySupplyLedger(data.dairyCenters || [], data.dairySupplies || [], data.dairyCenterPurchases || []);
+          const matchedDC = dsLedger.find(dc => low.includes(dc.name.toLowerCase()));
+          if (matchedDC) {
+            const list = matchedDC.entries.filter(e => inE(e.date));
+            const lit = AccountingEngine.round2(list.reduce((s, e) => s + (Number(e.quantity) || 0), 0));
+            const amt = AccountingEngine.round2(list.reduce((s, e) => s + (Number(e.amount) || 0), 0));
+            const pd = AccountingEngine.round2(list.reduce((s, e) => s + (Number(e.paid) || 0), 0));
+            const speech = `${matchedDC.name} पर ${eff.label} कुल ${lit} लीटर दूध (${amt} रुपये) भेजा गया और ${pd} रुपये प्राप्त हुए। कुल शेष बकाया ${matchedDC.balance} रुपये है।`;
+            return {
+              title: `डेयरी सप्लाई हिसाब — ${matchedDC.name} (${eff.label})`,
+              speech,
+              details: [
+                `कुल दूध: ${fmtL(lit)} | कुल राशि: ${fmtRs(amt)} | कुल बाकी: ${fmtRs(matchedDC.balance)}`,
+                ...list.slice(0, 10).map(e => `${e.date} (${e.shift || "सुबह"}) — ${e.milkType}: ${fmtL(e.quantity)} × ₹${e.rate} = ${fmtRs(e.amount)}`)
+              ]
+            };
+          }
 
           // Check Parchuni Customer itemized history first!
           const pLedger = AccountingEngine.calcParchuniCustomerLedger(data.parchuniCustomers || [], data.parchuniEntries || []);
@@ -3448,6 +3598,10 @@
           }
           return { ...buildReportData("house_expense", "2000-01-01", "2099-12-31", "", ""), importTarget: "houseExpenses" };
         } else {
+          if (tab === "dairy_supply") {
+            const list = d.dairySupplies || [];
+            return { title: "डेयरी पर दूध सप्लाई रिपोर्ट (Dairy Supply)", dateRange: todayStr(), headers: ["तारीख", "शिफ्ट", "डेयरी का नाम", "गाय/भैंस", "मात्रा (L)", "दर (₹)", "राशि (₹)", "प्राप्त (₹)", "बाकी (₹)"], rows: list.map(x => [x.date, x.shift || "सुबह", x.dairyName, x.milkType || "भैंस", x.quantity, x.rate, x.amount, x.paid || 0, AccountingEngine.calcRemaining(x.amount, x.paid)]), summaryLines: [`कुल दूध: ${fmtL(list.reduce((s, x) => s + (Number(x.quantity) || 0), 0))}`, `कुल राशि: ${fmtRs(list.reduce((s, x) => s + (Number(x.amount) || 0), 0))}`], importTarget: "milkSales" };
+          }
           if (tab === "production") return { ...buildReportData("dairy_prod", "2000-01-01", "2099-12-31", "", ""), importTarget: "dairyProduction" };
           if (tab === "sales" || tab === "bulk_delivery") return { ...buildReportData("dairy_sales", "2000-01-01", "2099-12-31", "", ""), importTarget: "milkSales" };
           if (tab === "purchase") return { ...buildReportData("dairy_purchase", "2000-01-01", "2099-12-31", "", ""), importTarget: "milkPurchases" };
@@ -4288,6 +4442,446 @@
         const exists = list.some(s => s.name.toLowerCase() === salesmanName.toLowerCase());
         if (!exists) await saveDoc("parchuniSalesmen", { name: salesmanName, company: "", mobile: prefill.mobile || "", openingBalance: 0 });
         if (await saveDoc("parchuniSalesmanEntries", { date: document.getElementById("sme-date").value, salesmanName, mobile: prefill.mobile || "", type: document.getElementById("sme-type").value, items: document.getElementById("sme-items").value.trim() || "बिल/भुगतान", amount })) closeModal();
+      });
+    }
+
+    // =========================================================================
+    // 11H. DAIRY CENTER MILK SUPPLY + DAIRY PRODUCT PURCHASES + MACHINE SLIP OCR
+    // =========================================================================
+    function renderDairySupplyTab(container) {
+      const ledger = AccountingEngine.calcDairySupplyLedger(state.data.dairyCenters, state.data.dairySupplies, state.data.dairyCenterPurchases);
+      const rows = [...(state.data.dairySupplies || [])].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      const pRows = [...(state.data.dairyCenterPurchases || [])].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      const totL = AccountingEngine.round2(rows.reduce((s, x) => s + (Number(x.quantity) || 0), 0));
+      const totMilkAmt = AccountingEngine.round2(rows.reduce((s, x) => s + (Number(x.amount) || 0), 0));
+      const totProdAmt = AccountingEngine.round2(pRows.reduce((s, x) => s + (Number(x.amount) || 0), 0));
+      const totNetDue = AccountingEngine.round2(ledger.reduce((s, d) => s + d.balance, 0));
+
+      container.innerHTML = `
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div class="text-xs font-semibold text-slate-500">डेयरी दूध सप्लाई व सामान खरीद फाइनल हिसाब (${ledger.length} डेयरी)</div>
+            <div class="text-base sm:text-lg font-bold text-teal-800">
+              दूध भेजा: ${fmtL(totL)} (${fmtRs(totMilkAmt)}) | सामान खरीद: <span class="text-amber-700">${fmtRs(totProdAmt)}</span> | फाइनल नेट बाकी: <span class="${totNetDue >= 0 ? "text-emerald-700" : "text-red-600"}">${fmtRs(totNetDue)}</span>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" id="ds-slip-scan-btn" class="btn-primary text-xs bg-rose-600 hover:bg-rose-700">📸 डेयरी पर्ची स्कैन</button>
+            <button type="button" id="ds-voice-btn" class="btn-primary text-xs bg-amber-600 hover:bg-amber-700">🎙️ बोलकर दूध भेजें</button>
+            <button type="button" id="ds-add-entry-btn" class="btn-primary text-xs">+ दूध सप्लाई</button>
+            <button type="button" id="ds-add-prod-btn" class="btn-secondary text-xs border-orange-300 text-orange-800 bg-orange-50">+ खल/भूसी/घी खरीद</button>
+            <button type="button" id="ds-add-center-btn" class="btn-secondary text-xs border-teal-300 text-teal-800">+ डेयरी नाम सेट</button>
+          </div>
+        </div>
+
+        ${ledger.length ? `
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            ${ledger.map(dc => `
+              <div class="kpi-card space-y-2">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <div class="font-bold text-base">🏭 ${escHtml(dc.name)}</div>
+                    <div class="text-[11px] text-slate-500">गाय: ₹${dc.cowRate}/L • भैंस: ₹${dc.buffaloRate}/L</div>
+                  </div>
+                  <span class="text-xs px-2 py-0.5 rounded-full font-bold ${dc.balance > 0 ? "bg-emerald-100 text-emerald-800" : dc.balance < 0 ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-600"}">
+                    ${dc.balance > 0 ? "लेने हैं: " + fmtRs(dc.balance) : dc.balance < 0 ? "देने हैं: " + fmtRs(Math.abs(dc.balance)) : "चुक्ता ✓"}
+                  </span>
+                </div>
+                <div class="grid grid-cols-2 gap-1 text-[11px] bg-slate-50 rounded-lg p-2 border border-slate-100">
+                  <span>दूध बिक्री: <b class="text-emerald-700">${fmtL(dc.totalLiters)} (${fmtRs(dc.totalAmount)})</b></span>
+                  <span>सामान खरीद: <b class="text-amber-700">${fmtRs(dc.totalProductBought)}</b></span>
+                  <span>नकद मिला: <b class="text-teal-700">${fmtRs(dc.totalPaid)}</b></span>
+                  <span>समायोजित: <b class="text-rose-700">-${fmtRs(dc.totalProductAdjusted)}</b></span>
+                </div>
+                <div class="flex flex-wrap gap-1.5 pt-1 border-t border-slate-100 text-xs">
+                  <button type="button" data-ds-quick="${escHtml(dc.name)}" class="px-2 py-1 rounded-lg bg-teal-50 text-teal-800 font-bold">+ दूध</button>
+                  <button type="button" data-ds-buy="${escHtml(dc.name)}" class="px-2 py-1 rounded-lg bg-orange-50 text-orange-800 font-bold">+ सामान</button>
+                  <button type="button" data-ds-pdf="${escHtml(dc.name)}" class="px-2 py-1 rounded-lg bg-blue-50 text-blue-800 font-bold">📄 फाइनल PDF</button>
+                  <button type="button" data-ds-wa="${escHtml(dc.name)}" class="px-2 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold">💬 WA</button>
+                  ${dc.id ? `<button type="button" data-ds-editc="${dc.id}" class="text-blue-700 font-bold px-1">Edit</button><button type="button" data-ds-delc="${dc.id}" class="text-red-600 font-bold px-1">Del</button>` : ""}
+                </div>
+              </div>
+            `).join("")}
+          </div>` : ""}
+
+        <!-- Milk Supply Table -->
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+          <div class="px-4 py-2.5 border-b border-slate-200 font-bold text-xs text-teal-800 bg-teal-50/50">🥛 1. डेयरी को भेजा गया दूध (${rows.length} एंट्री)</div>
+          <table class="data-table">
+            <thead><tr><th>तारीख / शिफ्ट</th><th>डेयरी</th><th>गाय / भैंस</th><th>मात्रा × दर</th><th>Fat / SNF</th><th>राशि</th><th>प्राप्त / बाकी</th><th>पर्ची</th><th>क्रिया</th></tr></thead>
+            <tbody>
+              ${rows.length ? rows.map(r => {
+                const due = AccountingEngine.calcRemaining(r.amount, r.paid);
+                return `
+                  <tr>
+                    <td class="whitespace-nowrap"><div class="font-medium">${escHtml(r.date)}</div><div class="text-[10px] text-slate-400">${escHtml(r.shift || "सुबह")}</div></td>
+                    <td class="font-bold">${escHtml(r.dairyName)}</td>
+                    <td><span class="px-2 py-0.5 rounded-full text-xs font-bold ${r.milkType === "गाय" ? "bg-amber-100 text-amber-800" : "bg-teal-100 text-teal-800"}">${escHtml(r.milkType || "भैंस")}</span></td>
+                    <td class="text-xs">${fmtL(r.quantity)} × ₹${r.rate}</td>
+                    <td class="text-xs text-slate-600">${r.fat ? `F:${escHtml(r.fat)}%` : "-"}${r.snf ? ` / S:${escHtml(r.snf)}%` : ""}</td>
+                    <td class="font-bold text-emerald-700">${fmtRs(r.amount)}</td>
+                    <td class="text-xs"><span class="text-teal-700 font-semibold">${fmtRs(r.paid || 0)}</span> / <span class="${due > 0 ? "text-red-600 font-bold" : "text-slate-400"}">${fmtRs(due)}</span></td>
+                    <td>${r.slipImage ? `<button type="button" data-view-slip="${r.id}" class="text-xs text-teal-700 underline font-semibold">पर्ची</button>` : "-"}</td>
+                    <td class="whitespace-nowrap">
+                      <button type="button" data-edit-ds="${r.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button>
+                      <button type="button" data-del-ds="${r.id}" class="text-xs font-bold text-red-600">Delete</button>
+                    </td>
+                  </tr>`;
+              }).join("") : `<tr><td colspan="9" class="text-center py-6 text-slate-400">अभी कोई दूध सप्लाई एंट्री नहीं है।</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Dairy Center Product Purchases Table (Khal, Bhusi, Ghee, Feed etc.) -->
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+          <div class="px-4 py-2.5 border-b border-slate-200 font-bold text-xs text-amber-900 bg-amber-50/70 flex items-center justify-between">
+            <span>🛒 2. डेयरी से खरीदा गया सामान — खल, भूसी, घी, पशु आहार (${pRows.length} एंट्री • कुल: ${fmtRs(totProdAmt)})</span>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>तारीख</th><th>डेयरी</th><th>प्रोडक्ट / सामान</th><th>मात्रा × दर</th><th>कुल राशि</th><th>नकद दिया</th><th>दूध हिसाब में समायोजित</th><th>क्रिया</th></tr></thead>
+            <tbody>
+              ${pRows.length ? pRows.map(p => {
+                const adj = AccountingEngine.round2(Math.max(0, (Number(p.amount) || 0) - (Number(p.paid) || 0)));
+                return `
+                  <tr>
+                    <td class="whitespace-nowrap">${escHtml(p.date)}</td>
+                    <td class="font-bold">${escHtml(p.dairyName)}</td>
+                    <td><span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-50 text-orange-800">${escHtml(p.productName)}</span>${p.note ? `<div class="text-[10px] text-slate-400">${escHtml(p.note)}</div>` : ""}</td>
+                    <td class="text-xs">${p.quantity ? `${p.quantity} ${escHtml(p.unit || "")} × ₹${p.rate || 0}` : "सीधी राशि"}</td>
+                    <td class="font-bold text-amber-800">${fmtRs(p.amount)}</td>
+                    <td class="text-emerald-700 font-semibold">${fmtRs(p.paid || 0)}</td>
+                    <td class="font-bold text-rose-700">-${fmtRs(adj)}</td>
+                    <td class="whitespace-nowrap">
+                      <button type="button" data-edit-dcp="${p.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button>
+                      <button type="button" data-del-dcp="${p.id}" class="text-xs font-bold text-red-600">Delete</button>
+                    </td>
+                  </tr>`;
+              }).join("") : `<tr><td colspan="8" class="text-center py-6 text-slate-400">अभी डेयरी से कोई खल, भूसी, घी या अन्य सामान की खरीद दर्ज नहीं है।</td></tr>`}
+            </tbody>
+          </table>
+        </div>`;
+
+      document.getElementById("ds-slip-scan-btn").addEventListener("click", () => openDairySlipScannerModal());
+      document.getElementById("ds-voice-btn").addEventListener("click", () => openDairySupplyVoiceModal());
+      document.getElementById("ds-add-entry-btn").addEventListener("click", () => openDairySupplyEntryModal());
+      document.getElementById("ds-add-prod-btn").addEventListener("click", () => openDairyProductPurchaseModal());
+      document.getElementById("ds-add-center-btn").addEventListener("click", () => openDairyCenterModal());
+
+      container.querySelectorAll("[data-ds-quick]").forEach(b => b.addEventListener("click", () => openDairySupplyEntryModal(null, b.dataset.dsQuick)));
+      container.querySelectorAll("[data-ds-buy]").forEach(b => b.addEventListener("click", () => openDairyProductPurchaseModal(null, b.dataset.dsBuy)));
+      container.querySelectorAll("[data-edit-ds]").forEach(b => b.addEventListener("click", () => {
+        const it = (state.data.dairySupplies || []).find(x => x.id === b.dataset.editDs);
+        if (it) openDairySupplyEntryModal(it);
+      }));
+      container.querySelectorAll("[data-del-ds]").forEach(b => b.addEventListener("click", () => deleteDocById("dairySupplies", b.dataset.delDs, "डेयरी दूध सप्लाई एंट्री")));
+      container.querySelectorAll("[data-view-slip]").forEach(b => b.addEventListener("click", () => {
+        const it = (state.data.dairySupplies || []).find(x => x.id === b.dataset.viewSlip);
+        if (it && it.slipImage) openModal("डेयरी पर्ची फोटो", `<img src="${it.slipImage}" alt="Dairy Slip" class="max-w-full h-auto rounded-xl mx-auto" />`);
+      }));
+      container.querySelectorAll("[data-edit-dcp]").forEach(b => b.addEventListener("click", () => {
+        const it = (state.data.dairyCenterPurchases || []).find(x => x.id === b.dataset.editDcp);
+        if (it) openDairyProductPurchaseModal(it);
+      }));
+      container.querySelectorAll("[data-del-dcp]").forEach(b => b.addEventListener("click", () => deleteDocById("dairyCenterPurchases", b.dataset.delDcp, "डेयरी सामान खरीद")));
+      container.querySelectorAll("[data-ds-editc]").forEach(b => b.addEventListener("click", () => {
+        const c = (state.data.dairyCenters || []).find(x => x.id === b.dataset.dsEditc);
+        if (c) openDairyCenterModal(c);
+      }));
+      container.querySelectorAll("[data-ds-delc]").forEach(b => b.addEventListener("click", () => deleteDocById("dairyCenters", b.dataset.dsDelc, "डेयरी सेंटर")));
+
+      // Combined Final Settlement PDF (Milk Sent + Dairy Products Bought = Net Final Balance)
+      container.querySelectorAll("[data-ds-pdf]").forEach(b => b.addEventListener("click", () => {
+        const dc = ledger.find(x => x.name === b.dataset.dsPdf);
+        if (!dc) return;
+        const combinedRows = [
+          ...dc.entries.map(e => [e.date, `दूध भेजा (${e.shift || "सुबह"} • ${e.milkType})`, `${e.quantity}L × ₹${e.rate}${e.fat ? ` (F:${e.fat}% S:${e.snf || "-"}%)` : ""}`, `+${e.amount}`, e.paid || 0]),
+          ...dc.purchases.map(p => [p.date, `सामान खरीद (${p.productName})`, p.quantity ? `${p.quantity} ${p.unit || ""} × ₹${p.rate || 0}` : (p.note || "-"), `-${p.amount}`, p.paid || 0])
+        ].sort((a, b2) => String(a[0]).localeCompare(String(b2[0])));
+
+        exportTableToPDF({
+          title: `डेयरी फाइनल हिसाब (दूध बिक्री व सामान खरीद) — ${dc.name}`,
+          dateRange: `तैयार तिथि: ${todayStr()}`,
+          headers: ["तारीख", "मद (दूध / सामान)", "विवरण (मात्रा/फैट/दर)", "राशि (+दूध / -सामान)", "नकद भुगतान (₹)"],
+          rows: combinedRows,
+          summaryLines: [
+            `कुल भेजा गया दूध: ${fmtL(dc.totalLiters)} (गाय: ${fmtL(dc.cowLiters)}, भैंस: ${fmtL(dc.buffaloLiters)})`,
+            `कुल दूध की राशि (Credit): ${fmtRs(dc.totalAmount)} | पिछला बकाया: ${fmtRs(dc.opening)}`,
+            `डेयरी से कुल सामान खरीद (खल/भूसी/घी आदि): ${fmtRs(dc.totalProductBought)} (दूध बिल में समायोजित: -${fmtRs(dc.totalProductAdjusted)})`,
+            `डेयरी से कुल नकद प्राप्त: ${fmtRs(dc.totalPaid)}`,
+            `फाइनल शुद्ध हिसाब (${dc.balance >= 0 ? "डेयरी से लेने हैं" : "डेयरी को देने हैं"}): ${fmtRs(Math.abs(dc.balance))}`
+          ]
+        });
+      }));
+
+      container.querySelectorAll("[data-ds-wa]").forEach(b => b.addEventListener("click", () => {
+        const dc = ledger.find(x => x.name === b.dataset.dsWa);
+        if (!dc) return;
+        const upi = getSavedUpiId();
+        const msg = `नमस्ते ${dc.name},\n*MahaIndustries डेयरी फाइनल हिसाब*\n• कुल दूध भेजा: ${fmtL(dc.totalLiters)} = ${fmtRs(dc.totalAmount)}\n• डेयरी से सामान खरीद (खल/भूसी/घी): -${fmtRs(dc.totalProductBought)} (समायोजित: -${fmtRs(dc.totalProductAdjusted)})\n• नकद प्राप्त: -${fmtRs(dc.totalPaid)}\n• *फाइनल बकाया (${dc.balance >= 0 ? "लेने हैं" : "देने हैं"}): ${fmtRs(Math.abs(dc.balance))}*${upi ? `\n• UPI ID: ${upi}` : ""}`;
+        openWhatsAppMessage(dc.mobile, msg);
+      }));
+    }
+
+    function openDairyProductPurchaseModal(existing = null, prefillDairy = "") {
+      const centers = state.data.dairyCenters || [];
+      const accs = getAccountOptions();
+      const prodSuggestions = ["खल", "भूसी", "घी", "चोकर", "दाना", "पशु आहार", "पनीर", "मक्खन", "दही", "कैन / बर्तन", "अन्य सामान"];
+      const defDairy = existing?.dairyName || prefillDairy || (centers[0]?.name || "");
+
+      openModal(existing ? "डेयरी सामान खरीद संपादित करें" : "डेयरी से सामान खरीदें (खल, भूसी, घी आदि)", `
+        <form id="dcp-form" class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">तारीख*</label><input type="date" id="dcp-date" value="${existing?.date || state.selectedDate}" required class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">डेयरी का नाम*</label><input type="text" list="dc-dl-p" id="dcp-dairy" value="${escHtml(defDairy)}" required placeholder="डेयरी चुनें या लिखें" class="input-field" /><datalist id="dc-dl-p">${centers.map(c => `<option value="${escHtml(c.name)}"></option>`).join("")}</datalist></div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1">प्रोडक्ट / सामान का नाम*</label>
+            <input type="text" list="dcp-prod-dl" id="dcp-prod" value="${escHtml(existing?.productName || "")}" required placeholder="उदा. खल, भूसी, देसी घी, पशु आहार" class="input-field" />
+            <datalist id="dcp-prod-dl">${prodSuggestions.map(p => `<option value="${p}"></option>`).join("")}</datalist>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div><label class="block text-xs font-bold mb-1">मात्रा (Qty)</label><input type="number" step="any" min="0" id="dcp-qty" value="${existing?.quantity ?? ""}" class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">इकाई</label><select id="dcp-unit" class="input-field">${UNITS.map(u => `<option value="${u}" ${(existing?.unit || "Bag") === u ? "selected" : ""}>${u}</option>`).join("")}</select></div>
+            <div><label class="block text-xs font-bold mb-1">दर (₹)</label><input type="number" step="any" min="0" id="dcp-rate" value="${existing?.rate ?? ""}" class="input-field" /></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div><label class="block text-xs font-bold mb-1">कुल राशि (₹)*</label><input type="number" step="any" min="0.01" id="dcp-amt" value="${existing?.amount ?? ""}" required class="input-field font-bold text-amber-800" /></div>
+            <div><label class="block text-xs font-bold mb-1">नकद दिया (₹) <span class="text-[10px] text-slate-400">(0 = दूध बिल से कटेगा)</span></label><input type="number" step="any" min="0" id="dcp-paid" value="${existing?.paid ?? 0}" class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">माध्यम</label><select id="dcp-mode" class="input-field">${accs.map(a => `<option value="${a.id}" ${existing?.paymentMode === a.id ? "selected" : ""}>${escHtml(a.name)}</option>`).join("")}</select></div>
+          </div>
+          <div><label class="block text-xs font-bold mb-1">नोट</label><input type="text" id="dcp-note" value="${escHtml(existing?.note || "")}" class="input-field" /></div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="dcp-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">सेव करें</button></div>
+        </form>`);
+
+      const recalc = () => {
+        const q = Number(document.getElementById("dcp-qty").value) || 0, r = Number(document.getElementById("dcp-rate").value) || 0;
+        if (q > 0 && r > 0) document.getElementById("dcp-amt").value = AccountingEngine.round2(q * r);
+      };
+      document.getElementById("dcp-qty").addEventListener("input", recalc);
+      document.getElementById("dcp-rate").addEventListener("input", recalc);
+      document.getElementById("dcp-cancel").addEventListener("click", closeModal);
+
+      document.getElementById("dcp-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const dairyName = document.getElementById("dcp-dairy").value.trim();
+        const productName = document.getElementById("dcp-prod").value.trim();
+        const amount = AccountingEngine.round2(document.getElementById("dcp-amt").value);
+        const err = AccountingEngine.validateEntry({ date: document.getElementById("dcp-date").value, amount, requiredFields: [{ label: "डेयरी का नाम", value: dairyName }, { label: "प्रोडक्ट का नाम", value: productName }] });
+        if (err) { showToast(err, "error"); return; }
+        if (!centers.some(c => c.name.toLowerCase() === dairyName.toLowerCase())) {
+          await saveDoc("dairyCenters", { name: dairyName, mobile: "", openingBalance: 0, cowRate: 45, buffaloRate: 60 });
+        }
+        const payload = { date: document.getElementById("dcp-date").value, dairyName, productName, quantity: Number(document.getElementById("dcp-qty").value) || 0, unit: document.getElementById("dcp-unit").value, rate: Number(document.getElementById("dcp-rate").value) || 0, amount, paid: AccountingEngine.round2(document.getElementById("dcp-paid").value || 0), paymentMode: document.getElementById("dcp-mode").value, note: document.getElementById("dcp-note").value.trim() };
+        if (await saveDoc("dairyCenterPurchases", payload, existing?.id || null)) closeModal();
+      });
+    }
+
+    function openDairySlipScannerModal() {
+      openModal("📸 डेयरी मशीन पर्ची स्कैनर (Date, Qty, Fat, SNF, Rate Auto-Fetch)", `
+        <div class="space-y-3 text-xs">
+          <p class="text-slate-600 leading-relaxed">डेयरी से निकलने वाली मशीन पर्ची की फोटो खींचें या गैलरी से चुनें। ऐप अपने आप <b>तारीख, शिफ्ट, गाय/भैंस, मात्रा (Liter), Fat %, SNF %, Rate और Amount</b> निकालकर सीधे फॉर्म पर भर देगा।</p>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="btn-primary text-xs cursor-pointer bg-rose-600 hover:bg-rose-700">
+              📷 कैमरे से पर्ची खींचें
+              <input type="file" id="dslip-cam" accept="image/*" capture="environment" class="hidden" />
+            </label>
+            <label class="btn-secondary text-xs cursor-pointer">
+              🖼️ गैलरी से पर्ची चुनें
+              <input type="file" id="dslip-gal" accept="image/*" class="hidden" />
+            </label>
+          </div>
+          <div id="dslip-preview-box" class="hidden space-y-2 text-center">
+            <img id="dslip-img" alt="Dairy Slip" class="max-h-48 rounded-xl border mx-auto" />
+            <div id="dslip-status" class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 font-bold text-amber-900">पर्ची स्कैन हो रही है...</div>
+          </div>
+        </div>`);
+
+      const handleSlip = (file) => {
+        if (!file) return;
+        document.getElementById("dslip-preview-box").classList.remove("hidden");
+        const stEl = document.getElementById("dslip-status");
+        stEl.textContent = "⏳ डेयरी पर्ची से Date, Qty, Fat, SNF, Rate पढ़ा जा रहा है...";
+
+        compressImageFile(file, async (dataUrl) => {
+          document.getElementById("dslip-img").src = dataUrl;
+          let parsed = { date: state.selectedDate, shift: "सुबह", milkType: "भैंस", quantity: "", fat: "", snf: "", rate: "", amount: 0 };
+          if (typeof Tesseract !== "undefined") {
+            try {
+              const res = await Tesseract.recognize(dataUrl, "eng+hin", {
+                logger: (m) => { if (m.status === "recognizing text" && typeof m.progress === "number") stEl.textContent = `🔍 पर्ची स्कैन हो रही है... ${Math.round(m.progress * 100)}%`; }
+              });
+              parsed = AccountingEngine.parseDairySlipOCR((res && res.data && res.data.text) || "");
+            } catch (err) {}
+          }
+          const defCenterName = (state.data.dairyCenters && state.data.dairyCenters[0]?.name) || parsed.dairyName || "";
+          showToast("✅ पर्ची डेटा फॉर्म में भर दिया गया है — जांचकर सेव करें!");
+          openDairySupplyEntryModal({
+            date: parsed.date || state.selectedDate,
+            shift: parsed.shift || "सुबह",
+            dairyName: defCenterName,
+            milkType: parsed.milkType || "भैंस",
+            quantity: parsed.quantity || "",
+            fat: parsed.fat || "",
+            snf: parsed.snf || "",
+            rate: parsed.rate || "",
+            amount: parsed.amount || 0,
+            paid: 0,
+            paymentMode: "acc_cash",
+            note: "Dairy Slip OCR Scan",
+            slipImage: dataUrl
+          });
+        });
+      };
+
+      document.getElementById("dslip-cam").addEventListener("change", (e) => handleSlip(e.target.files?.[0]));
+      document.getElementById("dslip-gal").addEventListener("change", (e) => handleSlip(e.target.files?.[0]));
+    }
+
+    function openDairyCenterModal(existing = null) {
+      openModal(existing ? "डेयरी सेंटर संपादित करें" : "एक बार डेयरी का नाम व दर सेट करें", `
+        <form id="dc-form" class="space-y-3">
+          <div><label class="block text-xs font-bold mb-1">डेयरी / कलेक्शन सेंटर का नाम*</label><input type="text" id="dc-name" value="${escHtml(existing?.name || "")}" required placeholder="उदा. शर्मा डेयरी / अमूल सेंटर" class="input-field" /></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">मोबाइल नंबर (WhatsApp)</label><input type="tel" id="dc-mob" value="${escHtml(existing?.mobile || "")}" placeholder="10 अंक" class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">पिछला बाकी (₹)</label><input type="number" step="any" id="dc-open" value="${existing?.openingBalance ?? 0}" class="input-field" /></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">गाय के दूध का डिफ़ॉल्ट रेट (₹/L)</label><input type="number" step="any" min="0" id="dc-cow" value="${existing?.cowRate ?? 45}" class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">भैंस के दूध का डिफ़ॉल्ट रेट (₹/L)</label><input type="number" step="any" min="0" id="dc-buf" value="${existing?.buffaloRate ?? 60}" class="input-field" /></div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="dc-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">सेव करें</button></div>
+        </form>`);
+      document.getElementById("dc-cancel").addEventListener("click", closeModal);
+      document.getElementById("dc-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("dc-name").value.trim(); if (!name) return;
+        if (await saveDoc("dairyCenters", { name, mobile: document.getElementById("dc-mob").value.trim(), openingBalance: AccountingEngine.round2(document.getElementById("dc-open").value || 0), cowRate: AccountingEngine.round2(document.getElementById("dc-cow").value || 45), buffaloRate: AccountingEngine.round2(document.getElementById("dc-buf").value || 60) }, existing?.id || null)) closeModal();
+      });
+    }
+
+    function openDairySupplyEntryModal(existing = null, prefillDairy = "") {
+      const centers = state.data.dairyCenters || [];
+      const accs = getAccountOptions();
+      const isEdit = Boolean(existing && existing.id);
+      const defDairy = existing?.dairyName || prefillDairy || (centers[0]?.name || "");
+      const defCenter = centers.find(c => c.name.toLowerCase() === defDairy.toLowerCase());
+      const defType = existing?.milkType || "भैंस";
+      const defRate = (existing && existing.rate !== "" && existing.rate !== undefined) ? existing.rate : (defCenter ? (defType === "गाय" ? defCenter.cowRate : defCenter.buffaloRate) : 60);
+      let slipImageData = existing?.slipImage || "";
+
+      openModal(isEdit ? "डेयरी दूध सप्लाई संपादित करें" : "डेयरी पर दूध सप्लाई जोड़ें", `
+        <form id="ds-form" class="space-y-3">
+          ${slipImageData ? `<div class="bg-slate-50 border border-slate-200 rounded-xl p-2 text-center"><img src="${slipImageData}" alt="Dairy Slip" class="max-h-32 rounded-lg mx-auto" /><div class="text-[10px] text-teal-700 font-bold mt-1">✓ डेयरी पर्ची से ऑटो-भरा गया (जांचकर सेव करें)</div></div>` : ""}
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">तारीख*</label><input type="date" id="ds-date" value="${existing?.date || state.selectedDate}" required class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">शिफ्ट (समय)</label><select id="ds-shift" class="input-field"><option value="सुबह" ${(existing?.shift || "सुबह") === "सुबह" ? "selected" : ""}>सुबह (Morning)</option><option value="शाम" ${existing?.shift === "शाम" ? "selected" : ""}>शाम (Evening)</option></select></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">डेयरी का नाम*</label><input type="text" list="dc-dl" id="ds-dairy" value="${escHtml(defDairy)}" required placeholder="डेयरी चुनें या लिखें" class="input-field" /><datalist id="dc-dl">${centers.map(c => `<option value="${escHtml(c.name)}"></option>`).join("")}</datalist></div>
+            <div><label class="block text-xs font-bold mb-1">गाय / भैंस*</label><select id="ds-type" class="input-field">${["भैंस", "गाय", "मिक्स"].map(t => `<option value="${t}" ${defType === t ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div><label class="block text-xs font-bold mb-1">दूध (Liter)*</label><input type="number" step="any" min="0.01" id="ds-qty" value="${existing?.quantity ?? ""}" required class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">दर (₹/L)*</label><input type="number" step="any" min="0.01" id="ds-rate" value="${defRate}" required class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">कुल राशि (₹)</label><input type="number" id="ds-amt" value="${existing?.amount ?? 0}" readonly class="input-field bg-slate-100 font-bold text-emerald-700" /></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">Fat % (फैट)</label><input type="number" step="any" min="0" id="ds-fat" value="${existing?.fat ?? ""}" placeholder="उदा. 6.5" class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">SNF % (एसएनएफ)</label><input type="number" step="any" min="0" id="ds-snf" value="${existing?.snf ?? ""}" placeholder="उदा. 8.8" class="input-field" /></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">प्राप्त भुगतान (₹)</label><input type="number" step="any" min="0" id="ds-paid" value="${existing?.paid ?? 0}" class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">माध्यम</label><select id="ds-mode" class="input-field">${accs.map(a => `<option value="${a.id}" ${existing?.paymentMode === a.id ? "selected" : ""}>${escHtml(a.name)}</option>`).join("")}</select></div>
+          </div>
+          <div><label class="block text-xs font-bold mb-1">नोट</label><input type="text" id="ds-note" value="${escHtml(existing?.note || "")}" class="input-field" /></div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="ds-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">सेव करें</button></div>
+        </form>`);
+
+      const recalc = () => { document.getElementById("ds-amt").value = AccountingEngine.calcLineAmount(document.getElementById("ds-qty").value, document.getElementById("ds-rate").value, 0); };
+      const applyDefaultRate = () => {
+        if (isEdit) return;
+        const nm = document.getElementById("ds-dairy").value.trim().toLowerCase(), tp = document.getElementById("ds-type").value;
+        const c = centers.find(x => x.name.toLowerCase() === nm);
+        if (c) { document.getElementById("ds-rate").value = tp === "गाय" ? c.cowRate : c.buffaloRate; recalc(); }
+      };
+      document.getElementById("ds-dairy").addEventListener("change", applyDefaultRate);
+      document.getElementById("ds-type").addEventListener("change", applyDefaultRate);
+      document.getElementById("ds-qty").addEventListener("input", recalc);
+      document.getElementById("ds-rate").addEventListener("input", recalc);
+      document.getElementById("ds-cancel").addEventListener("click", closeModal);
+      recalc();
+
+      document.getElementById("ds-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const dairyName = document.getElementById("ds-dairy").value.trim();
+        const quantity = AccountingEngine.round2(document.getElementById("ds-qty").value);
+        const rate = AccountingEngine.round2(document.getElementById("ds-rate").value);
+        const amount = AccountingEngine.calcLineAmount(quantity, rate, 0);
+        const paid = AccountingEngine.round2(document.getElementById("ds-paid").value || 0);
+        const err = AccountingEngine.validateEntry({ date: document.getElementById("ds-date").value, amount, requiredFields: [{ label: "डेयरी का नाम", value: dairyName }] });
+        if (err) { showToast(err, "error"); return; }
+        if (!centers.some(c => c.name.toLowerCase() === dairyName.toLowerCase())) {
+          const tp = document.getElementById("ds-type").value;
+          await saveDoc("dairyCenters", { name: dairyName, mobile: "", openingBalance: 0, cowRate: tp === "गाय" ? rate : 45, buffaloRate: tp === "गाय" ? 60 : rate });
+        }
+        const payload = { date: document.getElementById("ds-date").value, shift: document.getElementById("ds-shift").value, dairyName, milkType: document.getElementById("ds-type").value, quantity, rate, fat: document.getElementById("ds-fat").value.trim(), snf: document.getElementById("ds-snf").value.trim(), amount, paid, due: AccountingEngine.calcRemaining(amount, paid), paymentMode: document.getElementById("ds-mode").value, note: document.getElementById("ds-note").value.trim(), slipImage: slipImageData };
+        if (await saveDoc("dairySupplies", payload, isEdit ? existing.id : null)) closeModal();
+      });
+    }
+
+    function openDairySupplyVoiceModal() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      openModal("🎙️ बोलकर डेयरी पर दूध सप्लाई एंट्री करें", `
+        <div class="space-y-3 text-xs">
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-900 leading-relaxed">
+            <b>उदाहरण जो आप बोल सकते हैं:</b><br/>
+            • "शर्मा डेयरी को भैंस का 12 लीटर दूध 62 रेट से भेजा"<br/>
+            • "अमूल डेयरी पर गाय का 8 लीटर दूध 45 रेट से शाम को"
+          </div>
+          <div class="text-center"><button type="button" id="dsv-mic-btn" class="btn-primary bg-amber-600 hover:bg-amber-700 text-sm px-6 py-3 rounded-full shadow-lg">🎙️ बोलना शुरू करें</button></div>
+          <textarea id="dsv-raw" rows="2" class="input-field" placeholder="उदा. शर्मा डेयरी को भैंस का 12 लीटर दूध 62 रेट से भेजा"></textarea>
+          <div id="dsv-preview" class="hidden bg-teal-50 border border-teal-200 rounded-xl p-3"></div>
+          <div class="flex justify-end gap-2">
+            <button type="button" id="dsv-cancel" class="btn-secondary text-xs">रद्द करें</button>
+            <button type="button" id="dsv-save-btn" class="btn-primary text-xs bg-emerald-600 hover:bg-emerald-700">✅ सीधे सेव करें</button>
+            <button type="button" id="dsv-form-btn" class="btn-secondary text-xs border-teal-300 text-teal-800">फॉर्म में जांचें →</button>
+          </div>
+        </div>`);
+
+      const rawEl = document.getElementById("dsv-raw"), prevEl = document.getElementById("dsv-preview"), micBtn = document.getElementById("dsv-mic-btn");
+      const upd = () => {
+        const v = rawEl.value.trim(); if (!v) { prevEl.classList.add("hidden"); return null; }
+        const p = AccountingEngine.parseDairySupplyVoiceEntry(v);
+        if (!p.dairyName && state.data.dairyCenters?.length) p.dairyName = state.data.dairyCenters[0].name;
+        prevEl.classList.remove("hidden");
+        prevEl.innerHTML = `<div><b>डेयरी:</b> ${escHtml(p.dairyName || "(नाम भरें)")} | <b>प्रकार:</b> ${escHtml(p.milkType)} (${escHtml(p.shift)})</div><div><b>मात्रा:</b> ${fmtL(p.quantity)} × ₹${p.rate} = <b class="text-emerald-700">${fmtRs(p.amount)}</b></div>`;
+        return p;
+      };
+      rawEl.addEventListener("input", upd);
+      document.getElementById("dsv-cancel").addEventListener("click", closeModal);
+      micBtn.addEventListener("click", () => {
+        if (!SR) return;
+        const rec = new SR(); rec.lang = "hi-IN"; rec.interimResults = false;
+        micBtn.textContent = "🔴 सुन रहा है...";
+        rec.onresult = (ev) => { rawEl.value = (ev.results[0]?.[0]?.transcript || "").trim(); upd(); };
+        rec.onend = () => { micBtn.textContent = "🎙️ दोबारा बोलें"; };
+        rec.start();
+      });
+      document.getElementById("dsv-save-btn").addEventListener("click", async () => {
+        const p = upd();
+        if (!p || !p.dairyName || p.quantity <= 0 || p.amount <= 0) {
+          openDairySupplyEntryModal(p ? { date: state.selectedDate, ...p, paid: 0, paymentMode: "acc_cash", note: "Voice Entry" } : null);
+          return;
+        }
+        if (!(state.data.dairyCenters || []).some(c => c.name.toLowerCase() === p.dairyName.toLowerCase())) {
+          await saveDoc("dairyCenters", { name: p.dairyName, mobile: "", openingBalance: 0, cowRate: p.milkType === "गाय" ? p.rate : 45, buffaloRate: p.milkType === "गाय" ? 60 : p.rate });
+        }
+        await saveDoc("dairySupplies", { date: state.selectedDate, shift: p.shift, dairyName: p.dairyName, milkType: p.milkType, quantity: p.quantity, rate: p.rate, fat: "", snf: "", amount: p.amount, paid: 0, due: p.amount, paymentMode: "acc_cash", note: "Voice Entry", slipImage: "" });
+        closeModal();
+      });
+      document.getElementById("dsv-form-btn").addEventListener("click", () => {
+        const p = upd();
+        openDairySupplyEntryModal(p ? { date: state.selectedDate, ...p, paid: 0, paymentMode: "acc_cash", note: "Voice Entry" } : null);
       });
     }
 
