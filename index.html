@@ -728,12 +728,18 @@
       parseDairySlipOCR(text) {
         const raw = String(text || "");
         const norm = raw.replace(/[|]/g, " ");
-        const low = norm.toLowerCase();
 
-        // Date (DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD, DD/MM/YY)
+        // Helper to normalize OCR zero/letter confusions inside numeric tokens (e.g. O01.61 -> 001.61)
+        const cleanNum = (str) => {
+          const s = String(str || "").replace(/[oO]/g, "0").replace(/[lI]/g, "1").replace(/,/g, "").trim();
+          const v = Number(s);
+          return Number.isFinite(v) ? this.round2(v) : 0;
+        };
+
+        // Date (DATE:25/11/26, DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD, DD/MM/YY)
         let date = "";
         const isoM = norm.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-        const dmyM = norm.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+        const dmyM = norm.match(/(?:date\s*[:=\-]?\s*)?(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/i);
         if (isoM) {
           date = `${isoM[1]}-${String(isoM[2]).padStart(2, "0")}-${String(isoM[3]).padStart(2, "0")}`;
         } else if (dmyM) {
@@ -741,28 +747,40 @@
           date = `${yr}-${String(dmyM[2]).padStart(2, "0")}-${String(dmyM[1]).padStart(2, "0")}`;
         }
 
-        // Shift & Milk Type
-        const shift = /\b(?:eve|evening|pm|e)\b|शाम/i.test(norm) ? "शाम" : "सुबह";
-        const milkType = /\b(?:cow|c)\b|गाय/i.test(norm) ? "गाय" : /\b(?:mix)\b|मिक्स/i.test(norm) ? "मिक्स" : "भैंस";
+        // Shift (check TIME:19:00 >= 12 or E/EVE/PM)
+        const timeM = norm.match(/time\s*[:=\-]?\s*(\d{1,2})\s*[:\.]/i);
+        const hr = timeM ? Number(timeM[1]) : -1;
+        const shift = (hr >= 12 || /\b(?:eve|evening|pm|e)\b|शाम/i.test(norm)) ? "शाम" : "सुबह";
 
-        // Numeric field extractors tuned for Indian dairy machine slips
+        // Milk Type (M_TYPE:MIX / COW / BUF)
+        const mTypeM = norm.match(/m[_\s\-]*type\s*[:=\-]?\s*([a-zA-Z]+)/i);
+        const mTypeToken = mTypeM ? mTypeM[1].toLowerCase() : norm.toLowerCase();
+        const milkType = /\b(?:mix)\b|मिक्स/i.test(mTypeToken) ? "मिक्स"
+                       : /\b(?:cow|c)\b|गाय/i.test(mTypeToken) ? "गाय" : "भैंस";
+
         const grabNum = (rx) => {
           const m = norm.match(rx);
-          if (!m) return 0;
-          const v = Number(String(m[1]).replace(/,/g, ""));
-          return Number.isFinite(v) ? this.round2(v) : 0;
+          return m ? cleanNum(m[1]) : 0;
         };
 
-        const fat = grabNum(/(?:fat|फैट)\s*[:=\-]?\s*(\d{1,2}(?:\.\d{1,2})?)/i);
-        const snf = grabNum(/(?:snf|clr|एसएनएफ)\s*[:=\-]?\s*(\d{1,2}(?:\.\d{1,2})?)/i);
-        const quantity = grabNum(/(?:qty|quantity|ltr|liter|litre|wt|weight|milk|मात्रा|दूध)\s*[:=\-]?\s*(\d+(?:\.\d{1,2})?)/i)
-          || grabNum(/(\d+(?:\.\d{1,2})?)\s*(?:ltr|l\b|liter|लीटर)/i);
-        const rate = grabNum(/(?:rate|rt|दर|रेट)\s*[:=\-]?\s*(?:rs\.?|₹)?\s*(\d+(?:\.\d{1,2})?)/i);
-        let amount = grabNum(/(?:amt|amount|total|net\s*amt|राशि|कुल)\s*[:=\-]?\s*(?:rs\.?|₹)?\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)/i);
+        const fat = grabNum(/(?:fat|फैट)\s*[:=\-]?\s*([0-9oO]{1,2}(?:\.[0-9oO]{1,2})?)/i);
+        const snf = grabNum(/(?:snf|clr|एसएनएफ)\s*[:=\-]?\s*([0-9oO]{1,2}(?:\.[0-9oO]{1,2})?)/i);
+
+        // Weight / Quantity (WT:001.61 L, QTY, LTR, MILK)
+        const quantity = grabNum(/(?:wt|weight|qty|quantity|ltr|liter|litre|milk|मात्रा|दूध)\s*[:=\-]?\s*([0-9oO]+(?:\.[0-9oO]{1,3})?)/i)
+          || grabNum(/([0-9oO]+(?:\.[0-9oO]{1,2})?)\s*(?:ltr|l\b|liter|लीटर)/i);
+
+        // Rate per Litre (RT/LT:043.00, RT/L, RATE/L, RATE, RT)
+        const rate = grabNum(/(?:rt\s*\/\s*lt|rt\s*\/\s*l|rate\s*\/\s*lt|rate\s*\/\s*l|rate|rt|दर|रेट)\s*[:=\-]?\s*(?:rs\.?|₹)?\s*([0-9oO]+(?:\.[0-9oO]{1,2})?)/i);
+
+        // Total Amount (RS :00069.23, AMT, AMOUNT, TOTAL)
+        let amount = grabNum(/(?:rs\s*\.?\s*[:=\-]|amt|amount|total|net\s*amt|राशि|कुल)\s*[:=\-]?\s*(?:rs\.?|₹)?\s*([0-9oO,]+(?:\.[0-9oO]{1,2})?)/i);
         if (!amount && quantity > 0 && rate > 0) amount = this.calcLineAmount(quantity, rate, 0);
 
-        const firstLine = norm.split(/\r?\n/).map(l => l.trim()).find(l => l.length >= 3 && !/^\d/.test(l)) || "";
-        return { dairyName: firstLine.slice(0, 36), date, shift, milkType, quantity, fat, snf, rate, amount, raw };
+        const stnM = norm.match(/stn[_\s\-]*name\s*[:=\-]?\s*([^\r\n]+)/i);
+        const firstLine = (stnM ? stnM[1].trim() : "")
+          || norm.split(/\r?\n/).map(l => l.trim()).find(l => l.length >= 3 && !/^\d/.test(l)) || "";
+        return { dairyName: firstLine.slice(0, 40), date, shift, milkType, quantity, fat, snf, rate, amount, raw };
       },
       parseDairySupplyVoiceEntry(transcript) {
         const raw = String(transcript || "").trim();
@@ -2570,6 +2588,54 @@
       });
     }
 
+    function getMilkSaleCustomerNames() {
+      const set = new Set(["Rajkumar Dada"]);
+      (state.data.customers || []).forEach(c => { if (c.name && c.name.trim()) set.add(c.name.trim()); });
+      (state.data.milkSales || []).forEach(s => { if (s.customerName && s.customerName.trim()) set.add(s.customerName.trim()); });
+      return [...set];
+    }
+
+    async function scanMilkSaleParchiFile(file, onProgress) {
+      const dataUrl = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+      // Preprocess image (grayscale + contrast boost) for sharper thermal slip OCR
+      const preCanvas = await new Promise((res) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxW = 1400;
+          const scale = img.width > maxW ? maxW / img.width : 1;
+          const c = document.createElement("canvas");
+          c.width = Math.round(img.width * scale);
+          c.height = Math.round(img.height * scale);
+          const ctx = c.getContext("2d");
+          ctx.drawImage(img, 0, 0, c.width, c.height);
+          const imgData = ctx.getImageData(0, 0, c.width, c.height);
+          const d = imgData.data;
+          for (let i = 0; i < d.length; i += 4) {
+            const g = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+            const boosted = Math.max(0, Math.min(255, (g - 128) * 1.65 + 128));
+            d[i] = d[i + 1] = d[i + 2] = boosted;
+          }
+          ctx.putImageData(imgData, 0, 0);
+          res(c);
+        };
+        img.src = dataUrl;
+      });
+
+      if (typeof Tesseract === "undefined") {
+        throw new Error("OCR इंजन लोड नहीं हुआ — कृपया इंटरनेट चेक करें।");
+      }
+      const res = await Tesseract.recognize(preCanvas, "eng", {
+        logger: m => { if (onProgress && m.status === "recognizing text") onProgress(Math.round((m.progress || 0) * 100)); }
+      });
+      const parsed = AccountingEngine.parseDairySlipOCR(res?.data?.text || "");
+      return { parsed, photoUrl: dataUrl };
+    }
+
     function renderMilkSalesTab(container) {
       const rows = [...state.data.milkSales].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
       const totalL = AccountingEngine.round2(rows.reduce((s, x) => s + (Number(x.quantity) || 0), 0));
@@ -2578,51 +2644,177 @@
       container.innerHTML = `
         <div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
           <div><div class="text-xs text-slate-500">कुल दूध बिक्री (${rows.length} एंट्री)</div><div class="text-lg font-bold text-emerald-700">${fmtL(totalL)} • ${fmtRs(totalAmt)} <span class="text-red-600 text-sm">(बाकी: ${fmtRs(totalDue)})</span></div></div>
-          <button type="button" id="add-sale-btn" class="btn-primary">+ दूध बिक्री जोड़ें</button>
+          <div class="flex flex-wrap gap-2">
+            <label class="btn-secondary text-xs border-teal-400 text-teal-900 bg-teal-50 cursor-pointer inline-flex items-center gap-1.5 font-bold">
+              📸 पर्ची स्कैन (Auto-Fill)
+              <input type="file" id="ms-quick-parchi-inp" accept="image/*" capture="environment" class="hidden" />
+            </label>
+            <button type="button" id="add-sale-btn" class="btn-primary">+ दूध बिक्री जोड़ें</button>
+          </div>
         </div>
         <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto"><table class="data-table"><thead><tr><th>तारीख</th><th>ग्राहक</th><th>प्रकार</th><th>मात्रा × दर</th><th>राशि</th><th>मिला</th><th>बाकी</th><th>मोड</th><th>क्रिया</th></tr></thead><tbody>${rows.length ? rows.map(r => { const due = AccountingEngine.calcRemaining(r.amount, r.paid); return `<tr><td>${escHtml(r.date)}</td><td class="font-bold">${escHtml(r.customerName)}</td><td class="text-xs">${escHtml(r.milkType || "भैंस")}</td><td class="text-xs">${fmtL(r.quantity)} × ₹${r.rate}</td><td class="font-bold text-emerald-700">${fmtRs(r.amount)}</td><td class="text-teal-700 font-semibold">${fmtRs(r.paid)}</td><td class="${due > 0 ? "text-red-600 font-bold" : "text-slate-400"}">${fmtRs(due)}</td><td class="text-xs">${escHtml(accountNameById(r.paymentMode))}</td><td class="whitespace-nowrap"><button type="button" data-edit-ms="${r.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button><button type="button" data-del-ms="${r.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`; }).join("") : `<tr><td colspan="9" class="text-center py-8 text-slate-400">कोई दूध बिक्री दर्ज नहीं है।</td></tr>`}</tbody></table></div>`;
       document.getElementById("add-sale-btn").addEventListener("click", () => openMilkSaleModal());
+      document.getElementById("ms-quick-parchi-inp")?.addEventListener("change", async (e) => {
+        const f = e.target.files?.[0];
+        if (!f) return;
+        showToast("📸 पर्ची से Date, Weight (WT) और Rate (RT/LT) पढ़ा जा रहा है...");
+        try {
+          const { parsed, photoUrl } = await scanMilkSaleParchiFile(f);
+          const noteParts = [];
+          if (parsed.fat) noteParts.push(`FAT:${parsed.fat}`);
+          if (parsed.snf) noteParts.push(`SNF:${parsed.snf}`);
+          if (parsed.shift) noteParts.push(parsed.shift);
+          if (parsed.dairyName) noteParts.push(parsed.dairyName);
+          openMilkSaleModal(null, {
+            date: parsed.date || state.selectedDate,
+            customerName: "Rajkumar Dada",
+            milkType: parsed.milkType || "मिक्स",
+            quantity: parsed.quantity || "",
+            rate: parsed.rate || "",
+            amount: parsed.amount || 0,
+            note: noteParts.join(" | "),
+            slipPhoto: photoUrl
+          });
+          showToast("✅ पर्ची से Date, Weight और Rate भर दिया गया! जांचकर सेव करें।");
+        } catch (err) {
+          showToast("पर्ची पढ़ने में समस्या: " + (err?.message || "त्रुटि"), "error");
+          openMilkSaleModal();
+        }
+      });
       container.querySelectorAll("[data-edit-ms]").forEach(b => b.addEventListener("click", () => { const it = state.data.milkSales.find(x => x.id === b.dataset.editMs); if (it) openMilkSaleModal(it); }));
       container.querySelectorAll("[data-del-ms]").forEach(b => b.addEventListener("click", () => deleteDocById("milkSales", b.dataset.delMs, "दूध बिक्री")));
     }
 
-    function openMilkSaleModal(existing = null) {
+    function openMilkSaleModal(existing = null, prefill = null) {
+      const src = existing || prefill || {};
       const custs = state.data.customers, accs = getAccountOptions();
-      openModal(existing ? "दूध बिक्री संपादित करें" : "दूध बिक्री जोड़ें", `
+      const custNames = getMilkSaleCustomerNames();
+      const initialCust = (src.customerName && src.customerName.trim()) ? src.customerName.trim() : "Rajkumar Dada";
+      if (!custNames.includes(initialCust)) custNames.push(initialCust);
+
+      openModal(existing ? "दूध बिक्री संपादित करें" : "दूध बिक्री जोड़ें (पर्ची ऑटो-फिल सहित)", `
         <form id="ms-form" class="space-y-3">
+          ${!existing ? `
+            <div class="bg-teal-50 border border-teal-200 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div>
+                <div class="font-bold text-teal-900">📸 पर्ची से ऑटो-फिल (Date, WT, RT/LT)</div>
+                <div id="ms-ocr-status" class="text-[11px] text-teal-700">${prefill ? "✅ पर्ची का डेटा भर दिया गया है — नीचे जांचें।" : "दूध की पर्ची की फोटो चुनें, तारीख, वजन और रेट अपने आप भर जाएगा।"}</div>
+              </div>
+              <label class="btn-primary text-xs py-1.5 px-3 cursor-pointer shrink-0">
+                📷 पर्ची चुनें
+                <input type="file" id="ms-modal-parchi-inp" accept="image/*" class="hidden" />
+              </label>
+            </div>` : ""}
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="block text-xs font-bold mb-1">तारीख*</label><input type="date" id="ms-date" value="${existing?.date || state.selectedDate}" required class="input-field" /></div>
-            <div><label class="block text-xs font-bold mb-1">दूध प्रकार</label><select id="ms-type" class="input-field">${["भैंस", "गाय", "मिक्स"].map(t => `<option value="${t}" ${(existing?.milkType || "भैंस") === t ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+            <div><label class="block text-xs font-bold mb-1">तारीख (DATE)*</label><input type="date" id="ms-date" value="${src.date || state.selectedDate}" required class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">दूध प्रकार</label><select id="ms-type" class="input-field">${["भैंस", "गाय", "मिक्स"].map(t => `<option value="${t}" ${(src.milkType || "मिक्स") === t ? "selected" : ""}>${t}</option>`).join("")}</select></div>
           </div>
-          <div><label class="block text-xs font-bold mb-1">ग्राहक का नाम*</label><input type="text" list="cust-dl" id="ms-cust" value="${escHtml(existing?.customerName || "")}" required class="input-field" /><datalist id="cust-dl">${custs.map(c => `<option value="${escHtml(c.name)}"></option>`).join("")}</datalist></div>
+          <div class="space-y-2">
+            <label class="block text-xs font-bold">ग्राहक का नाम* (डिफ़ॉल्ट: Rajkumar Dada — नए नाम अपने आप जुड़ते जाएंगे)</label>
+            <select id="ms-cust-sel" class="input-field font-bold">
+              ${custNames.map(name => `<option value="${escHtml(name)}" ${name === initialCust ? "selected" : ""}>${escHtml(name)}</option>`).join("")}
+              <option value="__NEW__">➕ नया ग्राहक जोड़ें (लिस्ट में सेव होगा)</option>
+            </select>
+            <input type="text" id="ms-cust-new" placeholder="नए ग्राहक का नाम लिखें (यह अपने आप ड्रॉपडाउन में जुड़ जाएगा)..." class="hidden input-field border-teal-400 bg-teal-50/40" />
+          </div>
           <div class="grid grid-cols-3 gap-2">
-            <div><label class="block text-xs font-bold mb-1">मात्रा (L)*</label><input type="number" step="any" min="0.01" id="ms-qty" value="${existing?.quantity ?? ""}" required class="input-field" /></div>
-            <div><label class="block text-xs font-bold mb-1">दर (₹/L)*</label><input type="number" step="any" min="0.01" id="ms-rate" value="${existing?.rate ?? ""}" required class="input-field" /></div>
-            <div><label class="block text-xs font-bold mb-1">कुल राशि (₹)</label><input type="number" id="ms-amt" value="${existing?.amount ?? 0}" readonly class="input-field bg-slate-100 font-bold text-emerald-700" /></div>
+            <div><label class="block text-xs font-bold mb-1">मात्रा / WT (L)*</label><input type="number" step="any" min="0.01" id="ms-qty" value="${src.quantity ?? ""}" required class="input-field font-bold" /></div>
+            <div><label class="block text-xs font-bold mb-1">दर / RT/LT (₹)*</label><input type="number" step="any" min="0.01" id="ms-rate" value="${src.rate ?? ""}" required class="input-field font-bold" /></div>
+            <div><label class="block text-xs font-bold mb-1">कुल राशि (₹)</label><input type="number" step="any" id="ms-amt" value="${src.amount ?? 0}" readonly class="input-field bg-slate-100 font-bold text-emerald-700" /></div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div><label class="block text-xs font-bold mb-1">प्राप्त (₹)</label><input type="number" step="any" min="0" id="ms-paid" value="${existing?.paid ?? 0}" class="input-field" /></div>
-            <div><label class="block text-xs font-bold mb-1">बाकी (₹)</label><input type="number" id="ms-due" value="${existing ? AccountingEngine.calcRemaining(existing.amount, existing.paid) : 0}" readonly class="input-field bg-slate-100 font-bold text-red-600" /></div>
-            <div><label class="block text-xs font-bold mb-1">माध्यम</label><select id="ms-mode" class="input-field">${accs.map(a => `<option value="${a.id}" ${existing?.paymentMode === a.id ? "selected" : ""}>${escHtml(a.name)}</option>`).join("")}</select></div>
+            <div><label class="block text-xs font-bold mb-1">प्राप्त (₹)</label><input type="number" step="any" min="0" id="ms-paid" value="${src.paid ?? 0}" class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">बाकी (₹)</label><input type="number" step="any" id="ms-due" value="${src.amount ? AccountingEngine.calcRemaining(src.amount, src.paid || 0) : 0}" readonly class="input-field bg-slate-100 font-bold text-red-600" /></div>
+            <div><label class="block text-xs font-bold mb-1">माध्यम</label><select id="ms-mode" class="input-field">${accs.map(a => `<option value="${a.id}" ${src.paymentMode === a.id ? "selected" : ""}>${escHtml(a.name)}</option>`).join("")}</select></div>
           </div>
-          <div><label class="block text-xs font-bold mb-1">नोट</label><input type="text" id="ms-note" value="${escHtml(existing?.note || "")}" class="input-field" /></div>
-          <div class="flex justify-end gap-2 pt-2"><button type="button" id="ms-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">सेव करें</button></div>
+          <div><label class="block text-xs font-bold mb-1">नोट (FAT / SNF / केंद्र)</label><input type="text" id="ms-note" value="${escHtml(src.note || "")}" class="input-field" /></div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="ms-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">💾 सेव करें</button></div>
         </form>`);
-      const recalc = () => { const amt = AccountingEngine.calcLineAmount(document.getElementById("ms-qty").value, document.getElementById("ms-rate").value, 0); document.getElementById("ms-amt").value = amt; document.getElementById("ms-due").value = AccountingEngine.calcRemaining(amt, document.getElementById("ms-paid").value); };
-      if (!existing) document.getElementById("ms-cust").addEventListener("change", (e) => { const c = custs.find(x => x.name.toLowerCase() === e.target.value.trim().toLowerCase()); if (c) { if (c.defaultQty) document.getElementById("ms-qty").value = c.defaultQty; if (c.defaultRate) document.getElementById("ms-rate").value = c.defaultRate; recalc(); } });
+
+      const custSel = document.getElementById("ms-cust-sel");
+      const custNew = document.getElementById("ms-cust-new");
+      const recalc = () => {
+        const amt = AccountingEngine.calcLineAmount(document.getElementById("ms-qty").value, document.getElementById("ms-rate").value, 0);
+        document.getElementById("ms-amt").value = amt;
+        document.getElementById("ms-due").value = AccountingEngine.calcRemaining(amt, document.getElementById("ms-paid").value);
+      };
+      recalc();
+
+      custSel.addEventListener("change", () => {
+        if (custSel.value === "__NEW__") {
+          custNew.classList.remove("hidden");
+          custNew.required = true;
+          custNew.focus();
+        } else {
+          custNew.classList.add("hidden");
+          custNew.required = false;
+          if (!existing && !prefill) {
+            const c = custs.find(x => x.name.toLowerCase() === custSel.value.trim().toLowerCase());
+            if (c) {
+              if (c.defaultQty) document.getElementById("ms-qty").value = c.defaultQty;
+              if (c.defaultRate) document.getElementById("ms-rate").value = c.defaultRate;
+              recalc();
+            }
+          }
+        }
+      });
+
+      document.getElementById("ms-modal-parchi-inp")?.addEventListener("change", async (e) => {
+        const f = e.target.files?.[0];
+        if (!f) return;
+        const stEl = document.getElementById("ms-ocr-status");
+        if (stEl) stEl.textContent = "⏳ पर्ची पढ़ी जा रही है (0%)...";
+        try {
+          const { parsed } = await scanMilkSaleParchiFile(f, pct => {
+            if (stEl) stEl.textContent = `⏳ पर्ची पढ़ी जा रही है (${pct}%)...`;
+          });
+          if (parsed.date) document.getElementById("ms-date").value = parsed.date;
+          if (parsed.milkType) document.getElementById("ms-type").value = parsed.milkType;
+          if (parsed.quantity) document.getElementById("ms-qty").value = parsed.quantity;
+          if (parsed.rate) document.getElementById("ms-rate").value = parsed.rate;
+          const noteParts = [];
+          if (parsed.fat) noteParts.push(`FAT:${parsed.fat}`);
+          if (parsed.snf) noteParts.push(`SNF:${parsed.snf}`);
+          if (parsed.shift) noteParts.push(parsed.shift);
+          if (parsed.dairyName) noteParts.push(parsed.dairyName);
+          if (noteParts.length) document.getElementById("ms-note").value = noteParts.join(" | ");
+          recalc();
+          if (stEl) stEl.textContent = `✅ पढ़ लिया: Date ${parsed.date || "-"}, WT ${parsed.quantity || 0} L, RT/LT ₹${parsed.rate || 0}`;
+          showToast("✅ पर्ची से Date, Weight और Rate भर दिया गया!");
+        } catch (err) {
+          if (stEl) stEl.textContent = "⚠️ पर्ची साफ नहीं पढ़ी गई, कृपया हाथ से जांचें।";
+          showToast("पर्ची पढ़ने में समस्या: " + (err?.message || ""), "error");
+        }
+      });
+
       ["ms-qty", "ms-rate", "ms-paid"].forEach(id => document.getElementById(id).addEventListener("input", recalc));
       document.getElementById("ms-cancel").addEventListener("click", closeModal);
       document.getElementById("ms-form").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const payload = { date: document.getElementById("ms-date").value, customerName: document.getElementById("ms-cust").value.trim(), milkType: document.getElementById("ms-type").value, quantity: AccountingEngine.round2(document.getElementById("ms-qty").value), rate: AccountingEngine.round2(document.getElementById("ms-rate").value), paid: AccountingEngine.round2(document.getElementById("ms-paid").value || 0), paymentMode: document.getElementById("ms-mode").value, note: document.getElementById("ms-note").value.trim() };
+        const chosenCust = custSel.value === "__NEW__" ? custNew.value.trim() : custSel.value.trim();
+        const payload = {
+          date: document.getElementById("ms-date").value,
+          customerName: chosenCust,
+          milkType: document.getElementById("ms-type").value,
+          quantity: AccountingEngine.round2(document.getElementById("ms-qty").value),
+          rate: AccountingEngine.round2(document.getElementById("ms-rate").value),
+          paid: AccountingEngine.round2(document.getElementById("ms-paid").value || 0),
+          paymentMode: document.getElementById("ms-mode").value,
+          note: document.getElementById("ms-note").value.trim()
+        };
         payload.amount = AccountingEngine.calcLineAmount(payload.quantity, payload.rate, 0);
         payload.due = AccountingEngine.calcRemaining(payload.amount, payload.paid);
         const err = AccountingEngine.validateEntry({ date: payload.date, amount: payload.amount, requiredFields: [{ label: "ग्राहक का नाम", value: payload.customerName }] });
         if (err) { showToast(err, "error"); return; }
+
+        // Automatically add any new customer (including Rajkumar Dada) to state.data.customers so it stays in dropdown!
+        const existsCust = (state.data.customers || []).some(c => (c.name || "").trim().toLowerCase() === chosenCust.toLowerCase());
+        if (!existsCust && chosenCust) {
+          await saveDoc("customers", { name: chosenCust, phone: "", address: "", defaultQty: payload.quantity, defaultRate: payload.rate, notes: "दूध बिक्री से स्वतः जोड़ा गया" });
+        }
         if (await saveDoc("milkSales", payload, existing?.id || null)) closeModal();
       });
     }
-
     function renderMilkPurchaseTab(container) {
       const rows = [...state.data.milkPurchases].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
       const totalL = AccountingEngine.round2(rows.reduce((s, x) => s + (Number(x.quantity) || 0), 0));
