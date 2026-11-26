@@ -910,6 +910,7 @@
       diaryDraftAudio: null,
       diaryDraftPhoto: null,
       diaryDraftVideo: null,
+      diaryDraftFiles: null,
       selectedDate: todayStr(),
       selectedMonth: todayStr().slice(0, 7),
       selectedYear: todayStr().slice(0, 4),
@@ -5738,6 +5739,7 @@
       state.diaryDraftAudio = null;
       state.diaryDraftPhoto = null;
       state.diaryDraftVideo = null;
+      state.diaryDraftFiles = null;
       if (!silent) showToast("🔒 निजी डायरी तुरंत लॉक हो गई।");
     }
 
@@ -5754,7 +5756,6 @@
       if (!diarySessionMasterKey) return false;
       const encPayload = await DiaryVaultCrypto.encryptJSON(diarySessionMasterKey, diaryDecryptedNotes);
       await DiaryVaultIDB.set("payload", encPayload);
-      // Clear any old unencrypted personalDiary from localStorage so zero plaintext stays on phone!
       if (Array.isArray(state.data.personalDiary) && state.data.personalDiary.length > 0) {
         state.data.personalDiary = [];
         persistLocalDB();
@@ -5762,40 +5763,62 @@
       return true;
     }
 
-    async function downloadDiaryPDF(title, subtitle, bodyHtml) {
-      const safeName = `MahaHisab_Diary_${todayStr()}.pdf`;
-      const wrapper = document.createElement("div");
-      wrapper.style.cssText = "position:fixed;left:-9999px;top:0;width:760px;background:#ffffff;color:#0f172a;padding:24px;font-family:'Noto Sans Devanagari',sans-serif;";
-      wrapper.innerHTML = `
-        <div style="border-bottom:2px solid #0f766e;padding-bottom:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <div style="font-size:18px;font-weight:800;color:#0f766e;">${escHtml(title)}</div>
-            <div style="font-size:12px;color:#475569;margin-top:2px;">${escHtml(subtitle)}</div>
+    // FIXED: On-screen visible PDF renderer so Android Chrome html2canvas NEVER produces blank pages!
+    async function downloadDiaryPDF(title, subtitle, bodyHtml, customFilename = null) {
+      const safeName = customFilename || `MahaHisab_Diary_${todayStr()}.pdf`;
+      const overlay = document.createElement("div");
+      overlay.style.cssText = "position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,0.82);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow:auto;padding:16px;";
+      overlay.innerHTML = `
+        <div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:10px;background:#0f766e;padding:8px 16px;border-radius:999px;">📄 PDF तैयार हो रही है — कृपया 2 सेकंड रुकें...</div>
+        <div id="maha-pdf-render-sheet" style="width:740px;max-width:740px;background:#ffffff;color:#0f172a;padding:24px;border-radius:8px;font-family:'Noto Sans Devanagari',Arial,sans-serif;box-sizing:border-box;">
+          <div style="border-bottom:2px solid #0f766e;padding-bottom:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:18px;font-weight:800;color:#0f766e;">${escHtml(title)}</div>
+              <div style="font-size:12px;color:#475569;margin-top:2px;">${escHtml(subtitle)}</div>
+            </div>
+            <div style="text-align:right;font-size:10px;color:#64748b;">
+              <div style="font-weight:700;color:#0f172a;">MahaIndustries</div>
+              <div>निजी डायरी (Encrypted Vault)</div>
+            </div>
           </div>
-          <div style="text-align:right;font-size:10px;color:#64748b;">
-            <div style="font-weight:700;color:#0f172a;">MahaIndustries</div>
-            <div>निजी डायरी (Encrypted Vault)</div>
-          </div>
-        </div>
-        ${bodyHtml}`;
-      document.body.appendChild(wrapper);
+          ${bodyHtml}
+        </div>`;
+      document.body.appendChild(overlay);
+      const sheet = overlay.querySelector("#maha-pdf-render-sheet");
+
       try {
-        showToast("📄 PDF तैयार हो रही है...");
-        const blob = await generatePDFBlobFromElement(wrapper, safeName);
-        if (blob) {
+        // Wait for all embedded images inside the PDF sheet to fully load & decode
+        const imgs = [...sheet.querySelectorAll("img")];
+        await Promise.all(imgs.map(img => new Promise(res => {
+          if (img.complete && img.naturalWidth > 0) return res();
+          img.onload = () => res();
+          img.onerror = () => res();
+          setTimeout(res, 2500);
+        })));
+        await new Promise(r => setTimeout(r, 250));
+
+        if (typeof html2pdf !== "undefined") {
+          const blob = await html2pdf().set({
+            margin: [8, 8, 8, 8],
+            filename: safeName,
+            image: { type: "jpeg", quality: 0.95 },
+            html2canvas: { scale: 2, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", scrollX: 0, scrollY: 0, logging: false },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+          }).from(sheet).outputPdf("blob");
+
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
           a.download = safeName;
           document.body.appendChild(a);
           a.click();
-          setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 1500);
-          showToast("✅ डायरी PDF डाउनलोड हो गई!");
+          setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 2000);
+          showToast("✅ PDF (फोटो व टेक्स्ट सहित) डाउनलोड हो गई!");
         } else {
           const w = window.open("", "_blank", "width=850,height=700");
           if (w && w.document) {
             w.document.open();
-            w.document.write(`<!DOCTYPE html><html lang="hi"><head><meta charset="utf-8"><title>${escHtml(title)}</title></head><body style="font-family:sans-serif;padding:20px;">${wrapper.innerHTML}<script>setTimeout(()=>window.print(),400)<\/script></body></html>`);
+            w.document.write(`<!DOCTYPE html><html lang="hi"><head><meta charset="utf-8"><title>${escHtml(title)}</title></head><body style="font-family:sans-serif;padding:20px;background:#fff;">${sheet.innerHTML}<script>setTimeout(()=>window.print(),400)<\/script></body></html>`);
             w.document.close();
           } else {
             showToast("PDF लाइब्रेरी लोड नहीं हुई — कृपया इंटरनेट चेक करें।", "error");
@@ -5804,10 +5827,131 @@
       } catch (err) {
         showToast("PDF बनाने में समस्या आई: " + (err?.message || "त्रुटि"), "error");
       } finally {
-        wrapper.remove();
+        overlay.remove();
       }
     }
     window.generateAndPrintPDF = downloadDiaryPDF;
+
+    // Convert ANY uploaded file (Image, TXT, CSV, JSON, HTML, PDF, or binary metadata) to a real downloadable PDF
+    async function convertAnyFileToPDF(fileObj) {
+      const name = fileObj.name || "Document";
+      const type = (fileObj.type || "").toLowerCase();
+      const dataUrl = fileObj.dataUrl || "";
+      const outName = `${name.replace(/\.[^.]+$/, "")}.pdf`;
+
+      if (type === "application/pdf" || name.toLowerCase().endsWith(".pdf")) {
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = outName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        showToast("✅ PDF फ़ाइल डाउनलोड हो गई!");
+        return;
+      }
+
+      if (type.startsWith("image/") || /\.(png|jpe?g|webp|gif|bmp)$/i.test(name)) {
+        const body = `<div style="text-align:center;"><img src="${dataUrl}" style="max-width:100%;max-height:920px;border-radius:6px;border:1px solid #e2e8f0;" /></div>`;
+        await downloadDiaryPDF(name, `इमेज से PDF कनवर्ट • ${todayStr()}`, body, outName);
+        return;
+      }
+
+      // Text-readable files: txt, csv, json, md, log, xml, html, js, css
+      if (type.startsWith("text/") || /\.(txt|csv|json|md|log|xml|html|js|css)$/i.test(name)) {
+        let decoded = "";
+        try {
+          const base64 = dataUrl.split(",")[1] || "";
+          const bin = atob(base64);
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          decoded = new TextDecoder("utf-8").decode(bytes);
+        } catch (e) { decoded = "(फ़ाइल टेक्स्ट पढ़ा नहीं जा सका)"; }
+        const body = `<pre style="white-space:pre-wrap;word-break:break-word;font-size:12px;line-height:1.6;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:14px;">${escHtml(decoded.slice(0, 40000))}</pre>`;
+        await downloadDiaryPDF(name, `टेक्स्ट फ़ाइल से PDF • ${todayStr()}`, body, outName);
+        return;
+      }
+
+      // Excel (.xlsx / .xls) via bundled SheetJS if available
+      if (/\.(xlsx|xls)$/i.test(name) && typeof XLSX !== "undefined") {
+        try {
+          const base64 = dataUrl.split(",")[1] || "";
+          const wb = XLSX.read(base64, { type: "base64" });
+          const sheetHtml = wb.SheetNames.map(sn => {
+            const tbl = XLSX.utils.sheet_to_html(wb.Sheets[sn]);
+            return `<h4 style="font-size:13px;font-weight:700;color:#0f766e;margin:10px 0 6px;">शीट: ${escHtml(sn)}</h4><div style="font-size:11px;overflow:hidden;">${tbl}</div>`;
+          }).join("");
+          await downloadDiaryPDF(name, `Excel से PDF • ${todayStr()}`, sheetHtml, outName);
+          return;
+        } catch (e) {}
+      }
+
+      // Other binary documents (DOCX, PPTX, ZIP, Video, Audio, etc.) -> Formatted PDF File Summary Sheet
+      const sizeKB = Math.max(1, Math.round((fileObj.size || 0) / 1024));
+      const body = `
+        <div style="border:1px solid #cbd5e1;border-radius:10px;padding:18px;background:#f8fafc;font-size:13px;line-height:1.8;">
+          <div><b>फ़ाइल का नाम:</b> ${escHtml(name)}</div>
+          <div><b>फ़ाइल प्रकार (Type):</b> ${escHtml(type || "अन्य फ़ाइल")}</div>
+          <div><b>आकार (Size):</b> ${sizeKB} KB</div>
+          <div><b>तारीख:</b> ${todayStr()}</div>
+          <div style="margin-top:10px;color:#475569;font-size:12px;">यह फ़ाइल आपकी MahaIndustries Encrypted डायरी में सुरक्षित संलग्न है। मूल फ़ाइल डाउनलोड करने के लिए डायरी कार्ड पर '⬇️ डाउनलोड' बटन दबाएं।</div>
+        </div>`;
+      await downloadDiaryPDF(name, `फ़ाइल विवरण PDF • ${todayStr()}`, body, outName);
+    }
+
+    function openAnyFileToPdfConverterModal() {
+      openModal("📄 किसी भी फ़ाइल से PDF बनाएं (Any File → PDF)", `
+        <div class="space-y-3 text-xs">
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 text-blue-950">
+            आप अपने फोन से <b>फोटो (1 या कई), टेक्स्ट, CSV, Excel या कोई भी फ़ाइल</b> चुनकर तुरंत असली <b>PDF</b> बनाकर डाउनलोड कर सकते हैं।
+          </div>
+          <label class="btn-primary w-full flex items-center justify-center gap-2 cursor-pointer py-3">
+            📂 फ़ाइल(ें) चुनें (फोटो / टेक्स्ट / Excel / कोई भी)
+            <input type="file" id="conv-any-files-inp" multiple accept="*/*" class="hidden" />
+          </label>
+          <div id="conv-file-list" class="text-slate-600 text-center">अभी कोई फ़ाइल नहीं चुनी गई है।</div>
+          <button type="button" id="conv-make-pdf-btn" class="hidden btn-primary w-full bg-emerald-700 hover:bg-emerald-800 py-2.5">⬇️ एक साथ PDF बनाकर डाउनलोड करें</button>
+        </div>`);
+
+      let picked = [];
+      document.getElementById("conv-any-files-inp")?.addEventListener("change", async e => {
+        const files = [...(e.target.files || [])];
+        if (!files.length) return;
+        picked = [];
+        for (const f of files) {
+          const dataUrl = await new Promise(res => {
+            const r = new FileReader();
+            r.onload = () => res(r.result);
+            r.readAsDataURL(f);
+          });
+          picked.push({ name: f.name, type: f.type, size: f.size, dataUrl });
+        }
+        document.getElementById("conv-file-list").innerHTML = `<div class="text-left bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1">${picked.map((p, i) => `<div>${i + 1}. <b>${escHtml(p.name)}</b> (${Math.max(1, Math.round(p.size / 1024))} KB)</div>`).join("")}</div>`;
+        document.getElementById("conv-make-pdf-btn").classList.remove("hidden");
+      });
+
+      document.getElementById("conv-make-pdf-btn")?.addEventListener("click", async () => {
+        if (!picked.length) return;
+        closeModal(true);
+        if (picked.length === 1) {
+          await convertAnyFileToPDF(picked[0]);
+          return;
+        }
+        // Combine multiple files (especially multiple photos/text) into one multi-page PDF
+        let combinedHtml = "";
+        for (const f of picked) {
+          if ((f.type || "").startsWith("image/")) {
+            combinedHtml += `<div style="margin-bottom:16px;page-break-inside:avoid;text-align:center;"><div style="font-size:11px;color:#475569;margin-bottom:4px;font-weight:700;">${escHtml(f.name)}</div><img src="${f.dataUrl}" style="max-width:100%;max-height:820px;border-radius:6px;border:1px solid #e2e8f0;" /></div>`;
+          } else if ((f.type || "").startsWith("text/") || /\.(txt|csv|json|md)$/i.test(f.name)) {
+            let txt = "";
+            try { txt = new TextDecoder("utf-8").decode(DiaryVaultCrypto.b64Dec(f.dataUrl.split(",")[1] || "")); } catch (e) {}
+            combinedHtml += `<div style="margin-bottom:16px;page-break-inside:avoid;"><div style="font-weight:700;font-size:12px;color:#0f766e;margin-bottom:4px;">${escHtml(f.name)}</div><pre style="white-space:pre-wrap;font-size:11px;background:#f8fafc;border:1px solid #cbd5e1;padding:10px;border-radius:6px;">${escHtml(txt.slice(0, 15000))}</pre></div>`;
+          } else {
+            combinedHtml += `<div style="margin-bottom:12px;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:12px;">📎 <b>${escHtml(f.name)}</b> (${Math.max(1, Math.round(f.size / 1024))} KB)</div>`;
+          }
+        }
+        await downloadDiaryPDF(`संयुक्त फ़ाइल PDF (${picked.length} फ़ाइलें)`, `तारीख: ${todayStr()}`, combinedHtml, `MahaHisab_Combined_${todayStr()}.pdf`);
+      });
+    }
 
     async function exportEncryptedVaultFile() {
       const meta = await DiaryVaultIDB.get("meta");
@@ -5861,16 +6005,21 @@
         return showToast("इस ब्राउज़र/फोन में फिंगरप्रिंट/फेस अनलॉक (WebAuthn) उपलब्ध नहीं है।", "error");
       }
       if (!diarySessionMasterKey) return showToast("पहले पासवर्ड से डायरी अनलॉक करें।", "error");
+      if (window.location.protocol !== "https:" && window.location.hostname !== "localhost") {
+        return showToast("फिंगरप्रिंट/फेस अनलॉक सिर्फ HTTPS (GitHub Pages लिंक) पर काम करता है।", "error");
+      }
       try {
         const challenge = DiaryVaultCrypto.randBytes(32);
         const userId = DiaryVaultCrypto.randBytes(16);
+        const rpObj = { name: "MahaIndustries Encrypted Diary" };
+        if (window.location.hostname) rpObj.id = window.location.hostname;
         const cred = await navigator.credentials.create({
           publicKey: {
             challenge,
-            rp: { name: "MahaIndustries Encrypted Diary" },
+            rp: rpObj,
             user: { id: userId, name: "owner@mahaindustries", displayName: "Diary Owner" },
             pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
-            authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+            authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required", residentKey: "preferred" },
             timeout: 60000
           }
         });
@@ -5884,25 +6033,25 @@
         showToast("✅ फिंगरप्रिंट / फेस अनलॉक चालू हो गया!");
         renderCurrentView();
       } catch (e) {
-        showToast("फिंगरप्रिंट/फेस रजिस्टर नहीं हो सका (HTTPS वेबसाइट पर Android Chrome/iOS में चलता है)।", "error");
+        showToast("फिंगरप्रिंट/फेस सेट नहीं हो सका — सुनिश्चित करें कि फोन में Screen Lock चालू है।", "error");
       }
     }
 
     async function unlockDiaryWithBiometric(meta) {
       if (!meta?.biometricCredId || !meta?.biometricWrapped) {
-        return showToast("पहले डायरी सेटिंग्स में जाकर फिंगरप्रिंट/फेस चालू करें।", "error");
+        return showToast("पहले डायरी खोलकर '🔐 लॉक/फिंगर सेटिंग' से फिंगरप्रिंट/फेस चालू करें।", "error");
       }
       const bioSecret = localStorage.getItem("maha_diary_bio_token_v2");
       if (!bioSecret) return showToast("बायोमेट्रिक टोकन नहीं मिला, कृपया पासवर्ड से खोलें।", "error");
       try {
-        await navigator.credentials.get({
-          publicKey: {
-            challenge: DiaryVaultCrypto.randBytes(32),
-            allowCredentials: [{ id: DiaryVaultCrypto.b64Dec(meta.biometricCredId), type: "public-key" }],
-            userVerification: "required",
-            timeout: 60000
-          }
-        });
+        const pubOpts = {
+          challenge: DiaryVaultCrypto.randBytes(32),
+          allowCredentials: [{ id: DiaryVaultCrypto.b64Dec(meta.biometricCredId), type: "public-key" }],
+          userVerification: "required",
+          timeout: 60000
+        };
+        if (window.location.hostname) pubOpts.rpId = window.location.hostname;
+        await navigator.credentials.get({ publicKey: pubOpts });
         const mk = await DiaryVaultCrypto.unwrapMasterKey(meta.biometricWrapped, bioSecret);
         const payload = await DiaryVaultIDB.get("payload");
         diarySessionMasterKey = mk;
@@ -5913,6 +6062,36 @@
       } catch (e) {
         showToast("फिंगरप्रिंट / फेस सत्यापन रद्द या विफल हुआ।", "error");
       }
+    }
+
+    function openDiarySecuritySettingsModal(meta) {
+      openModal("🔐 डायरी पासवर्ड, फिंगरप्रिंट व फेस सेटिंग्स", `
+        <div class="space-y-4 text-xs">
+          <div class="bg-teal-50 border border-teal-200 rounded-xl p-3 space-y-2">
+            <div class="font-bold text-teal-950">👆 फिंगरप्रिंट और फेस अनलॉक (Biometric)</div>
+            <div class="text-slate-600">${meta.biometricCredId ? "✅ फिंगरप्रिंट / फेस अनलॉक पहले से चालू है।" : "फोन का फिंगरप्रिंट सेंसर या फेस अनलॉक जोड़ें।"}</div>
+            <button type="button" id="sec-enable-bio-btn" class="btn-primary w-full bg-teal-700 hover:bg-teal-800">${meta.biometricCredId ? "🔄 फिंगरप्रिंट / फेस दोबारा रजिस्टर करें" : "👆 फिंगरप्रिंट / फेस अनलॉक चालू करें"}</button>
+          </div>
+          <div class="bg-purple-50 border border-purple-200 rounded-xl p-3 space-y-2">
+            <div class="font-bold text-purple-950">🔑 डायरी पासवर्ड / PIN बदलें</div>
+            <input type="password" id="sec-new-pass-inp" placeholder="नया पासवर्ड (कम से कम 4 अक्षर/अंक)" class="input-field py-2 text-xs font-bold" />
+            <button type="button" id="sec-change-pass-btn" class="btn-primary w-full bg-purple-700 hover:bg-purple-800">💾 नया पासवर्ड सेव करें</button>
+          </div>
+        </div>`);
+
+      document.getElementById("sec-enable-bio-btn")?.addEventListener("click", async () => {
+        closeModal(true);
+        await enableDiaryBiometric(meta);
+      });
+      document.getElementById("sec-change-pass-btn")?.addEventListener("click", async () => {
+        const np = (document.getElementById("sec-new-pass-inp")?.value || "").trim();
+        if (np.length < 4) return showToast("कम से कम 4 अक्षर/अंक का पासवर्ड डालें।", "error");
+        meta.passWrapped = await DiaryVaultCrypto.wrapMasterKey(diarySessionMasterKey, np);
+        await DiaryVaultIDB.set("meta", meta);
+        diaryVaultMetaCache = meta;
+        closeModal(true);
+        showToast("✅ नया डायरी पासवर्ड सेव हो गया!");
+      });
     }
 
     function openDiaryOfflineForgotModal(meta) {
@@ -5971,7 +6150,7 @@
       const meta = await DiaryVaultIDB.get("meta");
       diaryVaultMetaCache = meta;
 
-      // FIRST-TIME ENCRYPTED VAULT SETUP SCREEN
+      // FIRST-TIME ENCRYPTED VAULT SETUP SCREEN (PASSWORD + FINGERPRINT/FACE + OFFLINE RECOVERY)
       if (!meta || !meta.passWrapped) {
         const legacyCount = (state.data.personalDiary || []).length;
         const genCode = DiaryVaultCrypto.makeRecoveryCode();
@@ -5979,8 +6158,8 @@
           <div class="max-w-lg mx-auto bg-white rounded-2xl border border-purple-200 p-5 space-y-4 shadow-sm">
             <div class="text-center space-y-1">
               <div class="text-4xl">🔐</div>
-              <h3 class="font-bold text-lg text-purple-950">निजी डायरी — AES-256 Encrypted Vault सेटअप</h3>
-              <p class="text-xs text-slate-500">आपकी पूरी डायरी (टेक्स्ट, फोटो, आवाज़ और वीडियो) फोन में <b>एन्क्रिप्टेड फॉर्मेट</b> में सेव होगी। कोई हिडन फ़ोल्डर खोलकर भी इसे पढ़ नहीं पाएगा।</p>
+              <h3 class="font-bold text-lg text-purple-950">निजी डायरी — पासवर्ड, फिंगरप्रिंट व फेस लॉक सेटअप</h3>
+              <p class="text-xs text-slate-500">आपकी पूरी डायरी (टेक्स्ट, फोटो, वीडियो और सभी फ़ाइलें) फोन में <b>AES-256 एन्क्रिप्टेड फॉर्मेट</b> में सेव होंगी।</p>
               ${legacyCount ? `<div class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg py-1 px-2">आपके पुराने ${legacyCount} डायरी पन्ने अपने आप एन्क्रिप्ट होकर सुरक्षित हो जाएंगे।</div>` : ""}
             </div>
 
@@ -5990,6 +6169,10 @@
                 <div><label class="block font-bold mb-1">2. ऑफ़लाइन रिकवरी सवाल 1: पसंदीदा शहर?</label><input type="text" id="dv-setup-a1" placeholder="जैसे: आगरा / दिल्ली" class="input-field py-2 text-xs" /></div>
                 <div><label class="block font-bold mb-1">3. ऑफ़लाइन रिकवरी सवाल 2: बचपन का नाम?</label><input type="text" id="dv-setup-a2" placeholder="जैसे: सोनू / चिंटू" class="input-field py-2 text-xs" /></div>
               </div>
+              <label class="flex items-center gap-2 bg-teal-50 border border-teal-200 rounded-xl p-2.5 cursor-pointer font-bold text-teal-900">
+                <input type="checkbox" id="dv-setup-bio-chk" checked class="w-4 h-4 accent-teal-700" />
+                <span>👆 अभी फोन का फिंगरप्रिंट / फेस अनलॉक भी चालू करें</span>
+              </label>
               <div class="bg-purple-50 border border-purple-200 rounded-xl p-3 space-y-1">
                 <div class="font-bold text-purple-900">🔑 आपका ऑफ़लाइन मास्टर रिकवरी कोड (इसे लिख लें):</div>
                 <div class="flex items-center justify-between gap-2">
@@ -5997,7 +6180,7 @@
                   <button type="button" id="dv-copy-code-btn" class="btn-secondary text-[11px] py-1 px-2">📋 कॉपी</button>
                 </div>
               </div>
-              <button type="button" id="dv-create-vault-btn" class="btn-primary w-full bg-purple-700 hover:bg-purple-800 py-2.5">🔐 Encrypted डायरी चालू करें</button>
+              <button type="button" id="dv-create-vault-btn" class="btn-primary w-full bg-purple-700 hover:bg-purple-800 py-2.5">🔐 पासवर्ड व फिंगरप्रिंट लॉक चालू करें</button>
             </div>
 
             <div class="border-t border-slate-200 pt-3 text-center space-y-2">
@@ -6018,6 +6201,7 @@
           const pass = (document.getElementById("dv-setup-pass")?.value || "").trim();
           const a1 = (document.getElementById("dv-setup-a1")?.value || "").trim().toLowerCase();
           const a2 = (document.getElementById("dv-setup-a2")?.value || "").trim().toLowerCase();
+          const wantBio = document.getElementById("dv-setup-bio-chk")?.checked;
           if (pass.length < 4) return showToast("कम से कम 4 अक्षर या अंक का पासवर्ड डालें।", "error");
           if (!a1 || !a2) return showToast("ऑफ़लाइन पासवर्ड रिकवरी के लिए दोनों सवालों के जवाब भरें।", "error");
 
@@ -6039,7 +6223,11 @@
           state.diaryUnlocked = true;
           await saveEncryptedDiaryVault();
           showToast("🔐 AES-256 Encrypted डायरी तैयार हो गई!");
-          renderCurrentView();
+          if (wantBio) {
+            await enableDiaryBiometric(newMeta);
+          } else {
+            renderCurrentView();
+          }
         });
         return;
       }
@@ -6051,12 +6239,11 @@
             <div class="text-4xl">🔐</div>
             <div>
               <h3 class="font-bold text-lg text-purple-950">निजी डायरी एन्क्रिप्टेड व लॉक है</h3>
-              <p class="text-xs text-slate-500">डायरी से बाहर जाते ही यह अपने आप लॉक हो जाती है। खोलने के लिए फिंगरप्रिंट, फेस या पासवर्ड उपयोग करें।</p>
+              <p class="text-xs text-slate-500">डायरी से बैक जाते ही यह तुरंत लॉक हो जाती है। खोलने के लिए फिंगरप्रिंट, फेस या पासवर्ड उपयोग करें।</p>
             </div>
 
-            ${meta.biometricCredId ? `
-              <button type="button" id="dv-bio-unlock-btn" class="btn-primary w-full bg-teal-700 hover:bg-teal-800 py-2.5 text-sm">👆 फिंगरप्रिंट / फेस अनलॉक</button>
-              <div class="text-[11px] text-slate-400">— या पासवर्ड डालें —</div>` : ""}
+            <button type="button" id="dv-bio-unlock-btn" class="btn-primary w-full bg-teal-700 hover:bg-teal-800 py-2.5 text-sm">👆 फिंगरप्रिंट / फेस अनलॉक ${meta.biometricCredId ? "" : "(चालू करने के लिए पहले पासवर्ड डालें)"}</button>
+            <div class="text-[11px] text-slate-400">— या पासवर्ड डालें —</div>
 
             <input type="password" id="dv-pass-unlock-inp" placeholder="डायरी पासवर्ड / PIN डालें" class="input-field text-center text-lg font-bold tracking-widest" />
             <button type="button" id="dv-pass-unlock-btn" class="btn-primary w-full bg-purple-700 hover:bg-purple-800">🔓 पासवर्ड से अनलॉक करें</button>
@@ -6101,31 +6288,33 @@
       const currentAudio = state.diaryDraftAudio !== null ? state.diaryDraftAudio : (editing?.audioData || "");
       const currentPhoto = state.diaryDraftPhoto !== null ? state.diaryDraftPhoto : (editing?.photoData || "");
       const currentVideo = state.diaryDraftVideo !== null ? state.diaryDraftVideo : (editing?.videoData || "");
+      const currentFiles = state.diaryDraftFiles !== null ? state.diaryDraftFiles : (editing?.attachments || []);
       const hiddenNow = isDiaryHidden();
       const moods = ["📝 सामान्य नोट", "😊 खुश", "🙏 आभार", "💡 विचार", "📌 ज़रूरी काम", "💼 बिज़नेस", "🏠 परिवार"];
 
       container.innerHTML = `
-        <!-- Security & Stealth Control Bar -->
+        <!-- Security, Biometric, File-to-PDF & Stealth Control Bar -->
         <div class="bg-purple-950 text-white rounded-2xl p-3 flex flex-wrap items-center justify-between gap-2 text-xs shadow-sm">
           <div class="flex items-center gap-2">
             <span>🛡️</span>
             <span><b>AES-256 Encrypted</b> • बैक करते ही ऑटो-लॉक</span>
           </div>
           <div class="flex flex-wrap gap-1.5">
-            <button type="button" id="dv-setup-bio-btn" class="px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-500 font-bold">${meta.biometricCredId ? "✅ फिंगर/फेस चालू" : "👆 फिंगर/फेस जोड़ें"}</button>
-            <button type="button" id="dv-toggle-hide-btn" class="px-2.5 py-1 rounded-lg ${hiddenNow ? "bg-amber-500 text-slate-950" : "bg-white/15 hover:bg-white/25"} font-bold">${hiddenNow ? "👁️ डायरी दिखाएं (Unhide)" : "🕵️ डायरी छिपाएं (Hide)"}</button>
-            <button type="button" id="dv-export-vault-btn" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-bold">💾 Encrypted फ़ाइल सेव</button>
-            <button type="button" id="dv-lock-now-btn" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 font-bold">🔒 लॉक करें</button>
+            <button type="button" id="dv-sec-settings-btn" class="px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-500 font-bold">🔐 पासवर्ड / फिंगर / फेस</button>
+            <button type="button" id="dv-any-to-pdf-btn" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 font-bold">📄 कोई भी फ़ाइल → PDF</button>
+            <button type="button" id="dv-toggle-hide-btn" class="px-2.5 py-1 rounded-lg ${hiddenNow ? "bg-amber-500 text-slate-950" : "bg-white/15 hover:bg-white/25"} font-bold">${hiddenNow ? "👁️ Unhide" : "🕵️ Hide"}</button>
+            <button type="button" id="dv-export-vault-btn" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-bold">💾 .mahavault</button>
+            <button type="button" id="dv-lock-now-btn" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 font-bold">🔒 लॉक</button>
           </div>
         </div>
-        ${hiddenNow ? `<div class="bg-amber-50 border border-amber-300 text-amber-950 rounded-xl px-3 py-2 text-[11px] font-semibold">🕵️ डायरी अभी ऐप से छिपी (Hidden) है। बाहर जाने के बाद इसे दोबारा खोलने के लिए ऊपर बाईं ओर <b>ऐप के लोगो पर लगातार 5 बार टैप</b> करें।</div>` : ""}
+        ${hiddenNow ? `<div class="bg-amber-50 border border-amber-300 text-amber-950 rounded-xl px-3 py-2 text-[11px] font-semibold">🕵️ डायरी अभी ऐप से छिपी (Hidden) है। दोबारा खोलने के लिए ऊपर बाईं ओर <b>ऐप के लोगो पर लगातार 5 बार टैप</b> करें।</div>` : ""}
 
-        <!-- Auto-Save Voice, Audio, Photo & Video Diary Editor -->
+        <!-- Auto-Save Voice, Audio, Photo, Video & All-Files Diary Editor -->
         <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 shadow-sm">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 class="font-bold text-base text-purple-900">📓 निजी डायरी (Voice, Audio, Photo व Video)</h3>
-              <div class="text-[11px] text-slate-500">सब कुछ फोन में एन्क्रिप्टेड ऑटो-सेव होता है।</div>
+              <h3 class="font-bold text-base text-purple-900">📓 निजी डायरी (Voice, Photo, Video व All Files)</h3>
+              <div class="text-[11px] text-slate-500">किसी भी तरह की फ़ाइल अपलोड करें और 1 क्लिक में उसकी PDF बनाएं।</div>
             </div>
             <div class="flex flex-wrap items-center gap-1.5">
               <span id="diary-autosave-badge" class="text-[11px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">✓ Encrypted ऑटो-सेव</span>
@@ -6147,17 +6336,25 @@
                 <button type="button" id="diary-rec-audio-btn" class="btn-secondary text-xs py-1.5 px-3 min-h-[34px] border-rose-300 text-rose-800 bg-rose-50">🔴 आवाज़</button>
                 <label class="btn-secondary text-xs py-1.5 px-3 min-h-[34px] border-blue-300 text-blue-800 bg-blue-50 cursor-pointer inline-flex items-center gap-1">📷 फोटो <input type="file" id="diary-photo-inp" accept="image/*" class="hidden" /></label>
                 <label class="btn-secondary text-xs py-1.5 px-3 min-h-[34px] border-indigo-300 text-indigo-800 bg-indigo-50 cursor-pointer inline-flex items-center gap-1">🎥 वीडियो <input type="file" id="diary-video-inp" accept="video/*" class="hidden" /></label>
+                <label class="btn-secondary text-xs py-1.5 px-3 min-h-[34px] border-amber-300 text-amber-900 bg-amber-50 cursor-pointer inline-flex items-center gap-1">📎 सभी फ़ाइलें <input type="file" id="diary-anyfile-inp" multiple accept="*/*" class="hidden" /></label>
                 <button type="button" id="diary-read-editor-btn" class="btn-secondary text-xs py-1.5 px-3 min-h-[34px] border-teal-300 text-teal-800">🔊 सुनें</button>
               </div>
             </div>
             <textarea id="diary-content" rows="5" placeholder="यहाँ अपनी बात लिखें या ऊपर '🎙️ बोलकर लिखें' दबाकर हिंदी में बोलना शुरू करें..." class="input-field text-sm leading-relaxed">${escHtml(editing?.content || "")}</textarea>
           </div>
 
-          ${(currentAudio || currentPhoto || currentVideo) ? `
-            <div class="flex flex-wrap items-center gap-3 p-2.5 rounded-xl bg-purple-50/70 border border-purple-200">
-              ${currentAudio ? `<div class="flex items-center gap-2"><audio controls src="${currentAudio}" class="h-8 max-w-[200px]"></audio><button type="button" id="diary-rm-audio" class="text-xs text-red-600 font-bold">✕ आवाज़</button></div>` : ""}
-              ${currentPhoto ? `<div class="flex items-center gap-2"><img src="${currentPhoto}" alt="Diary Photo" class="h-14 w-14 object-cover rounded-lg border border-purple-300" /><button type="button" id="diary-rm-photo" class="text-xs text-red-600 font-bold">✕ फोटो</button></div>` : ""}
-              ${currentVideo ? `<div class="flex items-center gap-2"><video controls playsinline src="${currentVideo}" class="h-20 rounded-lg bg-black"></video><button type="button" id="diary-rm-video" class="text-xs text-red-600 font-bold">✕ वीडियो</button></div>` : ""}
+          ${(currentAudio || currentPhoto || currentVideo || currentFiles.length) ? `
+            <div class="space-y-2 p-2.5 rounded-xl bg-purple-50/70 border border-purple-200 text-xs">
+              <div class="flex flex-wrap items-center gap-3">
+                ${currentAudio ? `<div class="flex items-center gap-2"><audio controls src="${currentAudio}" class="h-8 max-w-[200px]"></audio><button type="button" id="diary-rm-audio" class="text-xs text-red-600 font-bold">✕ आवाज़</button></div>` : ""}
+                ${currentPhoto ? `<div class="flex items-center gap-2"><img src="${currentPhoto}" alt="Diary Photo" class="h-14 w-14 object-cover rounded-lg border border-purple-300" /><button type="button" id="diary-rm-photo" class="text-xs text-red-600 font-bold">✕ फोटो</button></div>` : ""}
+                ${currentVideo ? `<div class="flex items-center gap-2"><video controls playsinline src="${currentVideo}" class="h-20 rounded-lg bg-black"></video><button type="button" id="diary-rm-video" class="text-xs text-red-600 font-bold">✕ वीडियो</button></div>` : ""}
+              </div>
+              ${currentFiles.length ? `<div class="space-y-1 pt-1 border-t border-purple-200">${currentFiles.map((f, idx) => `
+                <div class="flex items-center justify-between gap-2 bg-white px-2.5 py-1.5 rounded-lg border border-purple-100">
+                  <span class="truncate font-semibold text-slate-800">📎 ${escHtml(f.name)} (${Math.max(1, Math.round((f.size || 0) / 1024))} KB)</span>
+                  <button type="button" data-rm-draft-file="${idx}" class="text-red-600 font-bold shrink-0">✕ हटाएं</button>
+                </div>`).join("")}</div>` : ""}
             </div>` : ""}
 
           <div class="flex flex-wrap items-center justify-between gap-2">
@@ -6187,6 +6384,17 @@
               ${n.videoData ? `<video controls playsinline src="${n.videoData}" class="w-full max-h-56 rounded-xl bg-black"></video>` : ""}
               ${n.content ? `<div class="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed bg-slate-50 rounded-xl p-2.5 border border-slate-100 max-h-40 overflow-y-auto">${escHtml(n.content)}</div>` : ""}
               ${n.audioData ? `<audio controls src="${n.audioData}" class="w-full h-8"></audio>` : ""}
+              ${(n.attachments && n.attachments.length) ? `
+                <div class="space-y-1.5 pt-1">
+                  ${n.attachments.map((f, fIdx) => `
+                    <div class="flex flex-wrap items-center justify-between gap-1.5 bg-amber-50/70 border border-amber-200 rounded-lg px-2.5 py-1.5 text-[11px]">
+                      <span class="font-bold text-slate-800 truncate max-w-[160px]">📎 ${escHtml(f.name)}</span>
+                      <div class="flex gap-1.5">
+                        <button type="button" data-att-dl="${n.id}::${fIdx}" class="px-2 py-0.5 rounded bg-white border border-slate-300 font-bold text-slate-700">⬇️ फ़ाइल</button>
+                        <button type="button" data-att-pdf="${n.id}::${fIdx}" class="px-2 py-0.5 rounded bg-blue-600 text-white font-bold">📄 PDF बनाएं</button>
+                      </div>
+                    </div>`).join("")}
+                </div>` : ""}
               <div class="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100 text-xs">
                 <button type="button" data-diary-speak="${n.id}" class="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 font-bold">🔊 सुनें</button>
                 <button type="button" data-diary-edit="${n.id}" class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 font-bold">✏️ Edit</button>
@@ -6194,7 +6402,7 @@
                 <button type="button" data-diary-del="${n.id}" class="ml-auto px-2 py-1 rounded-lg text-red-600 font-bold">🗑️ Delete</button>
               </div>
             </div>
-          `).join("") : `<div class="col-span-full bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-sm">अभी आपकी एन्क्रिप्टेड डायरी खाली है। ऊपर <b>🎙️ बोलकर लिखें</b>, <b>📷 फोटो</b> या <b>🎥 वीडियो</b> जोड़ें।</div>`}
+          `).join("") : `<div class="col-span-full bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-sm">अभी आपकी एन्क्रिप्टेड डायरी खाली है। ऊपर <b>🎙️ बोलकर लिखें</b>, <b>📷 फोटो</b>, <b>🎥 वीडियो</b> या <b>📎 कोई भी फ़ाइल</b> जोड़ें।</div>`}
         </div>`;
 
       const dateEl = document.getElementById("diary-date");
@@ -6210,7 +6418,8 @@
         const audioData = state.diaryDraftAudio !== null ? state.diaryDraftAudio : (editing?.audioData || "");
         const photoData = state.diaryDraftPhoto !== null ? state.diaryDraftPhoto : (editing?.photoData || "");
         const videoData = state.diaryDraftVideo !== null ? state.diaryDraftVideo : (editing?.videoData || "");
-        if (!content && !title && !audioData && !photoData && !videoData) return;
+        const attachments = state.diaryDraftFiles !== null ? state.diaryDraftFiles : (editing?.attachments || []);
+        if (!content && !title && !audioData && !photoData && !videoData && !attachments.length) return;
         const now = new Date().toISOString();
         if (!state.activeDiaryEditId) state.activeDiaryEditId = generateId("dry");
         const id = state.activeDiaryEditId;
@@ -6218,11 +6427,12 @@
           id,
           date: dateEl.value || state.selectedDate,
           tag: tagEl.value,
-          title: title || (content ? content.slice(0, 34) : "मीडिया डायरी नोट"),
+          title: title || (content ? content.slice(0, 34) : (attachments[0]?.name || "मीडिया डायरी नोट")),
           content,
           audioData,
           photoData,
           videoData,
+          attachments,
           updatedAt: now,
           createdAt: (diaryDecryptedNotes.find(x => x.id === id)?.createdAt) || now
         };
@@ -6247,7 +6457,8 @@
       });
 
       // Security bar handlers
-      document.getElementById("dv-setup-bio-btn")?.addEventListener("click", () => enableDiaryBiometric(meta));
+      document.getElementById("dv-sec-settings-btn")?.addEventListener("click", () => openDiarySecuritySettingsModal(meta));
+      document.getElementById("dv-any-to-pdf-btn")?.addEventListener("click", openAnyFileToPdfConverterModal);
       document.getElementById("dv-export-vault-btn")?.addEventListener("click", exportEncryptedVaultFile);
       document.getElementById("dv-lock-now-btn")?.addEventListener("click", () => { lockDiaryVaultNow(false); renderCurrentView(); });
       document.getElementById("dv-toggle-hide-btn")?.addEventListener("click", () => {
@@ -6314,26 +6525,53 @@
         reader.readAsDataURL(file);
       });
 
-      // Video Upload (stored encrypted inside IndexedDB — supports up to ~25MB smoothly)
+      // Video Upload
       document.getElementById("diary-video-inp")?.addEventListener("change", e => {
         const file = e.target.files?.[0];
         if (!file) return;
-        if (file.size > 28 * 1024 * 1024) {
-          return showToast("कृपया 25MB से छोटा वीडियो चुनें ताकि एन्क्रिप्शन तेज़ रहे।", "error");
-        }
-        showToast("🎥 वीडियो एन्क्रिप्ट हो रहा है, कृपया 2 सेकंड रुकें...");
+        if (file.size > 28 * 1024 * 1024) return showToast("कृपया 25MB से छोटा वीडियो चुनें।", "error");
+        showToast("🎥 वीडियो एन्क्रिप्ट हो रहा है...");
         const reader = new FileReader();
         reader.onload = async ev => {
           state.diaryDraftVideo = ev.target.result;
           await autoSaveDiaryDraft(true);
-          showToast("✅ वीडियो एन्क्रिप्ट होकर डायरी में सेव हो गया!");
+          showToast("✅ वीडियो एन्क्रिप्ट होकर सेव हो गया!");
         };
         reader.readAsDataURL(file);
+      });
+
+      // ALL File Types Upload
+      document.getElementById("diary-anyfile-inp")?.addEventListener("change", async e => {
+        const files = [...(e.target.files || [])];
+        if (!files.length) return;
+        const list = [...currentFiles];
+        for (const f of files) {
+          if (f.size > 25 * 1024 * 1024) {
+            showToast(`${f.name} 25MB से बड़ी है, कृपया छोटी फ़ाइल चुनें।`, "error");
+            continue;
+          }
+          const dataUrl = await new Promise(res => {
+            const r = new FileReader();
+            r.onload = () => res(r.result);
+            r.readAsDataURL(f);
+          });
+          list.push({ name: f.name, type: f.type, size: f.size, dataUrl });
+        }
+        state.diaryDraftFiles = list;
+        await autoSaveDiaryDraft(true);
+        showToast("✅ फ़ाइल(ें) एन्क्रिप्ट होकर डायरी में जुड़ गईं!");
       });
 
       document.getElementById("diary-rm-audio")?.addEventListener("click", async () => { state.diaryDraftAudio = ""; await autoSaveDiaryDraft(true); });
       document.getElementById("diary-rm-photo")?.addEventListener("click", async () => { state.diaryDraftPhoto = ""; await autoSaveDiaryDraft(true); });
       document.getElementById("diary-rm-video")?.addEventListener("click", async () => { state.diaryDraftVideo = ""; await autoSaveDiaryDraft(true); });
+      container.querySelectorAll("[data-rm-draft-file]").forEach(b => b.addEventListener("click", async () => {
+        const idx = Number(b.dataset.rmDraftFile);
+        const list = [...currentFiles];
+        list.splice(idx, 1);
+        state.diaryDraftFiles = list;
+        await autoSaveDiaryDraft(true);
+      }));
 
       // Voice Dictation
       let diaryRec = null;
@@ -6376,6 +6614,7 @@
         state.diaryDraftAudio = null;
         state.diaryDraftPhoto = null;
         state.diaryDraftVideo = null;
+        state.diaryDraftFiles = null;
         renderCurrentView();
         showToast("डायरी पन्ना एन्क्रिप्ट होकर सेव हो गया!");
       });
@@ -6386,6 +6625,7 @@
         state.diaryDraftAudio = null;
         state.diaryDraftPhoto = null;
         state.diaryDraftVideo = null;
+        state.diaryDraftFiles = null;
         renderCurrentView();
       });
 
@@ -6394,18 +6634,40 @@
         renderCurrentView();
       });
 
-      // FIXED: Real PDF Download for Full Diary
+      // Full Diary PDF (Text + Photos + Attachments cleanly rendered on-screen!)
       document.getElementById("diary-export-all-pdf").addEventListener("click", () => {
         if (!notes.length) return showToast("डायरी में कोई पन्ना नहीं है।", "error");
         const body = notes.map(n => `
-          <div style="border:1px solid #cbd5e1;border-radius:10px;padding:12px;margin-bottom:12px;background:#faf5ff;page-break-inside:avoid;">
-            <div style="font-weight:700;font-size:14px;color:#4c1d95;">${escHtml(n.title || "निजी डायरी नोट")}</div>
-            <div style="font-size:11px;color:#64748b;margin-bottom:6px;">तारीख: ${escHtml(n.date)} | ${escHtml(n.tag || "")} ${n.videoData ? "| 🎥 वीडियो संलग्न" : ""} ${n.audioData ? "| 🔊 ऑडियो संलग्न" : ""}</div>
-            ${n.photoData ? `<img src="${n.photoData}" style="max-height:180px;border-radius:8px;margin-bottom:8px;" />` : ""}
-            <div style="font-size:13px;white-space:pre-wrap;line-height:1.6;">${escHtml(n.content || "")}</div>
+          <div style="border:1px solid #cbd5e1;border-radius:10px;padding:12px;margin-bottom:14px;background:#faf5ff;page-break-inside:avoid;">
+            <div style="font-weight:700;font-size:15px;color:#4c1d95;">${escHtml(n.title || "निजी डायरी नोट")}</div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:8px;">तारीख: ${escHtml(n.date)} | ${escHtml(n.tag || "")}</div>
+            ${n.photoData ? `<div style="margin-bottom:8px;"><img src="${n.photoData}" style="max-width:100%;max-height:260px;border-radius:8px;border:1px solid #e2e8f0;" /></div>` : ""}
+            <div style="font-size:13px;color:#0f172a;white-space:pre-wrap;line-height:1.65;">${escHtml(n.content || "")}</div>
+            ${(n.attachments && n.attachments.length) ? `<div style="margin-top:8px;font-size:11px;color:#334155;">📎 संलग्न फ़ाइलें: ${n.attachments.map(a => escHtml(a.name)).join(", ")}</div>` : ""}
           </div>`).join("");
         downloadDiaryPDF("निजी डायरी (Personal Encrypted Diary)", `कुल पन्ने: ${notes.length}`, body);
       });
+
+      // Individual Attachment Download & Any-File-to-PDF buttons
+      container.querySelectorAll("[data-att-dl]").forEach(b => b.addEventListener("click", () => {
+        const [nid, idx] = b.dataset.attDl.split("::");
+        const n = notes.find(x => x.id === nid);
+        const f = n?.attachments?.[Number(idx)];
+        if (!f) return;
+        const a = document.createElement("a");
+        a.href = f.dataUrl;
+        a.download = f.name || "file";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }));
+
+      container.querySelectorAll("[data-att-pdf]").forEach(b => b.addEventListener("click", async () => {
+        const [nid, idx] = b.dataset.attPdf.split("::");
+        const n = notes.find(x => x.id === nid);
+        const f = n?.attachments?.[Number(idx)];
+        if (f) await convertAnyFileToPDF(f);
+      }));
 
       container.querySelectorAll("[data-diary-speak]").forEach(b => b.addEventListener("click", () => {
         const n = notes.find(x => x.id === b.dataset.diarySpeak);
@@ -6417,18 +6679,20 @@
         state.diaryDraftAudio = null;
         state.diaryDraftPhoto = null;
         state.diaryDraftVideo = null;
+        state.diaryDraftFiles = null;
         renderCurrentView();
         window.scrollTo({ top: 0, behavior: "smooth" });
       }));
 
-      // FIXED: Real PDF Download for Single Note
       container.querySelectorAll("[data-diary-pdf]").forEach(b => b.addEventListener("click", () => {
         const n = notes.find(x => x.id === b.dataset.diaryPdf);
         if (!n) return;
+        const attImgs = (n.attachments || []).filter(a => (a.type || "").startsWith("image/")).map(a => `<div style="margin-top:8px;"><img src="${a.dataUrl}" style="max-width:100%;max-height:320px;border-radius:8px;" /></div>`).join("");
         const body = `<div style="border:1px solid #cbd5e1;border-radius:10px;padding:16px;background:#faf5ff;">
-          <div style="font-size:12px;color:#64748b;margin-bottom:8px;">तारीख: ${escHtml(n.date)} | ${escHtml(n.tag || "")} ${n.videoData ? "| 🎥 वीडियो संलग्न" : ""}</div>
-          ${n.photoData ? `<img src="${n.photoData}" style="max-height:240px;border-radius:8px;margin-bottom:10px;" />` : ""}
-          <div style="font-size:14px;white-space:pre-wrap;line-height:1.7;">${escHtml(n.content || "")}</div>
+          <div style="font-size:12px;color:#64748b;margin-bottom:8px;">तारीख: ${escHtml(n.date)} | ${escHtml(n.tag || "")}</div>
+          ${n.photoData ? `<div style="margin-bottom:10px;"><img src="${n.photoData}" style="max-width:100%;max-height:340px;border-radius:8px;border:1px solid #e2e8f0;" /></div>` : ""}
+          <div style="font-size:14px;color:#0f172a;white-space:pre-wrap;line-height:1.7;">${escHtml(n.content || "")}</div>
+          ${attImgs}
         </div>`;
         downloadDiaryPDF(n.title || "निजी डायरी नोट", `तारीख: ${n.date}`, body);
       }));
@@ -6448,6 +6712,7 @@
           state.diaryDraftAudio = null;
           state.diaryDraftPhoto = null;
           state.diaryDraftVideo = null;
+          state.diaryDraftFiles = null;
         }
         renderCurrentView();
         showToast("डायरी नोट हटा दिया गया।");
