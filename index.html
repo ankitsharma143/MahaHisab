@@ -80,6 +80,25 @@
       #print-area, #print-area * { visibility: visible !important; }
       #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: #fff !important; color: #000 !important; padding: 12px; font-size: 12px; }
     }
+
+    /* Staff Lock Mode privacy rules */
+    body.staff-mode-active [data-main-tab="diary"],
+    body.staff-mode-active [data-main-tab="reports"],
+    body.staff-mode-active [data-main-tab="settings"],
+    body.staff-mode-active #header-diary-btn,
+    body.staff-mode-active [data-house-tab="diary"],
+    body.staff-mode-active [data-house-tab="accounts"],
+    body.staff-mode-active [data-house-tab="income"],
+    body.staff-mode-active [data-dairy-tab="pl"],
+    body.staff-mode-active [data-dairy-tab="animal_profit"],
+    body.staff-mode-active .staff-hide {
+      display: none !important;
+    }
+    body.staff-mode-active .staff-blur-val {
+      filter: blur(6px);
+      user-select: none;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-900">
@@ -124,6 +143,7 @@
         <button type="button" data-main-tab="house" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>🏡</span><span>घर का हिसाब (House)</span></button>
         <button type="button" data-main-tab="parchuni" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>🏪</span><span>परचूनी दुकान (Kirana)</span></button>
         <button type="button" data-main-tab="dairy" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>🥛</span><span>डेयरी हिसाब (Dairy)</span></button>
+        <button type="button" data-main-tab="diary" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>📓</span><span>निजी डायरी (Diary)</span></button>
         <button type="button" data-main-tab="reports" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>📑</span><span>रिपोर्ट सेंटर (Reports)</span></button>
         <button type="button" data-main-tab="settings" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>⚙️</span><span>सेटिंग्स (Settings)</span></button>
       </nav>
@@ -157,6 +177,9 @@
             <button type="button" id="header-speak-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-teal-300 text-teal-800 bg-teal-50" title="बोलकर कोई भी हिसाब पूछें और सुनें">🗣️ <span class="hidden lg:inline">पूछें</span></button>
             <button type="button" id="header-lock-btn" class="hidden shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-slate-300 text-slate-700" title="ऐप लॉक करें">🔒</button>
             <button type="button" id="header-scan-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-rose-300 text-rose-800 bg-rose-50" title="पर्ची / बिल कैमरा स्कैनर">📸 <span class="hidden lg:inline">स्कैन</span></button>
+            <button type="button" id="header-diary-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-purple-300 text-purple-800 bg-purple-50" title="निजी डायरी (बोलकर लिखें व सुनें)">📓 <span class="hidden lg:inline">डायरी</span></button>
+            <button type="button" id="header-sms-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-indigo-300 text-indigo-800 bg-indigo-50" title="SMS / UPI मैसेज से ऑटो-एंट्री">📲 <span class="hidden lg:inline">SMS</span></button>
+            <button type="button" id="header-staff-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-amber-300 text-amber-900 bg-amber-50" title="Owner / Staff लॉक मोड">👑 <span class="hidden lg:inline">Owner</span></button>
             <button type="button" id="header-calc-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px]" title="स्मार्ट कैलकुलेटर">🧮</button>
             <button type="button" id="header-voice-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-amber-300 text-amber-800 bg-amber-50" title="बोलकर एंट्री करें">🎙️ <span class="hidden sm:inline">बोलकर लिखें</span></button>
             <button type="button" id="quick-search-open-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px]" title="पूरे ऐप में खोजें">🔍 <span class="hidden sm:inline">खोजें</span></button>
@@ -165,6 +188,7 @@
         </div>
       </header>
 
+      <div id="staff-mode-banner" class="hidden bg-amber-500 text-white px-4 py-2 text-xs font-bold flex flex-wrap items-center justify-between gap-2 shadow-sm"><span>👨‍💼 स्टाफ मोड चालू है — प्राइवेट प्रॉफिट, नकद बैलेंस, निजी डायरी और डेटा Delete लॉक हैं।</span><button type="button" id="staff-unlock-btn" class="px-3 py-1 rounded-lg bg-white text-amber-900 font-bold text-xs shadow-sm">👑 Owner अनलॉक</button></div>
       <main id="main-content" class="flex-1 p-3 sm:p-5 max-w-7xl w-full mx-auto space-y-4"></main>
     </div>
 
@@ -275,7 +299,7 @@
       "houseExpenses", "shopTransactions", "income", "accounts", "transfers",
       "loans", "loanPayments", "dairyProduction", "milkSales", "milkPurchases",
       "dairyExpenses", "dairyWaste", "customers", "suppliers", "animals",
-      "budgets", "recurringBills", "savingsGoals", "friendTransactions", "parchuniCustomers", "parchuniEntries", "parchuniSalesmen", "parchuniSalesmanEntries", "dairyCenters", "dairySupplies", "dairyCenterPurchases", "settings"
+      "budgets", "recurringBills", "savingsGoals", "friendTransactions", "parchuniCustomers", "parchuniEntries", "parchuniSalesmen", "parchuniSalesmanEntries", "dairyCenters", "dairySupplies", "dairyCenterPurchases", "parchuniInventory", "parchuniBills", "animalHealth", "personalDiary", "settings"
     ];
 
     const REPORT_TYPES = [
@@ -630,6 +654,67 @@
         });
         return Object.values(map).sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance));
       },
+      calcExpectedCalvingDate(aiDateStr, animalType = "भैंस") {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(aiDateStr || "")) return "";
+        const d = new Date(aiDateStr + "T00:00:00");
+        const days = /गाय|cow/i.test(animalType) ? 283 : 310;
+        d.setDate(d.getDate() + days);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      },
+      calcFinanceHealthAndOverdue(data, refDateStr) {
+        const mStr = (refDateStr || todayStr()).slice(0, 7);
+        const refMs = new Date((refDateStr || todayStr()) + "T00:00:00").getTime();
+
+        const mInc = this.round2(
+          (data.income || []).filter(x => (x.date || "").startsWith(mStr)).reduce((s, x) => s + (Number(x.amount) || 0), 0) +
+          (data.milkSales || []).filter(x => (x.date || "").startsWith(mStr)).reduce((s, x) => s + (Number(x.amount) || 0), 0) +
+          (data.dairySupplies || []).filter(x => (x.date || "").startsWith(mStr)).reduce((s, x) => s + (Number(x.amount) || 0), 0)
+        );
+        const mExp = this.round2(
+          (data.houseExpenses || []).filter(x => (x.date || "").startsWith(mStr)).reduce((s, x) => s + (Number(x.amount) || 0), 0) +
+          (data.dairyExpenses || []).filter(x => (x.date || "").startsWith(mStr)).reduce((s, x) => s + (Number(x.amount) || 0), 0)
+        );
+
+        // 30-day overdue accounts (Loans Given + Parchuni Customers)
+        const overdueList = [];
+        const ls = this.calcLoanSummary(data.loans, data.loanPayments);
+        ls.items.filter(l => l.type === "given" && l.remaining > 0 && l.date).forEach(l => {
+          const days = Math.floor((refMs - new Date(l.date + "T00:00:00").getTime()) / 86400000);
+          if (days >= 30) overdueList.push({ name: l.personName, tag: `उधार (${days} दिन)`, amount: l.remaining, mobile: l.mobile || "" });
+        });
+        const pLed = this.calcParchuniCustomerLedger(data.parchuniCustomers, data.parchuniEntries);
+        pLed.filter(c => c.balance > 0 && c.entries.length).forEach(c => {
+          const oldest = c.entries[c.entries.length - 1]?.date || "";
+          if (oldest) {
+            const days = Math.floor((refMs - new Date(oldest + "T00:00:00").getTime()) / 86400000);
+            if (days >= 30) overdueList.push({ name: c.name, tag: `परचूनी (${days} दिन)`, amount: c.balance, mobile: c.mobile || "" });
+          }
+        });
+        overdueList.sort((a, b) => b.amount - a.amount);
+
+        // Score calculation (0-100)
+        let score = 60;
+        if (mInc > 0) {
+          const savRatio = (mInc - mExp) / mInc;
+          if (savRatio >= 0.30) score += 25;
+          else if (savRatio >= 0.15) score += 15;
+          else if (savRatio >= 0) score += 5;
+          else score -= 15;
+        }
+        const bud = this.calcBudgetStatus(data.budgets, data.houseExpenses, mStr, getPrevMonth(mStr));
+        if (bud.totalPlanned > 0) score += bud.overBudget ? -12 : 10;
+        if (overdueList.length > 0) score -= Math.min(20, overdueList.length * 5);
+        score = Math.max(10, Math.min(100, Math.round(score)));
+
+        const grade = score >= 80 ? "उत्कृष्ट (Excellent)" : score >= 60 ? "अच्छा (Good)" : "ध्यान दें (Needs Focus)";
+        const tip = overdueList.length > 0
+          ? `${overdueList.length} खाते 30+ दिन से बकाया हैं — पहले वसूली रिमाइंडर भेजें।`
+          : bud.overBudget
+            ? "इस माह का घरेलू खर्च बजट से ऊपर है — अनावश्यक खर्च नियंत्रित करें।"
+            : "आपका हिसाब-किताब संतुलित चल रहा है। नियमित JSON बैकअप लेते रहें।";
+
+        return { score, grade, tip, mInc, mExp, overdueList };
+      },
       parseDairySlipOCR(text) {
         const raw = String(text || "");
         const norm = raw.replace(/[|]/g, " ");
@@ -809,6 +894,11 @@
       activeDairyTab: "bulk_delivery",
       activeParchuniTab: "customers",
       parchuniSearch: "",
+      diarySearch: "",
+      activeDiaryEditId: null,
+      diaryUnlocked: false,
+      diaryDraftAudio: null,
+      diaryDraftPhoto: null,
       selectedDate: todayStr(),
       selectedMonth: todayStr().slice(0, 7),
       selectedYear: todayStr().slice(0, 4),
@@ -825,7 +915,7 @@
         houseExpenses: [], shopTransactions: [], income: [], accounts: [], transfers: [],
         loans: [], loanPayments: [], dairyProduction: [], milkSales: [], milkPurchases: [],
         dairyExpenses: [], dairyWaste: [], customers: [], suppliers: [], animals: [],
-        budgets: [], recurringBills: [], savingsGoals: [], friendTransactions: [], parchuniCustomers: [], parchuniEntries: [], parchuniSalesmen: [], parchuniSalesmanEntries: [], dairyCenters: [], dairySupplies: [], dairyCenterPurchases: [], settings: []
+        budgets: [], recurringBills: [], savingsGoals: [], friendTransactions: [], parchuniCustomers: [], parchuniEntries: [], parchuniSalesmen: [], parchuniSalesmanEntries: [], dairyCenters: [], dairySupplies: [], dairyCenterPurchases: [], parchuniInventory: [], parchuniBills: [], animalHealth: [], personalDiary: [], settings: []
       }
     };
 
@@ -1292,6 +1382,10 @@
     }
 
     async function deleteDocById(col, docId, label = "यह एंट्री") {
+      if (typeof isStaffMode === "function" && isStaffMode()) {
+        showToast("स्टाफ मोड में डेटा डिलीट करना बंद है। Owner लॉक खोलें।", "error");
+        return false;
+      }
       const ok = await showConfirm("हटाने की पुष्टि (Delete Confirmation)", `क्या आप वाकई "${label}" को स्थायी रूप से हटाना चाहते हैं?`);
       if (!ok) return false;
       if (!Array.isArray(state.data[col])) return false;
@@ -1491,11 +1585,18 @@
     // 7. RENDER ROUTER
     // =========================================================================
     function renderCurrentView() {
+      if (typeof isStaffMode === "function" && isStaffMode()) {
+        if (["diary", "reports", "settings"].includes(state.activeMainTab)) {
+          state.activeMainTab = "parchuni";
+          showToast("स्टाफ मोड में यह सेक्शन लॉक है।", "error");
+        }
+      }
       const titles = {
         home: "मुख्य डैशबोर्ड (Dashboard)",
         house: "घर का हिसाब (House Management)",
         parchuni: "परचूनी दुकान उधार व सेल्समैन (Kirana)",
         dairy: "डेयरी प्रबंधन (Dairy Hisab)",
+        diary: "निजी डायरी (Personal Voice Diary)",
         reports: "रिपोर्ट सेंटर (Reports Center)",
         settings: "सेटिंग्स, नोटिफिकेशन व सुरक्षा"
       };
@@ -1507,6 +1608,7 @@
       else if (state.activeMainTab === "house") renderHouseModule(main);
       else if (state.activeMainTab === "parchuni") renderParchuniModule(main);
       else if (state.activeMainTab === "dairy") renderDairyModule(main);
+      else if (state.activeMainTab === "diary") renderPersonalDiaryView(main);
       else if (state.activeMainTab === "reports") renderReportsCenter(main);
       else if (state.activeMainTab === "settings") renderSettingsModule(main);
       attachVoiceMicsToContainer(main);
@@ -1600,6 +1702,7 @@
         ${renderDailyDigestCardOnDashboard()}
         ${renderSmartRemindersBanner()}
         ${renderSmartInsightsBanner()}
+        ${renderFinanceHealthWidget()}
 
         ${budgetStatus.overBudget ? `<div class="bg-red-50 border border-red-300 text-red-800 rounded-xl px-4 py-3 text-sm font-semibold">🚨 चेतावनी: इस महीने का घरेलू खर्च (${fmtRs(budgetStatus.totalActual)}) आपके तय बजट (${fmtRs(budgetStatus.totalPlanned)}) से अधिक हो गया है!</div>` : ""}
         ${todayDairyPL.mismatch ? `<div class="bg-amber-50 border border-amber-300 text-amber-900 rounded-xl px-4 py-3 text-sm font-semibold">⚠️ दूध मिलान चेतावनी (${dStr}): उपलब्ध दूध (${fmtL(todayDairyPL.available)}) से अधिक दूध बिक्री/नुकसान (${fmtL(todayDairyPL.sold + todayDairyPL.waste)}) दर्ज है!</div>` : ""}
@@ -1680,6 +1783,13 @@
       document.getElementById("dash-fr-add-btn").addEventListener("click", () => openFriendEntryModal());
       document.getElementById("dash-fr-open-all").addEventListener("click", () => { state.activeMainTab = "house"; state.activeHouseTab = "friends"; renderCurrentView(); });
       container.querySelectorAll("[data-dash-qr-fr]").forEach(b => b.addEventListener("click", () => openUpiQrModal({ name: b.dataset.dashQrFr, amount: Number(b.dataset.bal), note: "Friends Hisab", mobile: b.dataset.mob })));
+      container.querySelectorAll("[data-ov-wa]").forEach(b => b.addEventListener("click", () => {
+        const upi = getSavedUpiId();
+        openWhatsAppMessage(b.dataset.mob, `नमस्ते ${b.dataset.ovWa} जी,\nMahaIndustries रिमाइंडर: आपका ${fmtRs(Number(b.dataset.amt))} पिछले 30+ दिनों से बकाया है।${upi ? `\nUPI ID: ${upi}` : ""}\nकृपया शीघ्र भुगतान करें।`);
+      }));
+      container.querySelectorAll("[data-ov-qr]").forEach(b => b.addEventListener("click", () => {
+        openUpiQrModal({ name: b.dataset.ovQr, amount: Number(b.dataset.amt), note: "Overdue Balance", mobile: b.dataset.mob });
+      }));
       container.querySelectorAll("[data-dash-wa-fr]").forEach(b => b.addEventListener("click", () => {
         const name = b.dataset.dashWaFr, bal = Number(b.dataset.bal), mob = b.dataset.mob, upi = getSavedUpiId();
         const msg = bal > 0 ? `नमस्ते ${name} भाई, MahaIndustries दोस्त हिसाब में आपकी तरफ ${fmtRs(bal)} बाकी हैं।${upi ? ` UPI: ${upi}` : ""}` : bal < 0 ? `नमस्ते ${name} भाई, मेरी तरफ आपके ${fmtRs(Math.abs(bal))} बाकी हैं।` : `नमस्ते ${name} भाई, हमारा हिसाब चुक्ता है।`;
@@ -1752,7 +1862,9 @@
         { id: "friends", label: "👥 दोस्त खाता (Split)" },
         { id: "bills", label: "🔔 फिक्स बिल" },
         { id: "goals", label: "🎯 बचत लक्ष्य" },
-        { id: "vault", label: "🧾 रसीद गैलरी" }
+        { id: "vault", label: "🧾 रसीद गैलरी" },
+        { id: "simulator", label: "📈 क्या होगा? (Simulator)" },
+        { id: "diary", label: "📓 निजी डायरी" }
       ];
       container.innerHTML = `<div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">${subtabs.map(t => `<button type="button" data-house-tab="${t.id}" class="subtab-btn ${state.activeHouseTab === t.id ? "active" : ""}">${t.label}</button>`).join("")}</div><div class="flex flex-wrap items-center justify-between gap-2 bg-white rounded-xl border border-slate-200 px-3 py-2">
           <span class="text-xs font-bold text-slate-600">इस मॉड्यूल का सीधा एक्सपोर्ट / इम्पोर्ट:</span>
@@ -1775,6 +1887,8 @@
       else if (state.activeHouseTab === "bills") renderRecurringBillsTab(sub);
       else if (state.activeHouseTab === "goals") renderSavingsGoalsTab(sub);
       else if (state.activeHouseTab === "vault") renderBillsVaultTab(sub);
+      else if (state.activeHouseTab === "simulator") renderWhatIfSimulator(sub);
+      else if (state.activeHouseTab === "diary") renderPersonalDiaryView(sub);
       wireModuleExportButtons("house", state.activeHouseTab);
     }
 
@@ -2216,6 +2330,8 @@
         { id: "suppliers", label: "📦 सप्लायर खाता" },
         { id: "expenses", label: "🌾 डेयरी खर्च" },
         { id: "animals", label: "🐃 पशु प्रबंधन" },
+        { id: "animal_health", label: "🩺 पशु स्वास्थ्य व ब्यात" },
+        { id: "animal_profit", label: "💰 पशुवार मुनाफा" },
         { id: "pl", label: "📈 डेयरी P&L" }
       ];
       container.innerHTML = `<div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">${subtabs.map(t => `<button type="button" data-dairy-tab="${t.id}" class="subtab-btn ${state.activeDairyTab === t.id ? "active" : ""}">${t.label}</button>`).join("")}</div><div class="flex flex-wrap items-center justify-between gap-2 bg-white rounded-xl border border-slate-200 px-3 py-2">
@@ -2239,6 +2355,8 @@
       else if (state.activeDairyTab === "suppliers") renderSuppliersTab(sub);
       else if (state.activeDairyTab === "expenses") renderDairyExpensesTab(sub);
       else if (state.activeDairyTab === "animals") renderAnimalsTab(sub);
+      else if (state.activeDairyTab === "animal_health") renderAnimalHealthTab(sub);
+      else if (state.activeDairyTab === "animal_profit") renderAnimalProfitTab(sub);
       else if (state.activeDairyTab === "pl") renderDairyPLTab(sub);
       wireModuleExportButtons("dairy", state.activeDairyTab);
     }
@@ -3010,6 +3128,23 @@
           alerts.push({ kind: "loan", text: `${l.type === "given" ? "उधार लेना है" : "उधार देना है"}: ${l.personName} (${fmtRs(l.remaining)}) — ${l.dueDate}` });
         }
       });
+      // 3. Parchuni Low Stock & Expiring Items (within 15 days)
+      (state.data.parchuniInventory || []).forEach(it => {
+        if ((Number(it.stock) || 0) <= (Number(it.minStock) || 2)) {
+          alerts.push({ kind: "stock", text: `कम स्टॉक (परचूनी): ${it.name} — केवल ${it.stock} बचा` });
+        }
+        if (it.expiryDate) {
+          const diff = Math.round((new Date(it.expiryDate + "T00:00:00") - today) / 86400000);
+          if (diff <= 15) alerts.push({ kind: "exp", text: `एक्सपायरी अलर्ट: ${it.name} (${it.expiryDate})` });
+        }
+      });
+      // 4. Animal Calving / Vaccination Reminders (within 15 days)
+      (state.data.animalHealth || []).forEach(h => {
+        if (h.nextDueDate) {
+          const diff = Math.round((new Date(h.nextDueDate + "T00:00:00") - today) / 86400000);
+          if (diff >= -5 && diff <= 15) alerts.push({ kind: "animal", text: `पशु अलर्ट (${h.animalName}): ${h.eventType} — ${h.nextDueDate}` });
+        }
+      });
       if (!alerts.length) return "";
       return `<div class="bg-amber-50 border border-amber-300 rounded-2xl p-3.5 space-y-2"><div class="text-xs font-bold text-amber-900">🔔 स्मार्ट बिल व उधार रिमाइंडर (${alerts.length})</div><div class="space-y-1.5">${alerts.slice(0, 5).map(a => `<div class="flex flex-wrap items-center justify-between gap-2 text-xs bg-white/80 rounded-lg px-3 py-2 border border-amber-200"><span class="font-semibold">${escHtml(a.text)}</span>${a.kind === "bill" ? `<button type="button" data-pay-rec-bill="${a.id}" class="text-[11px] font-bold bg-teal-700 text-white px-2.5 py-1 rounded-lg">✓ भुगतान दर्ज</button>` : ""}</div>`).join("")}</div></div>`;
     }
@@ -3204,6 +3339,21 @@
       answer(query, data, refDateStr) {
         const raw = String(query || "").trim();
         const low = raw.toLowerCase();
+        // 0. Hands-Free Voice Command Navigation
+        if (/खोलो|kholo|दिखाओ|dikhao|जाओ|jao|चालू\s*करो|chalu\s*karo|बंद\s*करो/.test(low)) {
+          if (/डार्क\s*मोड|dark\s*mode/.test(low)) return { title: "वॉइस कमांड", speech: "डार्क मोड चालू कर दिया गया है।", details: [], navAction: () => applyDarkMode(true) };
+          if (/लाइट\s*मोड|light\s*mode/.test(low)) return { title: "वॉइस कमांड", speech: "लाइट मोड चालू कर दिया गया है।", details: [], navAction: () => applyDarkMode(false) };
+          if (/pos|बिलिंग|स्टॉक|stock/.test(low)) return { title: "वॉइस कमांड", speech: "परचूनी POS बिलिंग और स्टॉक खोल दिया गया है।", details: [], navAction: () => { state.activeMainTab = "parchuni"; state.activeParchuniTab = "pos"; renderCurrentView(); } };
+          if (/सेल्समैन|salesman/.test(low)) return { title: "वॉइस कमांड", speech: "सेल्समैन ऑर्डर और हिसाब खोल दिया गया है।", details: [], navAction: () => { state.activeMainTab = "parchuni"; state.activeParchuniTab = "salesmen"; renderCurrentView(); } };
+          if (/परचूनी|parchuni|किराना|kirana/.test(low)) return { title: "वॉइस कमांड", speech: "परचूनी दुकान खाता खोल दिया गया है।", details: [], navAction: () => { state.activeMainTab = "parchuni"; state.activeParchuniTab = "customers"; renderCurrentView(); } };
+          if (/पशु\s*स्वास्थ्य|ब्यात|टीका/.test(low)) return { title: "वॉइस कमांड", speech: "पशु स्वास्थ्य और ब्यात ट्रैकर खोल दिया गया है।", details: [], navAction: () => { state.activeMainTab = "dairy"; state.activeDairyTab = "animal_health"; renderCurrentView(); } };
+          if (/डेयरी|dairy|दूध\s*सप्लाई/.test(low)) return { title: "वॉइस कमांड", speech: "डेयरी दूध सप्लाई मॉड्यूल खोल दिया गया है।", details: [], navAction: () => { state.activeMainTab = "dairy"; state.activeDairyTab = "dairy_supply"; renderCurrentView(); } };
+          if (/दोस्त|friend/.test(low)) return { title: "वॉइस कमांड", speech: "दोस्तों का हिसाब-किताब खोल दिया गया है।", details: [], navAction: () => { state.activeMainTab = "house"; state.activeHouseTab = "friends"; renderCurrentView(); } };
+          if (/रिपोर्ट|report/.test(low)) return { title: "वॉइस कमांड", speech: "रिपोर्ट सेंटर खोल दिया गया है।", details: [], navAction: () => { state.activeMainTab = "reports"; renderCurrentView(); } };
+          if (/सेटिंग|setting/.test(low)) return { title: "वॉइस कमांड", speech: "सेटिंग्स खोल दी गई हैं।", details: [], navAction: () => { state.activeMainTab = "settings"; renderCurrentView(); } };
+          if (/डायरी|diary|नोटबुक/.test(low)) return { title: "वॉइस कमांड", speech: "आपकी निजी डायरी खोल दी गई है।", details: [], navAction: () => { state.activeMainTab = "diary"; renderCurrentView(); } };
+          if (/डैशबोर्ड|dashboard|होम|home/.test(low)) return { title: "वॉइस कमांड", speech: "मुख्य डैशबोर्ड खोल दिया गया है।", details: [], navAction: () => { state.activeMainTab = "home"; renderCurrentView(); } };
+        }
         const range = this.detectTimeRange(raw, refDateStr);
         const inR = (dt) => (dt || "") >= range.from && (dt || "") <= range.to;
         const digest = AccountingEngine.calcDailyNotificationDigest(data, refDateStr);
@@ -3481,6 +3631,7 @@
           ? res.details.map(d => `<div>• ${escHtml(d)}</div>`).join("")
           : "";
         speakHindiText(res.speech);
+        if (typeof res.navAction === "function") { setTimeout(() => { closeModal(); res.navAction(); }, 600); }
       };
 
       document.getElementById("va-ask-btn").addEventListener("click", runQuery);
@@ -3972,7 +4123,10 @@
       const subtabs = [
         { id: "customers", label: "👥 ग्राहक उधार खाता" },
         { id: "entries", label: "📒 सभी उधार / जमा एंट्री" },
-        { id: "salesmen", label: "🚚 सेल्समैन ऑर्डर व हिसाब" }
+        { id: "pos", label: "🧾 POS बिलिंग व स्टॉक" },
+        { id: "salesmen", label: "🚚 सेल्समैन ऑर्डर व हिसाब" },
+        { id: "trust", label: "⭐ ट्रस्ट स्कोर व रिकवरी" },
+        { id: "stock_intel", label: "📊 डेड-स्टॉक व मुनाफा" }
       ];
       container.innerHTML = `
         <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -3988,7 +4142,10 @@
       const sub = document.getElementById("parchuni-sub-content");
       if (state.activeParchuniTab === "customers") renderParchuniCustomersTab(sub);
       else if (state.activeParchuniTab === "entries") renderParchuniEntriesTab(sub);
+      else if (state.activeParchuniTab === "pos") renderParchuniPosStockTab(sub);
       else if (state.activeParchuniTab === "salesmen") renderParchuniSalesmenTab(sub);
+      else if (state.activeParchuniTab === "trust") renderParchuniTrustTab(sub);
+      else if (state.activeParchuniTab === "stock_intel") renderParchuniAnalyticsTab(sub);
     }
 
     function renderParchuniCustomersTab(container) {
@@ -4496,7 +4653,7 @@
                 <div class="flex flex-wrap gap-1.5 pt-1 border-t border-slate-100 text-xs">
                   <button type="button" data-ds-quick="${escHtml(dc.name)}" class="px-2 py-1 rounded-lg bg-teal-50 text-teal-800 font-bold">+ दूध</button>
                   <button type="button" data-ds-buy="${escHtml(dc.name)}" class="px-2 py-1 rounded-lg bg-orange-50 text-orange-800 font-bold">+ सामान</button>
-                  <button type="button" data-ds-pdf="${escHtml(dc.name)}" class="px-2 py-1 rounded-lg bg-blue-50 text-blue-800 font-bold">📄 फाइनल PDF</button>
+                  <button type="button" data-ds-pdf="${escHtml(dc.name)}" class="px-2 py-1 rounded-lg bg-blue-50 text-blue-800 font-bold">📄 फाइनल PDF</button><button type="button" data-ds-passbook="${escHtml(dc.name)}" class="px-2 py-1 rounded-lg bg-purple-50 text-purple-800 font-bold">📅 पासबुक</button>
                   <button type="button" data-ds-wa="${escHtml(dc.name)}" class="px-2 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold">💬 WA</button>
                   ${dc.id ? `<button type="button" data-ds-editc="${dc.id}" class="text-blue-700 font-bold px-1">Edit</button><button type="button" data-ds-delc="${dc.id}" class="text-red-600 font-bold px-1">Del</button>` : ""}
                 </div>
@@ -4613,6 +4770,10 @@
         });
       }));
 
+      container.querySelectorAll("[data-ds-passbook]").forEach(b => b.addEventListener("click", () => {
+        const dc = ledger.find(x => x.name === b.dataset.dsPassbook);
+        if (dc) openDairyPassbookModal(dc.name, dc.entries, "supply", dc.mobile || "");
+      }));
       container.querySelectorAll("[data-ds-wa]").forEach(b => b.addEventListener("click", () => {
         const dc = ledger.find(x => x.name === b.dataset.dsWa);
         if (!dc) return;
@@ -4882,6 +5043,1275 @@
       document.getElementById("dsv-form-btn").addEventListener("click", () => {
         const p = upd();
         openDairySupplyEntryModal(p ? { date: state.selectedDate, ...p, paid: 0, paymentMode: "acc_cash", note: "Voice Entry" } : null);
+      });
+    }
+
+    // =========================================================================
+    // 11I. FINANCE HEALTH SCORE, PARCHUNI BARCODE POS + THERMAL RECEIPT, DAIRY PASSBOOK & ANIMAL HEALTH
+    // =========================================================================
+    function renderFinanceHealthWidget() {
+      const fh = AccountingEngine.calcFinanceHealthAndOverdue(state.data, state.selectedDate);
+      const badgeColor = fh.score >= 80 ? "bg-emerald-100 text-emerald-800" : fh.score >= 60 ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-700";
+      return `
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          <div class="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 rounded-xl p-3 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-teal-900">🏆 फाइनेंस हेल्थ स्कोर (Home + Dairy + Shop)</span>
+              <span class="px-2.5 py-0.5 rounded-full font-bold ${badgeColor}">${fh.score}/100 • ${fh.grade}</span>
+            </div>
+            <div class="w-full bg-white rounded-full h-2 overflow-hidden border border-teal-200">
+              <div class="h-2 rounded-full bg-teal-600" style="width:${fh.score}%"></div>
+            </div>
+            <div class="text-slate-700">💡 ${escHtml(fh.tip)}</div>
+          </div>
+          <div class="bg-rose-50/70 border border-rose-200 rounded-xl p-3 space-y-1.5">
+            <div class="font-bold text-rose-900">🚨 30+ दिन से अटका उधार (Overdue Priority — ${fh.overdueList.length})</div>
+            ${fh.overdueList.length ? `<div class="space-y-1 max-h-24 overflow-y-auto">${fh.overdueList.slice(0, 4).map(o => `
+              <div class="flex items-center justify-between bg-white rounded-lg px-2 py-1 border border-rose-100">
+                <span><b>${escHtml(o.name)}</b> <span class="text-[10px] text-slate-500">${escHtml(o.tag)}</span></span>
+                <div class="flex items-center gap-1.5">
+                  <b class="text-red-700">${fmtRs(o.amount)}</b>
+                  <button type="button" data-ov-qr="${escHtml(o.name)}" data-amt="${o.amount}" data-mob="${escHtml(o.mobile)}" class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 font-bold text-[10px]">QR</button>
+                  <button type="button" data-ov-wa="${escHtml(o.name)}" data-amt="${o.amount}" data-mob="${escHtml(o.mobile)}" class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">WA</button>
+                </div>
+              </div>`).join("")}</div>` : `<div class="text-emerald-800 font-semibold">✅ कोई भी उधार 30 दिन से अधिक ओवरड्यू नहीं है।</div>`}
+          </div>
+        </div>`;
+    }
+
+    // --- 1-31 DAY DAIRY PASSBOOK CALENDAR CARD ---
+    function openDairyPassbookModal(titleName, entries, mode = "supply", mobile = "") {
+      let mStr = state.selectedMonth;
+      openModal(`📅 मासिक दूध पासबुक कार्ड (1–31 तारीख) — ${titleName}`, `
+        <div class="space-y-3 text-xs">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <input type="month" id="pb-month-sel" value="${mStr}" class="input-field py-1.5 min-h-[38px] w-40 text-xs" />
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" id="pb-pdf-btn" class="btn-primary text-xs py-1.5 min-h-[36px]">📄 PDF पासबुक</button>
+              <button type="button" id="pb-wa-btn" class="btn-secondary text-xs py-1.5 min-h-[36px] border-emerald-300 text-emerald-800">💬 WhatsApp</button>
+            </div>
+          </div>
+          <div id="pb-grid-wrap" class="max-h-[58vh] overflow-y-auto border border-slate-200 rounded-xl"></div>
+        </div>`);
+
+      const buildPassbook = () => {
+        const [yy, mm] = mStr.split("-").map(Number);
+        const daysInMonth = new Date(yy, mm, 0).getDate();
+        const rows = [];
+        let totM = 0, totE = 0, totAmt = 0;
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dt = `${mStr}-${String(day).padStart(2, "0")}`;
+          const dayEntries = (entries || []).filter(e => e.date === dt);
+          if (!dayEntries.length) {
+            rows.push([dt.slice(8), "-", "-", "0", "-", "0"]);
+            continue;
+          }
+          const mL = AccountingEngine.round2(dayEntries.filter(e => (e.shift || "सुबह") === "सुबह").reduce((s, e) => s + (Number(e.quantity) || 0), 0));
+          const eL = AccountingEngine.round2(dayEntries.filter(e => e.shift === "शाम").reduce((s, e) => s + (Number(e.quantity) || 0), 0));
+          const dAmt = AccountingEngine.round2(dayEntries.reduce((s, e) => s + (Number(e.amount) || 0), 0));
+          const fatSnf = dayEntries.map(e => e.fat ? `${e.fat}/${e.snf || "-"}` : "").filter(Boolean).join(", ") || "-";
+          totM = AccountingEngine.round2(totM + mL);
+          totE = AccountingEngine.round2(totE + eL);
+          totAmt = AccountingEngine.round2(totAmt + dAmt);
+          rows.push([String(day), mL || "-", eL || "-", AccountingEngine.round2(mL + eL), fatSnf, dAmt]);
+        }
+        return { rows, totM, totE, totL: AccountingEngine.round2(totM + totE), totAmt };
+      };
+
+      const renderPB = () => {
+        const pb = buildPassbook();
+        document.getElementById("pb-grid-wrap").innerHTML = `
+          <table class="data-table text-xs">
+            <thead><tr><th>तारीख</th><th>सुबह (L)</th><th>शाम (L)</th><th>कुल (L)</th><th>Fat/SNF</th><th>राशि (₹)</th></tr></thead>
+            <tbody>${pb.rows.map(r => `<tr class="${Number(r[3]) > 0 ? "bg-teal-50/40 font-semibold" : "text-slate-400"}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="text-teal-800">${r[3]}</td><td>${r[4]}</td><td class="text-emerald-700">₹${r[5]}</td></tr>`).join("")}</tbody>
+          </table>`;
+      };
+      renderPB();
+
+      document.getElementById("pb-month-sel").addEventListener("change", (e) => { mStr = e.target.value; renderPB(); });
+      document.getElementById("pb-pdf-btn").addEventListener("click", () => {
+        const pb = buildPassbook();
+        exportTableToPDF({
+          title: `मासिक दूध पासबुक कार्ड (1–31) — ${titleName}`,
+          dateRange: `माह: ${mStr}`,
+          headers: ["तारीख", "सुबह (L)", "शाम (L)", "कुल (L)", "Fat/SNF", "राशि (₹)"],
+          rows: pb.rows,
+          summaryLines: [`सुबह कुल: ${fmtL(pb.totM)} | शाम कुल: ${fmtL(pb.totE)}`, `माह का कुल दूध: ${fmtL(pb.totL)}`, `माह की कुल राशि: ${fmtRs(pb.totAmt)}`]
+        });
+      });
+      document.getElementById("pb-wa-btn").addEventListener("click", () => {
+        const pb = buildPassbook();
+        openWhatsAppMessage(mobile, `*MahaIndustries दूध पासबुक (${mStr}) — ${titleName}*\n• सुबह कुल: ${fmtL(pb.totM)}\n• शाम कुल: ${fmtL(pb.totE)}\n• कुल दूध: ${fmtL(pb.totL)}\n• कुल राशि: *${fmtRs(pb.totAmt)}*`);
+      });
+    }
+
+    // --- PARCHUNI BARCODE POS BILLING + INVENTORY + 58MM THERMAL RECEIPT ---
+    let posCart = [];
+    function renderParchuniPosStockTab(container) {
+      const inv = [...(state.data.parchuniInventory || [])].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      const lowItems = inv.filter(it => (Number(it.stock) || 0) <= (Number(it.minStock) || 2));
+      const cartTotal = AccountingEngine.round2(posCart.reduce((s, x) => s + (x.qty * x.rate), 0));
+      const custs = state.data.parchuniCustomers || [];
+
+      container.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- Left: POS Fast Billing + Camera Barcode Scan -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="font-bold text-sm text-teal-900">🧾 परचूनी फास्ट POS बिलिंग व थर्मल रसीद</h3>
+              <button type="button" id="pos-cam-scan-btn" class="btn-primary text-xs py-1.5 px-3 min-h-[36px] bg-rose-600 hover:bg-rose-700">📷 बारकोड स्कैन</button>
+            </div>
+            <div class="flex gap-2">
+              <input type="text" list="pos-inv-dl" id="pos-item-search" placeholder="बारकोड स्कैन करें या सामान चुनें..." class="input-field text-xs" />
+              <datalist id="pos-inv-dl">${inv.map(i => `<option value="${escHtml(i.name)}"></option>${i.barcode ? `<option value="${escHtml(i.barcode)}"></option>` : ""}`).join("")}</datalist>
+              <button type="button" id="pos-add-to-cart" class="btn-primary text-xs shrink-0">+ जोड़ें</button>
+            </div>
+            <div class="border border-slate-200 rounded-xl overflow-x-auto">
+              <table class="data-table text-xs">
+                <thead><tr><th>सामान</th><th>मात्रा</th><th>दर</th><th>योग</th><th>×</th></tr></thead>
+                <tbody>
+                  ${posCart.length ? posCart.map((c, idx) => `
+                    <tr>
+                      <td class="font-semibold">${escHtml(c.name)}</td>
+                      <td><input type="number" min="0.1" step="any" value="${c.qty}" data-cart-qty="${idx}" class="input-field py-1 min-h-[32px] w-16 text-xs" /></td>
+                      <td>₹${c.rate}</td>
+                      <td class="font-bold text-emerald-700">${fmtRs(c.qty * c.rate)}</td>
+                      <td><button type="button" data-cart-del="${idx}" class="text-red-600 font-bold">✕</button></td>
+                    </tr>`).join("") : `<tr><td colspan="5" class="text-center py-5 text-slate-400">बिल में सामान जोड़ने के लिए ऊपर चुनें या बारकोड स्कैन करें।</td></tr>`}
+                </tbody>
+              </table>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div><label class="block font-bold mb-1">ग्राहक का नाम (वैकल्पिक)</label><input type="text" list="pos-cust-dl" id="pos-cust-name" placeholder="नकद ग्राहक / उधार ग्राहक" class="input-field text-xs" /><datalist id="pos-cust-dl">${custs.map(c => `<option value="${escHtml(c.name)}"></option>`).join("")}</datalist></div>
+              <div><label class="block font-bold mb-1">भुगतान प्रकार</label><select id="pos-pay-type" class="input-field text-xs"><option value="acc_cash">नकद (Cash)</option><option value="acc_upi">UPI</option><option value="udhaar">उधार खाते में जोड़ें</option></select></div>
+            </div>
+            <div class="flex items-center justify-between bg-teal-50 border border-teal-200 rounded-xl px-3.5 py-2.5">
+              <span class="font-bold text-sm text-teal-900">कुल बिल: ${fmtRs(cartTotal)}</span>
+              <button type="button" id="pos-checkout-btn" class="btn-primary text-xs py-2 min-h-[38px]">🧾 बिल सेव &amp; थर्मल रसीद</button>
+            </div>
+          </div>
+
+          <!-- Right: Smart Stock & Expiry Management -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="font-bold text-sm text-slate-900">📦 दुकान स्टॉक व एक्सपायरी (${inv.length} आइटम)</h3>
+              <div class="flex gap-1.5">
+                ${lowItems.length ? `<button type="button" id="pos-order-low-btn" class="btn-secondary text-xs py-1.5 px-2.5 min-h-[36px] border-emerald-300 text-emerald-800">💬 कम स्टॉक ऑर्डर (${lowItems.length})</button>` : ""}
+                <button type="button" id="pos-add-inv-btn" class="btn-primary text-xs py-1.5 px-3 min-h-[36px]">+ स्टॉक आइटम</button>
+              </div>
+            </div>
+            <div class="overflow-x-auto max-h-80">
+              <table class="data-table text-xs">
+                <thead><tr><th>सामान / बारकोड</th><th>स्टॉक</th><th>बिक्री दर</th><th>एक्सपायरी</th><th>क्रिया</th></tr></thead>
+                <tbody>
+                  ${inv.length ? inv.map(it => {
+                    const isLow = (Number(it.stock) || 0) <= (Number(it.minStock) || 2);
+                    return `
+                      <tr>
+                        <td><div class="font-bold">${escHtml(it.name)}</div><div class="text-[10px] text-slate-400">${escHtml(it.barcode || "-")}</div></td>
+                        <td class="font-bold ${isLow ? "text-red-600" : "text-teal-700"}">${it.stock} ${isLow ? "⚠️" : ""}</td>
+                        <td class="font-semibold">₹${it.sellRate}</td>
+                        <td class="text-[11px]">${escHtml(it.expiryDate || "-")}</td>
+                        <td class="whitespace-nowrap"><button type="button" data-inv-quick="${it.id}" class="text-teal-700 font-bold mr-2">+बिल</button><button type="button" data-inv-del="${it.id}" class="text-red-600 font-bold">Del</button></td>
+                      </tr>`;
+                  }).join("") : `<tr><td colspan="5" class="text-center py-6 text-slate-400">अभी कोई स्टॉक आइटम नहीं जोड़ा गया है। "+ स्टॉक आइटम" दबाएं।</td></tr>`}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>`;
+
+      const addItemByQuery = (q) => {
+        const s = String(q || "").trim().toLowerCase(); if (!s) return;
+        const found = inv.find(i => (i.barcode || "").toLowerCase() === s || (i.name || "").toLowerCase() === s || (i.name || "").toLowerCase().includes(s));
+        if (!found) { showToast(`"${q}" स्टॉक में नहीं मिला — पहले "+ स्टॉक आइटम" में जोड़ें।`, "warning"); return; }
+        const ex = posCart.find(c => c.id === found.id);
+        if (ex) ex.qty = AccountingEngine.round2(ex.qty + 1);
+        else posCart.push({ id: found.id, name: found.name, qty: 1, rate: Number(found.sellRate) || 0 });
+        renderParchuniPosStockTab(container);
+      };
+
+      document.getElementById("pos-add-to-cart").addEventListener("click", () => addItemByQuery(document.getElementById("pos-item-search").value));
+      document.getElementById("pos-cam-scan-btn").addEventListener("click", () => openLiveBarcodeScannerModal((code) => addItemByQuery(code)));
+      container.querySelectorAll("[data-cart-qty]").forEach(inp => inp.addEventListener("change", (e) => { posCart[Number(inp.dataset.cartQty)].qty = Math.max(0.1, Number(e.target.value) || 1); renderParchuniPosStockTab(container); }));
+      container.querySelectorAll("[data-cart-del]").forEach(b => b.addEventListener("click", () => { posCart.splice(Number(b.dataset.cartDel), 1); renderParchuniPosStockTab(container); }));
+      container.querySelectorAll("[data-inv-quick]").forEach(b => b.addEventListener("click", () => { const it = inv.find(x => x.id === b.dataset.invQuick); if (it) addItemByQuery(it.name); }));
+      container.querySelectorAll("[data-inv-del]").forEach(b => b.addEventListener("click", () => deleteDocById("parchuniInventory", b.dataset.invDel, "स्टॉक आइटम")));
+      document.getElementById("pos-add-inv-btn").addEventListener("click", () => openInventoryItemModal());
+
+      const ordLowBtn = document.getElementById("pos-order-low-btn");
+      if (ordLowBtn) ordLowBtn.addEventListener("click", () => {
+        const listTxt = lowItems.map(i => `• ${i.name} (स्टॉक बचा: ${i.stock})`).join("\n");
+        openSalesmanOrderModal("", "");
+        setTimeout(() => { const ta = document.getElementById("smo-items"); if (ta) ta.value = listTxt; }, 80);
+      });
+
+      document.getElementById("pos-checkout-btn").addEventListener("click", async () => {
+        if (!posCart.length) { showToast("बिल में कम से कम 1 आइटम जोड़ें।", "warning"); return; }
+        const custName = document.getElementById("pos-cust-name").value.trim() || "नकद ग्राहक";
+        const payType = document.getElementById("pos-pay-type").value;
+        const total = AccountingEngine.round2(posCart.reduce((s, c) => s + (c.qty * c.rate), 0));
+        const itemsSummary = posCart.map(c => `${c.name} (${c.qty}×₹${c.rate})`).join(", ");
+        const billNo = "MH-" + String(Date.now()).slice(-5);
+
+        // 1. Deduct stock
+        for (const c of posCart) {
+          const invItem = (state.data.parchuniInventory || []).find(i => i.id === c.id);
+          if (invItem) await saveDoc("parchuniInventory", { ...invItem, stock: Math.max(0, AccountingEngine.round2((Number(invItem.stock) || 0) - c.qty)) }, invItem.id);
+        }
+        // 2. Save Bill + Route to Udhaar or Income
+        await saveDoc("parchuniBills", { billNo, date: state.selectedDate, customerName: custName, items: [...posCart], total, payType });
+        if (payType === "udhaar") {
+          if (!(state.data.parchuniCustomers || []).some(c => c.name.toLowerCase() === custName.toLowerCase())) {
+            await saveDoc("parchuniCustomers", { name: custName, mobile: "", address: "", openingBalance: 0 });
+          }
+          await saveDoc("parchuniEntries", { date: state.selectedDate, customerName: custName, type: "udhaar", items: itemsSummary, amount: total, note: `POS Bill ${billNo}` });
+        } else {
+          await saveDoc("income", { date: state.selectedDate, category: "दुकान से Income", description: `POS Bill ${billNo} (${custName})`, amount: total, paymentMode: payType, note: itemsSummary });
+        }
+
+        const savedItems = [...posCart];
+        posCart = [];
+        openThermalReceiptModal({ billNo, date: state.selectedDate, customerName: custName, items: savedItems, total, payLabel: payType === "udhaar" ? "उधार खाता" : accountNameById(payType) });
+      });
+    }
+
+    function openInventoryItemModal() {
+      openModal("नया परचूनी स्टॉक आइटम जोड़ें", `
+        <form id="inv-form" class="space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">सामान का नाम*</label><input type="text" id="iv-name" required placeholder="उदा. फॉर्च्यून तेल 1L" class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">बारकोड (वैकल्पिक)</label><input type="text" id="iv-bar" placeholder="8901234..." class="input-field" /></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div><label class="block text-xs font-bold mb-1">मौजूदा स्टॉक*</label><input type="number" step="any" min="0" id="iv-stk" value="10" required class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">कम-स्टॉक अलर्ट</label><input type="number" step="any" min="0" id="iv-min" value="3" class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">बिक्री दर (₹)*</label><input type="number" step="any" min="0.5" id="iv-sell" required class="input-field font-bold" /></div>
+          </div>
+          <div><label class="block text-xs font-bold mb-1">एक्सपायरी तारीख (वैकल्पिक)</label><input type="date" id="iv-exp" class="input-field" /></div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="iv-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">सेव करें</button></div>
+        </form>`);
+      document.getElementById("iv-cancel").addEventListener("click", closeModal);
+      document.getElementById("inv-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("iv-name").value.trim(), sellRate = AccountingEngine.round2(document.getElementById("iv-sell").value);
+        if (!name || sellRate <= 0) return;
+        if (await saveDoc("parchuniInventory", { name, barcode: document.getElementById("iv-bar").value.trim(), stock: AccountingEngine.round2(document.getElementById("iv-stk").value || 0), minStock: AccountingEngine.round2(document.getElementById("iv-min").value || 2), sellRate, expiryDate: document.getElementById("iv-exp").value })) closeModal();
+      });
+    }
+
+    function openLiveBarcodeScannerModal(onDetected) {
+      let stream = null, raf = null;
+      openModal("📷 लाइव कैमरा बारकोड स्कैनर", `
+        <div class="space-y-3 text-center text-xs">
+          <video id="bc-video" autoplay playsinline class="w-full max-h-60 rounded-xl bg-black mx-auto"></video>
+          <div id="bc-status" class="font-bold text-teal-800">कैमरा शुरू हो रहा है... पैकेट का बारकोड सामने लाएं</div>
+          <div class="flex gap-2">
+            <input type="text" id="bc-manual" placeholder="या बारकोड नंबर लिखें..." class="input-field text-xs" />
+            <button type="button" id="bc-manual-go" class="btn-primary text-xs shrink-0">जोड़ें</button>
+          </div>
+        </div>`);
+
+      const stopCam = () => { if (raf) cancelAnimationFrame(raf); if (stream) stream.getTracks().forEach(t => t.stop()); };
+      document.getElementById("modal-close-btn").addEventListener("click", stopCam, { once: true });
+      document.getElementById("bc-manual-go").addEventListener("click", () => {
+        const v = document.getElementById("bc-manual").value.trim();
+        if (v) { stopCam(); closeModal(); onDetected(v); }
+      });
+
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(s => {
+          stream = s;
+          const v = document.getElementById("bc-video");
+          if (v) v.srcObject = s;
+          if ("BarcodeDetector" in window) {
+            const det = new BarcodeDetector({ formats: ["ean_13", "ean_8", "code_128", "qr_code", "upc_a"] });
+            const scanLoop = async () => {
+              if (!v || v.readyState < 2) { raf = requestAnimationFrame(scanLoop); return; }
+              try {
+                const codes = await det.detect(v);
+                if (codes && codes.length) {
+                  stopCam(); closeModal(); showToast("बारकोड स्कैन हो गया: " + codes[0].rawValue); onDetected(codes[0].rawValue); return;
+                }
+              } catch (e) {}
+              raf = requestAnimationFrame(scanLoop);
+            };
+            raf = requestAnimationFrame(scanLoop);
+          } else {
+            document.getElementById("bc-status").textContent = "इस ब्राउज़र में लाइव BarcodeDetector उपलब्ध नहीं है — कृपया नीचे बारकोड नंबर लिखें।";
+          }
+        }).catch(() => {
+          document.getElementById("bc-status").textContent = "कैमरा अनुमति नहीं मिली — कृपया नीचे बारकोड नंबर लिखें।";
+        });
+      }
+    }
+
+    function openThermalReceiptModal({ billNo, date, customerName, items, total, payLabel }) {
+      const receiptHtml = `
+        <div id="thermal-slip" style="width:260px; margin:0 auto; padding:12px; background:#fff; color:#000; font-family:monospace; font-size:12px; border:1px dashed #334155;">
+          <div style="text-align:center; font-weight:700; font-size:14px;">MAHAINDUSTRIES</div>
+          <div style="text-align:center; font-size:11px;">परचूनी स्टोर • प्रो. अंकित शर्मा</div>
+          <div style="text-align:center; font-size:10px; border-bottom:1px dashed #000; padding-bottom:6px; margin-bottom:6px;">मो: 7500343487</div>
+          <div>बिल नं: <b>${escHtml(billNo)}</b> | तिथि: ${escHtml(date)}</div>
+          <div style="border-bottom:1px dashed #000; padding-bottom:4px; margin-bottom:6px;">ग्राहक: <b>${escHtml(customerName)}</b> (${escHtml(payLabel)})</div>
+          ${items.map(i => `<div style="display:flex; justify-content:space-between;"><span>${escHtml(i.name)} ×${i.qty}</span><span>₹${AccountingEngine.round2(i.qty * i.rate)}</span></div>`).join("")}
+          <div style="border-top:1px dashed #000; margin-top:6px; padding-top:6px; display:flex; justify-content:space-between; font-weight:700; font-size:14px;"><span>कुल योग:</span><span>${fmtRs(total)}</span></div>
+          <div style="text-align:center; font-size:10px; margin-top:8px;">धन्यवाद! फिर पधारें 🙏</div>
+        </div>`;
+      openModal(`🧾 थर्मल रसीद — ${billNo}`, `
+        <div class="space-y-3 text-center">
+          ${receiptHtml}
+          <div class="flex flex-wrap justify-center gap-2">
+            <button type="button" id="th-print-btn" class="btn-primary text-xs">🖨️ 58mm प्रिंट</button>
+            <button type="button" id="th-wa-btn" class="btn-secondary text-xs border-emerald-300 text-emerald-800">💬 WhatsApp रसीद</button>
+          </div>
+        </div>`);
+      document.getElementById("th-print-btn").addEventListener("click", () => {
+        const w = window.open("", "_blank", "width=340,height=500");
+        if (w) { w.document.write(`<!DOCTYPE html><html><body style="margin:0;">${receiptHtml}</body></html>`); w.document.close(); setTimeout(() => w.print(), 250); }
+      });
+      document.getElementById("th-wa-btn").addEventListener("click", () => {
+        const txt = `*MahaIndustries परचूनी स्टोर — रसीद ${billNo}*\nतिथि: ${date} | ग्राहक: ${customerName} (${payLabel})\n${items.map(i => `• ${i.name} (${i.qty}×₹${i.rate}) = ₹${AccountingEngine.round2(i.qty * i.rate)}`).join("\n")}\n*कुल राशि: ${fmtRs(total)}*\nसंपर्क: 7500343487`;
+        openWhatsAppMessage("", txt);
+      });
+    }
+
+    // --- ANIMAL HEALTH, CALVING (ब्यात) & VACCINATION TRACKER ---
+    function renderAnimalHealthTab(container) {
+      const rows = [...(state.data.animalHealth || [])].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      container.innerHTML = `
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
+          <div><div class="text-xs font-bold text-teal-800">🩺 पशु स्वास्थ्य, गर्भाधान (AI), ब्यात व टीकाकरण ट्रैकर</div><div class="text-xs text-slate-500">अगले ब्यात (गाय 283 दिन / भैंस 310 दिन) व टीकाकरण का स्वचालित अलर्ट</div></div>
+          <button type="button" id="add-ah-btn" class="btn-primary text-xs">+ स्वास्थ्य / ब्यात रिकॉर्ड</button>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+          <table class="data-table text-xs">
+            <thead><tr><th>पशु</th><th>प्रकार</th><th>तारीख</th><th>अगली संभावित तारीख (ब्यात/टीका)</th><th>नोट</th><th>क्रिया</th></tr></thead>
+            <tbody>${rows.length ? rows.map(r => `<tr><td class="font-bold">${escHtml(r.animalName)} <span class="text-slate-400">(${escHtml(r.animalType || "भैंस")})</span></td><td><span class="px-2 py-0.5 rounded-full font-bold bg-teal-50 text-teal-800">${escHtml(r.eventType)}</span></td><td>${escHtml(r.date)}</td><td class="font-bold text-amber-800">${escHtml(r.nextDueDate || "-")}</td><td>${escHtml(r.note || "-")}</td><td><button type="button" data-del-ah="${r.id}" class="text-red-600 font-bold">Delete</button></td></tr>`).join("") : `<tr><td colspan="6" class="text-center py-8 text-slate-400">अभी कोई पशु स्वास्थ्य या ब्यात रिकॉर्ड नहीं है।</td></tr>`}</tbody>
+          </table>
+        </div>`;
+
+      document.getElementById("add-ah-btn").addEventListener("click", () => {
+        const animals = state.data.animals || [];
+        openModal("पशु स्वास्थ्य / गर्भाधान (AI) / टीकाकरण रिकॉर्ड", `
+          <form id="ah-form" class="space-y-3 text-xs">
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="block font-bold mb-1">पशु का नाम*</label><input type="text" list="ah-an-dl" id="ah-name" required placeholder="उदा. काली भैंस" class="input-field" /><datalist id="ah-an-dl">${animals.map(a => `<option value="${escHtml(a.name)}"></option>`).join("")}</datalist></div>
+              <div><label class="block font-bold mb-1">गाय / भैंस</label><select id="ah-atype" class="input-field"><option value="भैंस">भैंस (310 दिन ब्यात)</option><option value="गाय">गाय (283 दिन ब्यात)</option></select></div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="block font-bold mb-1">घटना प्रकार*</label><select id="ah-ev" class="input-field"><option value="गर्भाधान (AI)">गर्भाधान (AI) → ब्यात अलर्ट</option><option value="टीकाकरण (FMD/HS)">टीकाकरण (FMD/HS)</option><option value="ब्यात (Calving)">ब्यात (Calving)</option><option value="दवाई / इलाज">दवाई / इलाज</option></select></div>
+              <div><label class="block font-bold mb-1">तारीख*</label><input type="date" id="ah-date" value="${state.selectedDate}" required class="input-field" /></div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="block font-bold mb-1">अगली तारीख (ब्यात / अगला टीका)</label><input type="date" id="ah-next" class="input-field font-bold text-amber-800" /></div>
+              <div><label class="block font-bold mb-1">डॉक्टर / नोट</label><input type="text" id="ah-note" class="input-field" /></div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2"><button type="button" id="ah-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">सेव करें</button></div>
+          </form>`);
+        const autoNext = () => {
+          const ev = document.getElementById("ah-ev").value, dt = document.getElementById("ah-date").value, at = document.getElementById("ah-atype").value;
+          if (!dt) return;
+          if (ev === "गर्भाधान (AI)") document.getElementById("ah-next").value = AccountingEngine.calcExpectedCalvingDate(dt, at);
+          else if (ev === "टीकाकरण (FMD/HS)") { const d = new Date(dt + "T00:00:00"); d.setDate(d.getDate() + 180); document.getElementById("ah-next").value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+        };
+        ["ah-ev", "ah-date", "ah-atype"].forEach(id => document.getElementById(id).addEventListener("change", autoNext));
+        autoNext();
+        document.getElementById("ah-cancel").addEventListener("click", closeModal);
+        document.getElementById("ah-form").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const name = document.getElementById("ah-name").value.trim(); if (!name) return;
+          if (await saveDoc("animalHealth", { animalName: name, animalType: document.getElementById("ah-atype").value, eventType: document.getElementById("ah-ev").value, date: document.getElementById("ah-date").value, nextDueDate: document.getElementById("ah-next").value, note: document.getElementById("ah-note").value.trim() })) closeModal();
+        });
+      });
+      container.querySelectorAll("[data-del-ah]").forEach(b => b.addEventListener("click", () => deleteDocById("animalHealth", b.dataset.delAh, "पशु स्वास्थ्य रिकॉर्ड")));
+    }
+
+    // =========================================================================
+    // 11J. PERSONAL VOICE DIARY (बोलकर लिखें, ऑटो-सेव, बोलकर सुनें, Edit/Delete/PDF)
+    // =========================================================================
+    let diaryAutoSaveTimer = null;
+    let diarySpeechRec = null;
+
+    function renderPersonalDiaryView(container) {
+      const diaryPin = localStorage.getItem("maha_diary_pin_v1") || "";
+      if (diaryPin && !state.diaryUnlocked) {
+        container.innerHTML = `
+          <div class="max-w-md mx-auto bg-white rounded-2xl border border-purple-200 p-6 text-center space-y-4 shadow-sm mt-6">
+            <div class="text-4xl">🔐</div>
+            <h3 class="font-bold text-lg text-purple-950">निजी डायरी लॉक है</h3>
+            <p class="text-xs text-slate-500">अपनी निजी डायरी खोलने के लिए 4-अंकों का सीक्रेट डायरी PIN डालें।</p>
+            <input type="password" inputmode="numeric" maxlength="4" id="diary-pin-unlock-inp" placeholder="••••" class="input-field text-center text-2xl tracking-[0.5em] font-bold" />
+            <button type="button" id="diary-pin-unlock-btn" class="btn-primary w-full bg-purple-700 hover:bg-purple-800">🔓 डायरी अनलॉक करें</button>
+          </div>`;
+        const tryUnlock = () => {
+          const val = (document.getElementById("diary-pin-unlock-inp")?.value || "").trim();
+          if (val === diaryPin) {
+            state.diaryUnlocked = true;
+            renderCurrentView();
+            showToast("निजी डायरी अनलॉक हो गई।");
+          } else {
+            showToast("गलत डायरी PIN! फिर से प्रयास करें।", "error");
+          }
+        };
+        document.getElementById("diary-pin-unlock-btn")?.addEventListener("click", tryUnlock);
+        document.getElementById("diary-pin-unlock-inp")?.addEventListener("keydown", e => { if (e.key === "Enter") tryUnlock(); });
+        return;
+      }
+
+      const notes = [...(state.data.personalDiary || [])].sort((a, b) => (b.updatedAt || b.date || "").localeCompare(a.updatedAt || a.date || ""));
+      const q = (state.diarySearch || "").toLowerCase();
+      const filtered = notes.filter(n => !q || `${n.date} ${n.title} ${n.tag} ${n.content}`.toLowerCase().includes(q));
+      const editing = state.activeDiaryEditId ? notes.find(n => n.id === state.activeDiaryEditId) : null;
+      const currentAudio = state.diaryDraftAudio !== null ? state.diaryDraftAudio : (editing?.audioData || "");
+      const currentPhoto = state.diaryDraftPhoto !== null ? state.diaryDraftPhoto : (editing?.photoData || "");
+      const moods = ["📝 सामान्य नोट", "😊 खुश", "🙏 आभार", "💡 विचार", "📌 ज़रूरी काम", "💼 बिज़नेस", "🏠 परिवार"];
+
+      container.innerHTML = `
+        <!-- Auto-Save Voice, Audio & Photo Diary Editor -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="font-bold text-base text-purple-900">📓 निजी डायरी (Voice, Audio व Photo Diary)</h3>
+              <div class="text-[11px] text-slate-500">बोलकर लिखें, असली आवाज़ रिकॉर्ड करें, फोटो जोड़ें — सब अपने आप (Auto-Save) सेव होगा।</div>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span id="diary-autosave-badge" class="text-[11px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">✓ ऑटो-सेव तैयार</span>
+              <button type="button" id="diary-pin-cfg-btn" class="btn-secondary text-xs py-1.5 px-2.5 min-h-[34px] border-purple-300 text-purple-800">${diaryPin ? "🔐 PIN बदलें/लॉक" : "🔐 डायरी PIN लगाएं"}</button>
+              ${diaryPin ? `<button type="button" id="diary-lock-now-btn" class="btn-secondary text-xs py-1.5 px-2.5 min-h-[34px] border-rose-300 text-rose-700">🔒 लॉक करें</button>` : ""}
+              ${editing ? `<button type="button" id="diary-new-btn" class="btn-secondary text-xs py-1.5 px-2.5 min-h-[34px]">+ नया पन्ना</button>` : ""}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+            <div><label class="block font-bold mb-1">तारीख</label><input type="date" id="diary-date" value="${editing?.date || state.selectedDate}" class="input-field py-2 text-xs" /></div>
+            <div><label class="block font-bold mb-1">टैग / मूड</label><select id="diary-tag" class="input-field py-2 text-xs">${moods.map(m => `<option value="${m}" ${(editing?.tag || moods[0]) === m ? "selected" : ""}>${m}</option>`).join("")}</select></div>
+            <div class="col-span-2 sm:col-span-1"><label class="block font-bold mb-1">शीर्षक (वैकल्पिक)</label><input type="text" id="diary-title" value="${escHtml(editing?.title || "")}" placeholder="आज की खास बात..." class="input-field py-2 text-xs" /></div>
+          </div>
+
+          <div>
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+              <label class="text-xs font-bold text-slate-700">डायरी का पन्ना (बोलकर या टाइप करके लिखें)</label>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" id="diary-dictate-btn" class="btn-primary text-xs py-1.5 px-3 min-h-[34px] bg-purple-700 hover:bg-purple-800">🎙️ बोलकर लिखें</button>
+                <button type="button" id="diary-rec-audio-btn" class="btn-secondary text-xs py-1.5 px-3 min-h-[34px] border-rose-300 text-rose-800 bg-rose-50">🔴 आवाज़ रिकॉर्ड</button>
+                <label class="btn-secondary text-xs py-1.5 px-3 min-h-[34px] border-blue-300 text-blue-800 bg-blue-50 cursor-pointer inline-flex items-center gap-1">📷 फोटो <input type="file" id="diary-photo-inp" accept="image/*" class="hidden" /></label>
+                <button type="button" id="diary-read-editor-btn" class="btn-secondary text-xs py-1.5 px-3 min-h-[34px] border-teal-300 text-teal-800">🔊 बोलकर सुनें</button>
+              </div>
+            </div>
+            <textarea id="diary-content" rows="5" placeholder="यहाँ अपनी बात लिखें या ऊपर '🎙️ बोलकर लिखें' दबाकर हिंदी में बोलना शुरू करें..." class="input-field text-sm leading-relaxed">${escHtml(editing?.content || "")}</textarea>
+          </div>
+
+          ${(currentAudio || currentPhoto) ? `
+            <div class="flex flex-wrap items-center gap-3 p-2.5 rounded-xl bg-purple-50/70 border border-purple-200">
+              ${currentAudio ? `<div class="flex items-center gap-2"><audio controls src="${currentAudio}" class="h-8 max-w-[220px]"></audio><button type="button" id="diary-rm-audio" class="text-xs text-red-600 font-bold">✕ आवाज़ हटाएं</button></div>` : ""}
+              ${currentPhoto ? `<div class="flex items-center gap-2"><img src="${currentPhoto}" alt="Diary Photo" class="h-14 w-14 object-cover rounded-lg border border-purple-300" /><button type="button" id="diary-rm-photo" class="text-xs text-red-600 font-bold">✕ फोटो हटाएं</button></div>` : ""}
+            </div>` : ""}
+
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-[11px] text-slate-400">कुल सहेजे गए पन्ने: <b>${notes.length}</b></span>
+            <div class="flex gap-2">
+              <button type="button" id="diary-export-all-pdf" class="btn-secondary text-xs py-1.5 px-3 min-h-[36px] border-blue-300 text-blue-800">📄 पूरी डायरी PDF</button>
+              <button type="button" id="diary-save-now-btn" class="btn-primary text-xs py-1.5 px-4 min-h-[36px]">💾 सेव व नया पन्ना</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search & Saved Diary Notes List -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-3">
+          <input type="search" id="diary-search-inp" value="${escHtml(state.diarySearch)}" placeholder="अपनी पुरानी डायरी तारीख, शीर्षक या शब्द से खोजें..." class="input-field text-xs" />
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          ${filtered.length ? filtered.map(n => `
+            <div class="kpi-card space-y-2 ${state.activeDiaryEditId === n.id ? "ring-2 ring-purple-400 border-purple-400" : ""}">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <div class="font-bold text-sm text-slate-900">${escHtml(n.title || "निजी डायरी नोट")}</div>
+                  <div class="text-[11px] text-slate-500">${escHtml(n.date)} • <span class="font-semibold text-purple-800">${escHtml(n.tag || "📝 सामान्य नोट")}</span></div>
+                </div>
+              </div>
+              ${n.photoData ? `<img src="${n.photoData}" alt="Diary Memory" class="w-full max-h-44 object-cover rounded-xl border border-slate-200" />` : ""}
+              ${n.content ? `<div class="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed bg-slate-50 rounded-xl p-2.5 border border-slate-100 max-h-40 overflow-y-auto">${escHtml(n.content)}</div>` : ""}
+              ${n.audioData ? `<audio controls src="${n.audioData}" class="w-full h-8"></audio>` : ""}
+              <div class="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100 text-xs">
+                <button type="button" data-diary-speak="${n.id}" class="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 font-bold">🔊 सुनें</button>
+                <button type="button" data-diary-edit="${n.id}" class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 font-bold">✏️ Edit</button>
+                <button type="button" data-diary-pdf="${n.id}" class="px-2.5 py-1 rounded-lg bg-purple-50 text-purple-800 font-bold">📄 PDF</button>
+                <button type="button" data-diary-del="${n.id}" class="ml-auto px-2 py-1 rounded-lg text-red-600 font-bold">🗑️ Delete</button>
+              </div>
+            </div>
+          `).join("") : `<div class="col-span-full bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-sm">अभी आपकी निजी डायरी खाली है। ऊपर <b>🎙️ बोलकर लिखें</b> या <b>🔴 आवाज़ रिकॉर्ड</b> दबाकर अपना पहला नोट बनाएं।</div>`}
+        </div>`;
+
+      const dateEl = document.getElementById("diary-date");
+      const tagEl = document.getElementById("diary-tag");
+      const titleEl = document.getElementById("diary-title");
+      const contentEl = document.getElementById("diary-content");
+      const badgeEl = document.getElementById("diary-autosave-badge");
+      const dictBtn = document.getElementById("diary-dictate-btn");
+
+      const autoSaveDiaryDraft = (refreshListAfter = false) => {
+        const content = contentEl.value.trim();
+        const title = titleEl.value.trim();
+        const audioData = state.diaryDraftAudio !== null ? state.diaryDraftAudio : (editing?.audioData || "");
+        const photoData = state.diaryDraftPhoto !== null ? state.diaryDraftPhoto : (editing?.photoData || "");
+        if (!content && !title && !audioData && !photoData) return;
+        const now = new Date().toISOString();
+        const devTag = getDeviceName();
+        if (!state.activeDiaryEditId) state.activeDiaryEditId = generateId("dry");
+        const id = state.activeDiaryEditId;
+        const rec = {
+          id,
+          date: dateEl.value || state.selectedDate,
+          tag: tagEl.value,
+          title: title || (content ? content.slice(0, 34) : "आवाज़ / फोटो डायरी नोट"),
+          content,
+          audioData,
+          photoData,
+          updatedBy: devTag,
+          updatedAt: now,
+          createdAt: (state.data.personalDiary.find(x => x.id === id)?.createdAt) || now
+        };
+        const idx = state.data.personalDiary.findIndex(x => x.id === id);
+        if (idx >= 0) state.data.personalDiary[idx] = rec;
+        else state.data.personalDiary.push(rec);
+        persistLocalDB();
+        if (isCloudSyncEnabled() && cloudUser && navigator.onLine) {
+          const { id: _id, ...cloudPayload } = rec;
+          privateRtdbRest(`data/personalDiary/${id}`, "PUT", cloudPayload).catch(() => {});
+        }
+        const t = new Date().toLocaleTimeString("hi-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        if (badgeEl) badgeEl.textContent = `✓ ऑटो-सेव (${t})`;
+        if (refreshListAfter) renderCurrentView();
+      };
+
+      let saveTimer = null;
+      const scheduleAutoSave = () => {
+        if (badgeEl) badgeEl.textContent = "⏳ सेव हो रहा है...";
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => autoSaveDiaryDraft(false), 1100);
+      };
+
+      [dateEl, tagEl, titleEl, contentEl].forEach(el => {
+        el.addEventListener("input", scheduleAutoSave);
+        el.addEventListener("change", scheduleAutoSave);
+      });
+
+      // Secret Diary PIN Setup / Remove
+      document.getElementById("diary-pin-cfg-btn")?.addEventListener("click", () => {
+        openModal("🔐 निजी डायरी सीक्रेट PIN", `
+          <div class="space-y-3 text-xs">
+            <p class="text-slate-600">यह PIN सिर्फ आपकी <b>निजी डायरी</b> को लॉक करेगा, ताकि कोई और आपका फोन चलाए तो आपकी निजी बातें न पढ़ सके।</p>
+            <div><label class="block font-bold mb-1">नया 4-अंकों का डायरी PIN (हटाने के लिए खाली छोड़ें)</label>
+              <input type="password" inputmode="numeric" maxlength="4" id="set-diary-pin-inp" placeholder="जैसे: 2580" class="input-field text-center text-lg tracking-widest font-bold" />
+            </div>
+            <div class="flex gap-2">
+              <button type="button" id="save-diary-pin-btn" class="btn-primary flex-1">💾 PIN सेव करें</button>
+              ${diaryPin ? `<button type="button" id="clear-diary-pin-btn" class="btn-secondary text-red-700 border-red-300">🗑️ PIN हटाएं</button>` : ""}
+            </div>
+          </div>`);
+        document.getElementById("save-diary-pin-btn")?.addEventListener("click", () => {
+          const p = (document.getElementById("set-diary-pin-inp")?.value || "").trim();
+          if (p && !/^\d{4}$/.test(p)) return showToast("कृपया ठीक 4 अंकों का PIN डालें।", "error");
+          if (p) {
+            localStorage.setItem("maha_diary_pin_v1", p);
+            state.diaryUnlocked = true;
+            showToast("डायरी सीक्रेट PIN सेट हो गया!");
+          } else {
+            localStorage.removeItem("maha_diary_pin_v1");
+            showToast("डायरी PIN हटा दिया गया।");
+          }
+          closeModal();
+          renderCurrentView();
+        });
+        document.getElementById("clear-diary-pin-btn")?.addEventListener("click", () => {
+          localStorage.removeItem("maha_diary_pin_v1");
+          closeModal();
+          renderCurrentView();
+          showToast("डायरी PIN हटा दिया गया।");
+        });
+      });
+
+      document.getElementById("diary-lock-now-btn")?.addEventListener("click", () => {
+        state.diaryUnlocked = false;
+        renderCurrentView();
+        showToast("निजी डायरी लॉक हो गई।");
+      });
+
+      // Real Audio Voice Note Recording (MediaRecorder)
+      let mediaRec = null;
+      let audioChunks = [];
+      const recBtn = document.getElementById("diary-rec-audio-btn");
+      recBtn?.addEventListener("click", async () => {
+        if (mediaRec && mediaRec.state === "recording") {
+          mediaRec.stop();
+          return;
+        }
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === "undefined") {
+          return showToast("इस ब्राउज़र में ऑडियो रिकॉर्डिंग सपोर्ट नहीं है। Chrome में खोलें।", "error");
+        }
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          audioChunks = [];
+          mediaRec = new MediaRecorder(stream);
+          mediaRec.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
+          mediaRec.onstop = () => {
+            stream.getTracks().forEach(t => t.stop());
+            recBtn.textContent = "🔴 आवाज़ रिकॉर्ड";
+            recBtn.classList.remove("animate-pulse", "bg-red-600", "text-white");
+            const blob = new Blob(audioChunks, { type: mediaRec.mimeType || "audio/webm" });
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              state.diaryDraftAudio = reader.result;
+              autoSaveDiaryDraft(true);
+              showToast("आवाज़ रिकॉर्ड होकर ऑटो-सेव हो गई!");
+            };
+            reader.readAsDataURL(blob);
+          };
+          mediaRec.start();
+          recBtn.textContent = "⏹️ रिकॉर्डिंग रोकें";
+          recBtn.classList.add("animate-pulse", "bg-red-600", "text-white");
+          showToast("माइक चालू है — बोलें और पूरा होने पर 'रिकॉर्डिंग रोकें' दबाएं।");
+        } catch (err) {
+          showToast("माइक की अनुमति नहीं मिली।", "error");
+        }
+      });
+
+      // Photo Attachment (compressed JPEG so localStorage stays fast)
+      document.getElementById("diary-photo-inp")?.addEventListener("change", e => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const img = new Image();
+          img.onload = () => {
+            const maxW = 800;
+            const scale = img.width > maxW ? maxW / img.width : 1;
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+            state.diaryDraftPhoto = canvas.toDataURL("image/jpeg", 0.72);
+            autoSaveDiaryDraft(true);
+            showToast("फोटो डायरी में ऑटो-सेव हो गई!");
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      document.getElementById("diary-rm-audio")?.addEventListener("click", () => {
+        state.diaryDraftAudio = "";
+        autoSaveDiaryDraft(true);
+      });
+      document.getElementById("diary-rm-photo")?.addEventListener("click", () => {
+        state.diaryDraftPhoto = "";
+        autoSaveDiaryDraft(true);
+      });
+
+      // Continuous Hindi Voice Dictation into Diary
+      let diaryRec = null;
+      let isDictating = false;
+      dictBtn.addEventListener("click", () => {
+        if (isDictating && diaryRec) {
+          try { diaryRec.stop(); } catch (e) {}
+          return;
+        }
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) return showToast("आपके ब्राउज़र में बोलकर लिखने की सुविधा उपलब्ध नहीं है। Chrome में खोलें।", "error");
+        diaryRec = new SR();
+        diaryRec.lang = "hi-IN";
+        diaryRec.continuous = true;
+        diaryRec.interimResults = false;
+        isDictating = true;
+        dictBtn.textContent = "⏹️ बोलना रोकें";
+        dictBtn.classList.add("animate-pulse", "bg-red-600");
+        showToast("माइक चालू है — अपनी बात हिंदी में बोलें...");
+        diaryRec.onresult = ev => {
+          let spoken = "";
+          for (let i = ev.resultIndex; i < ev.results.length; i++) {
+            if (ev.results[i].isFinal) spoken += ev.results[i][0].transcript + " ";
+          }
+          if (spoken.trim()) {
+            contentEl.value = (contentEl.value.trim() ? contentEl.value.trim() + " " : "") + spoken.trim();
+            autoSaveDiaryDraft(false);
+          }
+        };
+        diaryRec.onerror = () => {
+          isDictating = false;
+          dictBtn.textContent = "🎙️ बोलकर लिखें";
+          dictBtn.classList.remove("animate-pulse", "bg-red-600");
+        };
+        diaryRec.onend = () => {
+          isDictating = false;
+          dictBtn.textContent = "🎙️ बोलकर लिखें";
+          dictBtn.classList.remove("animate-pulse", "bg-red-600");
+          autoSaveDiaryDraft(true);
+        };
+        try { diaryRec.start(); } catch (e) {}
+      });
+
+      document.getElementById("diary-read-editor-btn").addEventListener("click", () => {
+        const txt = `${titleEl.value ? titleEl.value + "। " : ""}${contentEl.value.trim()}`;
+        if (!txt) return showToast("सुनने के लिए पहले कुछ लिखें या बोलें।", "error");
+        speakHindiText(txt);
+      });
+
+      document.getElementById("diary-save-now-btn").addEventListener("click", () => {
+        autoSaveDiaryDraft(false);
+        state.activeDiaryEditId = null;
+        state.diaryDraftAudio = null;
+        state.diaryDraftPhoto = null;
+        renderCurrentView();
+        showToast("डायरी पन्ना सेव हो गया! नया पन्ना तैयार है।");
+      });
+
+      document.getElementById("diary-new-btn")?.addEventListener("click", () => {
+        autoSaveDiaryDraft(false);
+        state.activeDiaryEditId = null;
+        state.diaryDraftAudio = null;
+        state.diaryDraftPhoto = null;
+        renderCurrentView();
+      });
+
+      document.getElementById("diary-search-inp").addEventListener("input", e => {
+        state.diarySearch = e.target.value;
+        renderCurrentView();
+      });
+
+      document.getElementById("diary-export-all-pdf").addEventListener("click", () => {
+        if (!notes.length) return showToast("डायरी में कोई पन्ना नहीं है।", "error");
+        const body = notes.map(n => `
+          <div style="border:1px solid #cbd5e1;border-radius:10px;padding:12px;margin-bottom:12px;background:#faf5ff;">
+            <div style="font-weight:700;font-size:14px;color:#4c1d95;">${escHtml(n.title || "निजी डायरी नोट")}</div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:6px;">तारीख: ${escHtml(n.date)} | ${escHtml(n.tag || "")}</div>
+            ${n.photoData ? `<img src="${n.photoData}" style="max-height:180px;border-radius:8px;margin-bottom:8px;" />` : ""}
+            <div style="font-size:13px;white-space:pre-wrap;line-height:1.6;">${escHtml(n.content || "")}</div>
+          </div>`).join("");
+        generateAndPrintPDF("निजी डायरी (Personal Voice Diary)", `कुल पन्ने: ${notes.length}`, body);
+      });
+
+      container.querySelectorAll("[data-diary-speak]").forEach(b => b.addEventListener("click", () => {
+        const n = notes.find(x => x.id === b.dataset.diarySpeak);
+        if (n) speakHindiText(`तारीख ${n.date}। ${n.title || ""}। ${n.content || "ऑडियो नोट"}`);
+      }));
+
+      container.querySelectorAll("[data-diary-edit]").forEach(b => b.addEventListener("click", () => {
+        state.activeDiaryEditId = b.dataset.diaryEdit;
+        state.diaryDraftAudio = null;
+        state.diaryDraftPhoto = null;
+        renderCurrentView();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }));
+
+      container.querySelectorAll("[data-diary-pdf]").forEach(b => b.addEventListener("click", () => {
+        const n = notes.find(x => x.id === b.dataset.diaryPdf);
+        if (!n) return;
+        const body = `<div style="border:1px solid #cbd5e1;border-radius:10px;padding:16px;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:8px;">तारीख: ${escHtml(n.date)} | ${escHtml(n.tag || "")}</div>
+          ${n.photoData ? `<img src="${n.photoData}" style="max-height:240px;border-radius:8px;margin-bottom:10px;" />` : ""}
+          <div style="font-size:14px;white-space:pre-wrap;line-height:1.7;">${escHtml(n.content || "")}</div>
+        </div>`;
+        generateAndPrintPDF(n.title || "निजी डायरी नोट", `तारीख: ${n.date}`, body);
+      }));
+
+      container.querySelectorAll("[data-diary-del]").forEach(b => b.addEventListener("click", async () => {
+        const n = notes.find(x => x.id === b.dataset.diaryDel);
+        if (n && await deleteDocById("personalDiary", n.id, n.title || "डायरी नोट")) {
+          if (state.activeDiaryEditId === b.dataset.diaryDel) {
+            state.activeDiaryEditId = null;
+            state.diaryDraftAudio = null;
+            state.diaryDraftPhoto = null;
+          }
+        }
+      }));
+    }
+
+    // =========================================================================
+    // 11B. SMS / UPI SMART PASTE AUTO-ENTRY
+    // =========================================================================
+    function parseSmsUpiText(raw) {
+      const txt = String(raw || "").trim();
+      const amtMatch = txt.match(/(?:rs\.?|inr|₹)\s*([0-9,]+(?:\.\d{1,2})?)/i) || txt.match(/\b([0-9,]+(?:\.\d{1,2})?)\s*(?:rs\.?|inr|₹|rupees|रुपये)/i);
+      const amount = amtMatch ? Number(amtMatch[1].replace(/,/g, "")) : 0;
+      const isCredit = /(credited|received|deposited|refund|cashback|आया|आए|मिले|जमा)/i.test(txt) && !/(debited|paid|sent|spent|withdrawn|कटा|दिए)/i.test(txt);
+      const type = isCredit ? "income" : "expense";
+      const mode = /(upi|vpa|gpay|phonepe|paytm|bhim|@)/i.test(txt) ? "UPI" : (/(a\/c|acct|bank|neft|imps|rtgs|card)/i.test(txt) ? "Bank" : "UPI");
+
+      let party = "";
+      const pMatch = txt.match(/(?:to|from|at|by|vpa)\s+([A-Za-z0-9@._\- ]{2,35}?)(?:\s+(?:on|via|ref|upi|avl|bal|using|for|at)|\s*[\.,;\n]|$)/i);
+      if (pMatch) party = pMatch[1].trim();
+
+      let date = todayStr();
+      const d1 = txt.match(/(\d{4})[-\/](\d{2})[-\/](\d{2})/);
+      const d2 = txt.match(/(\d{2})[-\/](\d{2})[-\/](\d{2,4})/);
+      if (d1) date = `${d1[1]}-${d1[2]}-${d1[3]}`;
+      else if (d2) {
+        const yr = d2[3].length === 2 ? `20${d2[3]}` : d2[3];
+        date = `${yr}-${d2[2]}-${d2[1]}`;
+      }
+
+      const low = txt.toLowerCase();
+      let category = "अन्य खर्च";
+      if (/(kirana|mart|grocery|supermarket|ration|dmart|blinkit|zepto|bigbasket)/.test(low)) category = "राशन / किराना";
+      else if (/(petrol|diesel|fuel|hpcl|bpcl|iocl|indian oil)/.test(low)) category = "पेट्रोल / डीज़ल";
+      else if (/(electricity|bijli|power|uppcl|bescom|tata power)/.test(low)) category = "बिजली बिल";
+      else if (/(jio|airtel|vi |bsnl|recharge|dth)/.test(low)) category = "मोबाइल / इंटरनेट";
+      else if (/(medical|pharma|hospital|clinic|doctor|apollo|1mg)/.test(low)) category = "दवाई / मेडिकल";
+      else if (/(milk|dairy|amul|mother dairy)/.test(low)) category = "दूध / डेयरी";
+      else if (/(swiggy|zomato|hotel|restaurant|cafe|sweet|bakery)/.test(low)) category = "बाहर का खाना";
+      else if (/(amazon|flipkart|myntra|meesho)/.test(low)) category = "ऑनलाइन शॉपिंग";
+
+      return { amount, type, mode, party: party || "UPI / Bank Transaction", date, category };
+    }
+
+    function openSmsUpiPasteModal() {
+      const expCats = getCategories("houseCategories", DEFAULT_HOUSE_CATEGORIES);
+      openModal("📲 SMS / UPI Smart Paste Auto-Entry", `
+        <div class="space-y-3 text-xs">
+          <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-2.5 text-indigo-900">
+            GPay, PhonePe, Paytm या बैंक का मैसेज नीचे पेस्ट करें — ऐप अपने आप <b>राशि, तारीख, पार्टी और खर्च/आय</b> भर देगा।
+          </div>
+          <div class="flex gap-2">
+            <button type="button" id="sms-clip-btn" class="btn-secondary text-xs py-1.5 px-3 border-indigo-300 text-indigo-800">📋 Clipboard से पेस्ट करें</button>
+            <button type="button" id="sms-sample-btn" class="btn-secondary text-xs py-1.5 px-3">🧪 सैंपल टेस्ट</button>
+          </div>
+          <textarea id="sms-raw-inp" rows="3" placeholder="उदाहरण: Rs. 450.00 debited from A/c XX1234 to Sharma Kirana via UPI on 26-11-2026..." class="input-field text-xs"></textarea>
+          <div id="sms-parsed-box" class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2.5">
+            <div class="grid grid-cols-2 gap-2">
+              <div><label class="block font-bold mb-1">प्रकार</label><select id="sms-type" class="input-field py-1.5 text-xs"><option value="expense">💸 खर्च (Debit)</option><option value="income">💰 आय (Credit)</option></select></div>
+              <div><label class="block font-bold mb-1">राशि (₹)</label><input type="number" step="0.01" id="sms-amt" class="input-field py-1.5 text-xs font-bold" /></div>
+              <div><label class="block font-bold mb-1">तारीख</label><input type="date" id="sms-date" value="${todayStr()}" class="input-field py-1.5 text-xs" /></div>
+              <div><label class="block font-bold mb-1">भुगतान माध्यम</label><select id="sms-mode" class="input-field py-1.5 text-xs"><option value="UPI">UPI</option><option value="Bank">Bank</option><option value="Cash">Cash</option></select></div>
+              <div><label class="block font-bold mb-1">पार्टी / विवरण</label><input type="text" id="sms-party" class="input-field py-1.5 text-xs" /></div>
+              <div><label class="block font-bold mb-1">श्रेणी (Category)</label><select id="sms-cat" class="input-field py-1.5 text-xs">${expCats.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join("")}</select></div>
+            </div>
+            <button type="button" id="sms-save-btn" class="btn-primary w-full bg-indigo-700 hover:bg-indigo-800">✅ ऑटो-एंट्री सेव करें</button>
+          </div>
+        </div>`);
+
+      const rawEl = document.getElementById("sms-raw-inp");
+      const applyParse = () => {
+        const p = parseSmsUpiText(rawEl.value);
+        document.getElementById("sms-type").value = p.type;
+        if (p.amount) document.getElementById("sms-amt").value = p.amount;
+        document.getElementById("sms-date").value = p.date;
+        document.getElementById("sms-mode").value = p.mode;
+        document.getElementById("sms-party").value = p.party;
+        const catSel = document.getElementById("sms-cat");
+        if ([...catSel.options].some(o => o.value === p.category)) catSel.value = p.category;
+      };
+      rawEl.addEventListener("input", applyParse);
+
+      document.getElementById("sms-clip-btn")?.addEventListener("click", async () => {
+        try {
+          const clip = await navigator.clipboard.readText();
+          if (clip) { rawEl.value = clip; applyParse(); showToast("SMS पेस्ट होकर पढ़ लिया गया!"); }
+          else showToast("Clipboard खाली है।", "error");
+        } catch (e) {
+          showToast("मैसेज को बॉक्स में लॉन्ग-प्रेस करके पेस्ट करें।", "error");
+        }
+      });
+
+      document.getElementById("sms-sample-btn")?.addEventListener("click", () => {
+        rawEl.value = `Rs. 640.00 debited from A/c XX4387 to Sharma Kirana Store via UPI on ${todayStr()}. Ref 6330129811.`;
+        applyParse();
+      });
+
+      document.getElementById("sms-save-btn")?.addEventListener("click", async () => {
+        const type = document.getElementById("sms-type").value;
+        const amount = Number(document.getElementById("sms-amt").value || 0);
+        const date = document.getElementById("sms-date").value || todayStr();
+        const paymentMode = document.getElementById("sms-mode").value;
+        const party = document.getElementById("sms-party").value.trim() || "SMS/UPI Entry";
+        const category = document.getElementById("sms-cat").value;
+        if (amount <= 0) return showToast("कृपया सही राशि (₹) डालें।", "error");
+        if (type === "income") {
+          await saveDoc("income", { date, source: party, category: "UPI / बैंक आय", amount, paymentMode, notes: `SMS Auto: ${rawEl.value.slice(0, 120)}` });
+        } else {
+          await saveDoc("houseExpenses", { date, item: party, category, amount, paymentMode, shopName: party, notes: `SMS Auto: ${rawEl.value.slice(0, 120)}` });
+        }
+        closeModal();
+      });
+    }
+
+    // =========================================================================
+    // 11C. OWNER VS. STAFF LOCK MODE
+    // =========================================================================
+    function isStaffMode() {
+      return localStorage.getItem("maha_staff_mode_v1") === "1";
+    }
+
+    function applyStaffModeUI() {
+      const on = isStaffMode();
+      document.body.classList.toggle("staff-mode-active", on);
+      const banner = document.getElementById("staff-mode-banner");
+      if (banner) banner.classList.toggle("hidden", !on);
+      const btn = document.getElementById("header-staff-btn");
+      if (btn) {
+        btn.innerHTML = on
+          ? `👨‍💼 <span class="hidden lg:inline">Staff</span>`
+          : `👑 <span class="hidden lg:inline">Owner</span>`;
+        btn.classList.toggle("bg-amber-500", on);
+        btn.classList.toggle("text-white", on);
+      }
+    }
+
+    function openStaffModeModal() {
+      const on = isStaffMode();
+      const savedPin = localStorage.getItem("maha_owner_pin_v1") || localStorage.getItem("maha_app_pin_v1") || "";
+      if (on) {
+        openModal("👑 Owner मोड अनलॉक करें", `
+          <div class="space-y-3 text-xs">
+            <p class="text-slate-600">स्टाफ मोड बंद करके पूरा Owner एक्सेस वापस पाने के लिए अपना 4-अंकों का Owner PIN डालें।</p>
+            <input type="password" inputmode="numeric" maxlength="4" id="owner-unlock-pin-inp" placeholder="••••" class="input-field text-center text-2xl tracking-[0.5em] font-bold" />
+            <button type="button" id="owner-unlock-confirm-btn" class="btn-primary w-full">👑 Owner अनलॉक करें</button>
+          </div>`);
+        document.getElementById("owner-unlock-confirm-btn")?.addEventListener("click", () => {
+          const val = (document.getElementById("owner-unlock-pin-inp")?.value || "").trim();
+          if (savedPin && val !== savedPin) return showToast("गलत Owner PIN!", "error");
+          localStorage.setItem("maha_staff_mode_v1", "0");
+          applyStaffModeUI();
+          closeModal();
+          renderCurrentView();
+          showToast("Owner मोड वापस चालू हो गया!");
+        });
+      } else {
+        openModal("👨‍💼 स्टाफ लॉक मोड चालू करें", `
+          <div class="space-y-3 text-xs">
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-900 space-y-1">
+              <div class="font-bold">स्टाफ मोड चालू होने पर क्या लॉक होगा?</div>
+              <div>• निजी डायरी, रिपोर्ट सेंटर, सेटिंग्स, डेयरी P&L और Cash/Bank अकाउंट छिप जाएंगे।</div>
+              <div>• कोई भी स्टाफ पुरानी एंट्री <b>Delete</b> नहीं कर पाएगा।</div>
+              <div>• स्टाफ सिर्फ <b>परचूनी उधार/बिलिंग, दूध डिलीवरी और घर के खर्च</b> जोड़ सकेगा।</div>
+            </div>
+            <div>
+              <label class="block font-bold mb-1">Owner अनलॉक PIN (4 अंक${savedPin ? " — पहले से सेट है, बदलना हो तो नया डालें" : " — अनिवार्य"})</label>
+              <input type="password" inputmode="numeric" maxlength="4" id="owner-set-pin-inp" placeholder="${savedPin ? "पहले वाला PIN उपयोग होगा" : "जैसे: 1234"}" class="input-field text-center text-lg tracking-widest font-bold" />
+            </div>
+            <button type="button" id="enable-staff-mode-btn" class="btn-primary w-full bg-amber-600 hover:bg-amber-700">👨‍💼 स्टाफ मोड चालू करें</button>
+          </div>`);
+        document.getElementById("enable-staff-mode-btn")?.addEventListener("click", () => {
+          const newPin = (document.getElementById("owner-set-pin-inp")?.value || "").trim();
+          const finalPin = newPin || savedPin;
+          if (!/^\d{4}$/.test(finalPin)) return showToast("कृपया 4 अंकों का Owner PIN सेट करें।", "error");
+          localStorage.setItem("maha_owner_pin_v1", finalPin);
+          localStorage.setItem("maha_staff_mode_v1", "1");
+          applyStaffModeUI();
+          closeModal();
+          if (["diary", "reports", "settings"].includes(state.activeMainTab)) state.activeMainTab = "parchuni";
+          renderCurrentView();
+          showToast("👨‍💼 स्टाफ मोड चालू हो गया!");
+        });
+      }
+    }
+
+    // =========================================================================
+    // 11D. GRAHAK TRUST SCORE & SMART WHATSAPP RECOVERY (PARCHUNI)
+    // =========================================================================
+    function renderParchuniTrustTab(container) {
+      const ledger = AccountingEngine.calcParchuniCustomerLedger(state.data.parchuniCustomers, state.data.parchuniEntries);
+      const nowMs = Date.now();
+      const upiId = state.data.settings?.upiId || "";
+
+      const scored = ledger.map(c => {
+        const cEntries = (state.data.parchuniEntries || []).filter(e => e.customerId === c.id);
+        const totalUdhaar = cEntries.filter(e => e.type === "udhaar").reduce((s, e) => s + Number(e.amount || 0), 0);
+        const totalPaid = cEntries.filter(e => e.type === "payment").reduce((s, e) => s + Number(e.amount || 0), 0);
+        const payRatio = totalUdhaar > 0 ? Math.min(1, totalPaid / totalUdhaar) : 1;
+        const lastPay = cEntries.filter(e => e.type === "payment").sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
+        const firstUdhaar = cEntries.filter(e => e.type === "udhaar").sort((a, b) => (a.date || "").localeCompare(b.date || ""))[0];
+        const refDate = lastPay?.date || firstUdhaar?.date || todayStr();
+        const daysPending = c.balance > 0 ? Math.max(0, Math.floor((nowMs - new Date(refDate).getTime()) / 86400000)) : 0;
+
+        let score = Math.round(50 + payRatio * 45 - Math.min(45, daysPending * 0.9));
+        if (c.balance <= 0) score = Math.max(score, 92);
+        score = Math.max(10, Math.min(100, score));
+        const tier = score >= 80 ? { label: "🟢 भरोसेमंद", cls: "bg-emerald-50 text-emerald-800 border-emerald-200" }
+                   : score >= 50 ? { label: "🟡 मध्यम", cls: "bg-amber-50 text-amber-800 border-amber-200" }
+                   : { label: "🔴 देरी / जोखिम", cls: "bg-rose-50 text-rose-800 border-rose-200" };
+        return { ...c, score, tier, daysPending, payPct: Math.round(payRatio * 100) };
+      }).sort((a, b) => (b.balance > 0 ? 1 : 0) - (a.balance > 0 ? 1 : 0) || a.score - b.score);
+
+      const pendingTotal = scored.reduce((s, c) => s + Math.max(0, c.balance), 0);
+      const riskCount = scored.filter(c => c.balance > 0 && c.score < 50).length;
+
+      container.innerHTML = `
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div class="kpi-card"><div class="text-xs text-slate-500">कुल बकाया उधार</div><div class="text-lg font-extrabold text-rose-700">${formatINR(pendingTotal)}</div></div>
+          <div class="kpi-card"><div class="text-xs text-slate-500">🔴 जोखिम वाले ग्राहक</div><div class="text-lg font-extrabold text-red-700">${riskCount}</div></div>
+          <div class="kpi-card col-span-2 sm:col-span-1"><div class="text-xs text-slate-500">कुल जांचे गए ग्राहक</div><div class="text-lg font-extrabold text-teal-800">${scored.length}</div></div>
+        </div>
+
+        <div class="space-y-3">
+          ${scored.length ? scored.map(c => {
+            const upiLine = upiId ? `\nUPI ID: ${upiId}` : "";
+            const msgPolite = encodeURIComponent(`नमस्ते ${c.name} जी 🙏\nहमारी परचूनी दुकान का आपका बकाया हिसाब ${formatINR(c.balance)} है। सुविधा अनुसार भुगतान करने की कृपा करें।${upiLine}\nधन्यवाद!`);
+            const msgFirm = encodeURIComponent(`नमस्ते ${c.name} जी,\nआपका ${formatINR(c.balance)} का उधार ${c.daysPending} दिनों से बकाया है। कृपया इस सप्ताह हिसाब क्लियर करवा दें।${upiLine}`);
+            const msgUrgent = encodeURIComponent(`ज़रूरी सूचना ${c.name} जी ⚠️\nआपका बकाया उधार ${formatINR(c.balance)} काफी समय (${c.daysPending} दिन) से पेंडिंग है। कृपया आज ही भुगतान करें।${upiLine}`);
+            const phone = String(c.mobile || "").replace(/\D/g, "");
+            const waBase = phone ? `https://wa.me/91${phone.slice(-10)}?text=` : `https://wa.me/?text=`;
+            return `
+              <div class="kpi-card space-y-2">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div class="font-bold text-sm text-slate-900">${escHtml(c.name)} <span class="text-[11px] font-bold px-2 py-0.5 rounded-full border ${c.tier.cls}">${c.tier.label} (${c.score}/100)</span></div>
+                    <div class="text-[11px] text-slate-500">भुगतान रिकॉर्ड: <b>${c.payPct}%</b> ${c.balance > 0 ? `• बकाया उम्र: <b>${c.daysPending} दिन</b>` : "• हिसाब क्लियर"}</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xs text-slate-400">बकाया</div>
+                    <div class="font-extrabold text-base ${c.balance > 0 ? "text-rose-700" : "text-emerald-700"}">${formatINR(c.balance)}</div>
+                  </div>
+                </div>
+                ${c.balance > 0 ? `
+                  <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100 text-xs">
+                    <a href="${waBase}${msgPolite}" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">😊 विनम्र WhatsApp</a>
+                    <a href="${waBase}${msgFirm}" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-800 font-bold border border-amber-200">📌 सामान्य रिमाइंडर</a>
+                    <a href="${waBase}${msgUrgent}" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-rose-50 text-rose-800 font-bold border border-rose-200">⚠️ तुरंत भुगतान</a>
+                  </div>` : ""}
+              </div>`;
+          }).join("") : `<div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-sm">अभी कोई परचूनी ग्राहक नहीं जुड़ा है।</div>`}
+        </div>`;
+    }
+
+    // =========================================================================
+    // 11E. KIRANA DEAD-STOCK & FAST-MOVING PROFIT DETECTOR
+    // =========================================================================
+    function renderParchuniAnalyticsTab(container) {
+      const inv = state.data.parchuniInventory || [];
+      const bills = state.data.parchuniBills || [];
+      const nowMs = Date.now();
+      const salesMap = {};
+
+      bills.forEach(b => {
+        const bDate = b.date || "";
+        (b.items || []).forEach(it => {
+          const key = (it.name || it.item || "").toLowerCase().trim();
+          if (!key) return;
+          if (!salesMap[key]) salesMap[key] = { qty: 0, revenue: 0, lastDate: "" };
+          salesMap[key].qty += Number(it.qty || 1);
+          salesMap[key].revenue += Number(it.total || (Number(it.qty || 1) * Number(it.price || 0)));
+          if (bDate > salesMap[key].lastDate) salesMap[key].lastDate = bDate;
+        });
+      });
+
+      const analyzed = inv.map(item => {
+        const key = (item.name || "").toLowerCase().trim();
+        const s = salesMap[key] || { qty: 0, revenue: 0, lastDate: "" };
+        const buy = Number(item.buyPrice || item.purchasePrice || (Number(item.price || 0) * 0.85));
+        const sell = Number(item.price || item.sellPrice || 0);
+        const unitProfit = Math.max(0, sell - buy);
+        const marginPct = sell > 0 ? Math.round((unitProfit / sell) * 100) : 0;
+        const totalProfit = unitProfit * s.qty;
+        const stock = Number(item.stock || 0);
+        const blockedCap = stock * buy;
+        const refDate = s.lastDate || item.createdAt?.slice(0, 10) || todayStr();
+        const idleDays = Math.max(0, Math.floor((nowMs - new Date(refDate).getTime()) / 86400000));
+        const isDead = stock > 0 && (s.qty === 0 || idleDays >= 30);
+        return { ...item, buy, sell, unitProfit, marginPct, soldQty: s.qty, totalProfit, blockedCap, idleDays, isDead, lastSold: s.lastDate || "कभी नहीं बिका" };
+      });
+
+      const fastMoving = [...analyzed].sort((a, b) => b.totalProfit - a.totalProfit || b.soldQty - a.soldQty).slice(0, 12);
+      const deadStock = analyzed.filter(x => x.isDead).sort((a, b) => b.blockedCap - a.blockedCap);
+      const totalBlocked = deadStock.reduce((s, x) => s + x.blockedCap, 0);
+
+      container.innerHTML = `
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div class="kpi-card"><div class="text-xs text-slate-500">कुल स्टॉक आइटम</div><div class="text-lg font-extrabold text-slate-900">${inv.length}</div></div>
+          <div class="kpi-card"><div class="text-xs text-slate-500">🧊 डेड-स्टॉक आइटम</div><div class="text-lg font-extrabold text-amber-700">${deadStock.length}</div></div>
+          <div class="kpi-card col-span-2 sm:col-span-1"><div class="text-xs text-slate-500">डेड-स्टॉक में फ़ंसा पैसा</div><div class="text-lg font-extrabold text-rose-700">${formatINR(totalBlocked)}</div></div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-2.5">
+          <h3 class="font-bold text-sm text-rose-800">🧊 डेड-स्टॉक अलर्ट (जो 30+ दिन से नहीं बिका)</h3>
+          ${deadStock.length ? `<div class="overflow-x-auto"><table class="w-full text-xs text-left"><thead class="bg-rose-50 text-rose-900"><tr><th class="p-2">सामान</th><th class="p-2">स्टॉक</th><th class="p-2">आखिरी बिक्री</th><th class="p-2 text-right">फ़ंसा पैसा</th></tr></thead><tbody>${deadStock.map(x => `<tr class="border-t border-slate-100"><td class="p-2 font-bold">${escHtml(x.name)}</td><td class="p-2">${x.stock} ${escHtml(x.unit || "")}</td><td class="p-2 text-slate-500">${escHtml(x.lastSold)}</td><td class="p-2 text-right font-bold text-rose-700">${formatINR(x.blockedCap)}</td></tr>`).join("")}</tbody></table></div>` : `<div class="text-xs text-emerald-700 font-semibold">🎉 शानदार! कोई डेड-स्टॉक नहीं है।</div>`}
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-2.5">
+          <h3 class="font-bold text-sm text-emerald-800">🔥 सबसे ज़्यादा मुनाफे वाला सामान (Fast-Moving)</h3>
+          ${fastMoving.length ? `<div class="overflow-x-auto"><table class="w-full text-xs text-left"><thead class="bg-emerald-50 text-emerald-900"><tr><th class="p-2">सामान</th><th class="p-2">खरीद / बिक्री</th><th class="p-2">मार्जिन</th><th class="p-2">बिका</th><th class="p-2 text-right">अनुमानित मुनाफा</th></tr></thead><tbody>${fastMoving.map(x => `<tr class="border-t border-slate-100"><td class="p-2 font-bold">${escHtml(x.name)}</td><td class="p-2">${formatINR(x.buy)} / ${formatINR(x.sell)}</td><td class="p-2 font-bold text-teal-700">${x.marginPct}%</td><td class="p-2">${x.soldQty}</td><td class="p-2 text-right font-bold text-emerald-700">${formatINR(x.totalProfit)}</td></tr>`).join("")}</tbody></table></div>` : `<div class="text-xs text-slate-400">POS बिलिंग और स्टॉक में सामान जोड़ने पर यहाँ मुनाफे का विश्लेषण दिखेगा।</div>`}
+        </div>`;
+    }
+
+    // =========================================================================
+    // 11F. PER-ANIMAL PROFIT & FEED-TO-MILK RATIO (DAIRY AI INSIGHTS)
+    // =========================================================================
+    function renderAnimalProfitTab(container) {
+      const animals = state.data.animals || [];
+      const month = state.selectedMonth;
+      const prodM = (state.data.dairyProduction || []).filter(p => (p.date || "").startsWith(month));
+      const salesM = (state.data.milkSales || []).filter(s => (s.date || "").startsWith(month));
+      const expM = (state.data.dairyExpenses || []).filter(e => (e.date || "").startsWith(month));
+      const supM = (state.data.dairySupplies || []).filter(s => (s.date || "").startsWith(month));
+
+      const totalSalesQty = salesM.reduce((s, r) => s + Number(r.qty || r.litres || 0), 0) + supM.reduce((s, r) => s + Number(r.qty || 0), 0);
+      const totalSalesAmt = salesM.reduce((s, r) => s + Number(r.amount || r.total || 0), 0) + supM.reduce((s, r) => s + Number(r.amount || 0), 0);
+      const avgRate = totalSalesQty > 0 ? totalSalesAmt / totalSalesQty : 55;
+
+      const sharedExp = expM.filter(e => !e.animalId && !e.animalName).reduce((s, e) => s + Number(e.amount || 0), 0);
+      const perAnimalShared = animals.length > 0 ? sharedExp / animals.length : 0;
+
+      const rows = animals.map(a => {
+        const directProd = prodM.filter(p => p.animalId === a.id || (p.animalName && p.animalName === a.name)).reduce((s, p) => s + Number(p.total || p.qty || (Number(p.morning || 0) + Number(p.evening || 0))), 0);
+        const estMilk = directProd > 0 ? directProd : (Number(a.avgMilk || 0) * 30);
+        const revenue = estMilk * avgRate;
+        const directExp = expM.filter(e => e.animalId === a.id || (e.animalName && e.animalName === a.name)).reduce((s, e) => s + Number(e.amount || 0), 0);
+        const totalCost = directExp + perAnimalShared;
+        const profit = revenue - totalCost;
+        const costPerL = estMilk > 0 ? totalCost / estMilk : 0;
+        const badge = profit > 3000 ? "🏆 सुपर मुनाफा" : (profit >= 0 ? "✅ मुनाफे में" : "⚠️ घाटे में / जांचें");
+        return { ...a, estMilk, revenue, totalCost, profit, costPerL, badge };
+      }).sort((a, b) => b.profit - a.profit);
+
+      container.innerHTML = `
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="font-bold text-base text-teal-900">💰 पशुवार मुनाफा और चारा-दूध अनुपात (${month})</h3>
+              <div class="text-[11px] text-slate-500">औसत दूध दर: <b>${formatINR(avgRate)}/ली.</b> • साझा डेयरी खर्च प्रति पशु: <b>${formatINR(perAnimalShared)}</b></div>
+            </div>
+          </div>
+
+          <form id="animal-exp-quick-form" class="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+            <select id="aexp-animal" class="input-field py-1.5 text-xs" required>
+              <option value="">पशु चुनें...</option>
+              ${animals.map(a => `<option value="${a.id}" data-name="${escHtml(a.name)}">${escHtml(a.name)} (${escHtml(a.type || "पशु")})</option>`).join("")}
+            </select>
+            <select id="aexp-cat" class="input-field py-1.5 text-xs"><option>चारा / भूसा</option><option>खल / दाना</option><option>दवाई / डॉक्टर</option><option>अन्य पशु खर्च</option></select>
+            <input type="number" step="0.01" id="aexp-amt" placeholder="राशि (₹)" class="input-field py-1.5 text-xs" required />
+            <input type="date" id="aexp-date" value="${state.selectedDate}" class="input-field py-1.5 text-xs" />
+            <button type="submit" class="btn-primary py-1.5 text-xs col-span-2 sm:col-span-1">+ पशु खर्च जोड़ें</button>
+          </form>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            ${rows.length ? rows.map(r => `
+              <div class="kpi-card space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <div class="font-bold text-sm text-slate-900">🐄 ${escHtml(r.name)} <span class="text-[11px] text-slate-500">(${escHtml(r.type || "गाय/भैंस")})</span></div>
+                  <span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${r.profit >= 0 ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800"}">${r.badge}</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 text-xs pt-1">
+                  <div class="bg-slate-50 p-2 rounded-lg"><div class="text-[10px] text-slate-500">दूध (मासिक)</div><div class="font-bold text-teal-800">${r.estMilk.toFixed(1)} ली.</div></div>
+                  <div class="bg-slate-50 p-2 rounded-lg"><div class="text-[10px] text-slate-500">कुल कमाई</div><div class="font-bold text-emerald-700">${formatINR(r.revenue)}</div></div>
+                  <div class="bg-slate-50 p-2 rounded-lg"><div class="text-[10px] text-slate-500">कुल खर्च</div><div class="font-bold text-rose-700">${formatINR(r.totalCost)}</div></div>
+                </div>
+                <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
+                  <span class="text-slate-500">1 ली. लागत: <b>${formatINR(r.costPerL)}</b></span>
+                  <span class="font-extrabold ${r.profit >= 0 ? "text-emerald-700" : "text-rose-700"}">शुद्ध लाभ: ${formatINR(r.profit)}</span>
+                </div>
+              </div>`).join("") : `<div class="col-span-full text-center text-slate-400 text-xs py-6">पहले '🐃 पशु प्रबंधन' टैब में अपनी गाय/भैंस जोड़ें।</div>`}
+          </div>
+        </div>`;
+
+      document.getElementById("animal-exp-quick-form")?.addEventListener("submit", async e => {
+        e.preventDefault();
+        const sel = document.getElementById("aexp-animal");
+        const animalId = sel.value;
+        const animalName = sel.options[sel.selectedIndex]?.dataset?.name || "";
+        const category = document.getElementById("aexp-cat").value;
+        const amount = Number(document.getElementById("aexp-amt").value || 0);
+        const date = document.getElementById("aexp-date").value || todayStr();
+        if (!animalId || amount <= 0) return showToast("पशु और राशि दोनों भरें।", "error");
+        await saveDoc("dairyExpenses", { date, category, amount, animalId, animalName, notes: `${animalName} का विशेष खर्च`, paymentMode: "Cash" });
+      });
+    }
+
+    // =========================================================================
+    // 11G. MONTHLY "WHAT-IF" BACHAT & PROFIT SIMULATOR
+    // =========================================================================
+    function renderWhatIfSimulator(container) {
+      const month = state.selectedMonth;
+      const baseHouseExp = (state.data.houseExpenses || []).filter(e => (e.date || "").startsWith(month)).reduce((s, e) => s + Number(e.amount || 0), 0) || 15000;
+      const baseMilkL = (state.data.milkSales || []).filter(e => (e.date || "").startsWith(month)).reduce((s, e) => s + Number(e.qty || e.litres || 0), 0)
+                      + (state.data.dairySupplies || []).filter(e => (e.date || "").startsWith(month)).reduce((s, e) => s + Number(e.qty || 0), 0) || 300;
+      const baseKiranaRev = (state.data.parchuniBills || []).filter(b => (b.date || "").startsWith(month)).reduce((s, b) => s + Number(b.total || 0), 0)
+                          + (state.data.parchuniEntries || []).filter(e => e.type === "udhaar" && (e.date || "").startsWith(month)).reduce((s, e) => s + Number(e.amount || 0), 0) || 40000;
+
+      container.innerHTML = `
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-4 shadow-sm">
+          <div>
+            <h3 class="font-bold text-base text-teal-900">📈 "क्या होगा अगर..." (Monthly Profit & Bachat Simulator)</h3>
+            <p class="text-xs text-slate-500">स्लाइडर घुमाकर देखें कि छोटे बदलाव से आपकी महीने और साल की बचत कितनी बढ़ सकती है।</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+              <div>
+                <div class="flex justify-between font-bold mb-1"><span>🥛 दूध का रेट बढ़े (₹/लीटर)</span><span id="sim-milk-rate-v" class="text-teal-800">+₹2/ली.</span></div>
+                <input type="range" id="sim-milk-rate" min="-5" max="15" step="1" value="2" class="w-full accent-teal-700" />
+              </div>
+              <div>
+                <div class="flex justify-between font-bold mb-1"><span>🐄 रोज़ाना अतिरिक्त दूध (लीटर/दिन)</span><span id="sim-milk-qty-v" class="text-teal-800">+2 ली./दिन</span></div>
+                <input type="range" id="sim-milk-qty" min="0" max="25" step="1" value="2" class="w-full accent-teal-700" />
+              </div>
+              <div>
+                <div class="flex justify-between font-bold mb-1"><span>🏪 परचूनी मार्जिन बढ़े (%)</span><span id="sim-kirana-m-v" class="text-teal-800">+2%</span></div>
+                <input type="range" id="sim-kirana-m" min="0" max="15" step="0.5" value="2" class="w-full accent-teal-700" />
+              </div>
+              <div>
+                <div class="flex justify-between font-bold mb-1"><span>🏠 घर के खर्च में बचत (%)</span><span id="sim-exp-cut-v" class="text-teal-800">10%</span></div>
+                <input type="range" id="sim-exp-cut" min="0" max="35" step="1" value="10" class="w-full accent-teal-700" />
+              </div>
+            </div>
+
+            <div class="space-y-3 bg-gradient-to-br from-teal-900 to-emerald-800 text-white p-4 rounded-xl flex flex-col justify-between">
+              <div class="space-y-2">
+                <div class="text-xs text-teal-100">आपका अनुमानित अतिरिक्त मुनाफा / बचत:</div>
+                <div class="text-3xl font-extrabold" id="sim-monthly-gain">₹0 / माह</div>
+                <div class="text-sm font-bold text-amber-300" id="sim-yearly-gain">सालाना अतिरिक्त बचत: ₹0</div>
+                <div class="text-[11px] text-teal-100 pt-2 border-t border-teal-700/60 space-y-1" id="sim-breakdown"></div>
+              </div>
+              <button type="button" id="sim-make-goal-btn" class="w-full py-2.5 rounded-xl bg-white text-teal-900 font-bold text-xs shadow-sm">🎯 इसे सालाना बचत लक्ष्य (Savings Goal) बनाएं</button>
+            </div>
+          </div>
+        </div>`;
+
+      const rEl = document.getElementById("sim-milk-rate");
+      const qEl = document.getElementById("sim-milk-qty");
+      const kEl = document.getElementById("sim-kirana-m");
+      const eEl = document.getElementById("sim-exp-cut");
+      let lastYearly = 0;
+
+      const recalc = () => {
+        const dRate = Number(rEl.value);
+        const dQty = Number(qEl.value);
+        const dMargin = Number(kEl.value);
+        const dCut = Number(eEl.value);
+
+        document.getElementById("sim-milk-rate-v").textContent = `${dRate >= 0 ? "+" : ""}₹${dRate}/ली.`;
+        document.getElementById("sim-milk-qty-v").textContent = `+${dQty} ली./दिन`;
+        document.getElementById("sim-kirana-m-v").textContent = `+${dMargin}%`;
+        document.getElementById("sim-exp-cut-v").textContent = `${dCut}%`;
+
+        const milkGain = (baseMilkL * dRate) + (dQty * 30 * (55 + dRate));
+        const kiranaGain = baseKiranaRev * (dMargin / 100);
+        const houseGain = baseHouseExp * (dCut / 100);
+        const monthlyGain = Math.round(milkGain + kiranaGain + houseGain);
+        lastYearly = monthlyGain * 12;
+
+        document.getElementById("sim-monthly-gain").textContent = `${monthlyGain >= 0 ? "+" : ""}${formatINR(monthlyGain)} / माह`;
+        document.getElementById("sim-yearly-gain").textContent = `सालाना अतिरिक्त बचत: ${lastYearly >= 0 ? "+" : ""}${formatINR(lastYearly)}`;
+        document.getElementById("sim-breakdown").innerHTML = `
+          <div>• डेयरी से बदलाव: <b>${formatINR(milkGain)}</b> (आधार: ${Math.round(baseMilkL)} ली./माह)</div>
+          <div>• परचूनी मार्जिन से: <b>${formatINR(kiranaGain)}</b> (आधार: ${formatINR(baseKiranaRev)})</div>
+          <div>• घर खर्च बचत से: <b>${formatINR(houseGain)}</b> (आधार: ${formatINR(baseHouseExp)})</div>`;
+      };
+
+      [rEl, qEl, kEl, eEl].forEach(el => el.addEventListener("input", recalc));
+      recalc();
+
+      document.getElementById("sim-make-goal-btn")?.addEventListener("click", async () => {
+        if (lastYearly <= 0) return showToast("सकारात्मक बचत लक्ष्य चुनें।", "error");
+        await saveDoc("savingsGoals", {
+          title: `वार्षिक स्मार्ट बचत लक्ष्य (${state.selectedYear})`,
+          targetAmount: lastYearly,
+          savedAmount: 0,
+          targetDate: `${Number(state.selectedYear) + 1}-03-31`,
+          notes: "What-If Simulator से बनाया गया लक्ष्य"
+        });
+        state.activeHouseTab = "goals";
+        renderCurrentView();
       });
     }
 
@@ -5312,6 +6742,11 @@
       document.getElementById("header-speak-btn").addEventListener("click", () => openVoiceAssistantModal());
       document.getElementById("header-lock-btn").addEventListener("click", lockAppWithPin);
       document.getElementById("header-scan-btn").addEventListener("click", () => openParchiScannerModal());
+      document.getElementById("header-diary-btn").addEventListener("click", () => { state.activeMainTab = "diary"; renderCurrentView(); });
+      document.getElementById("header-sms-btn")?.addEventListener("click", () => openSmsUpiPasteModal());
+      document.getElementById("header-staff-btn")?.addEventListener("click", () => openStaffModeModal());
+      document.getElementById("staff-unlock-btn")?.addEventListener("click", () => openStaffModeModal());
+      applyStaffModeUI();
       document.getElementById("header-calc-btn").addEventListener("click", () => openSmartCalculatorModal());
       document.getElementById("header-voice-btn").addEventListener("click", () => openVoiceEntryModal());
       document.getElementById("quick-search-open-btn").addEventListener("click", openGlobalSearchModal);
