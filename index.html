@@ -99,6 +99,13 @@
       user-select: none;
       pointer-events: none;
     }
+
+    /* Hidden Personal Diary Stealth Mode */
+    body.diary-hidden-mode [data-main-tab="diary"],
+    body.diary-hidden-mode #header-diary-btn,
+    body.diary-hidden-mode [data-house-tab="diary"] {
+      display: none !important;
+    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-900">
@@ -163,7 +170,7 @@
         <!-- Sticky Universal Back Button -->
         <button type="button" id="header-back-btn" class="hidden shrink-0 btn-secondary text-sm font-extrabold px-2.5 py-1.5 min-h-[36px] border-teal-300 text-teal-900 bg-teal-50" title="पिछली स्क्रीन पर वापस जाएं">←</button>
         <!-- Fixed Logo & Title (Never overlaps or shrinks on mobile) -->
-        <div class="flex items-center gap-2 shrink-0 max-w-[44%] sm:max-w-none">
+        <div id="app-header-logo-wrap" class="flex items-center gap-2 shrink-0 max-w-[44%] sm:max-w-none select-none cursor-pointer">
           <img src="data:image/png;base64,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" alt="MahaIndustries Logo" class="md:hidden h-9 w-auto max-w-[96px] rounded-lg bg-white px-1.5 py-0.5 border border-slate-200 shadow-sm object-contain shrink-0" />
           <div class="hidden sm:block min-w-0">
             <h2 id="page-title" class="font-bold text-sm sm:text-lg text-slate-900 truncate">मुख्य डैशबोर्ड</h2>
@@ -902,6 +909,7 @@
       diaryUnlocked: false,
       diaryDraftAudio: null,
       diaryDraftPhoto: null,
+      diaryDraftVideo: null,
       selectedDate: todayStr(),
       selectedMonth: todayStr().slice(0, 7),
       selectedYear: todayStr().slice(0, 4),
@@ -1728,6 +1736,10 @@
     }
 
     function renderCurrentView() {
+      const isDiaryScreen = state.activeMainTab === "diary" || (state.activeMainTab === "house" && state.activeHouseTab === "diary");
+      if (!isDiaryScreen && typeof lockDiaryVaultNow === "function" && state.diaryUnlocked) {
+        lockDiaryVaultNow(true);
+      }
       if (typeof isStaffMode === "function" && isStaffMode()) {
         if (["diary", "reports", "settings"].includes(state.activeMainTab)) {
           state.activeMainTab = "parchuni";
@@ -5584,52 +5596,539 @@
     let diaryAutoSaveTimer = null;
     let diarySpeechRec = null;
 
-    function renderPersonalDiaryView(container) {
-      const diaryPin = localStorage.getItem("maha_diary_pin_v1") || "";
-      if (diaryPin && !state.diaryUnlocked) {
-        container.innerHTML = `
-          <div class="max-w-md mx-auto bg-white rounded-2xl border border-purple-200 p-6 text-center space-y-4 shadow-sm mt-6">
-            <div class="text-4xl">🔐</div>
-            <h3 class="font-bold text-lg text-purple-950">निजी डायरी लॉक है</h3>
-            <p class="text-xs text-slate-500">अपनी निजी डायरी खोलने के लिए 4-अंकों का सीक्रेट डायरी PIN डालें।</p>
-            <input type="password" inputmode="numeric" maxlength="4" id="diary-pin-unlock-inp" placeholder="••••" class="input-field text-center text-2xl tracking-[0.5em] font-bold" />
-            <button type="button" id="diary-pin-unlock-btn" class="btn-primary w-full bg-purple-700 hover:bg-purple-800">🔓 डायरी अनलॉक करें</button>
-          </div>`;
-        const tryUnlock = () => {
-          const val = (document.getElementById("diary-pin-unlock-inp")?.value || "").trim();
-          if (val === diaryPin) {
-            state.diaryUnlocked = true;
-            renderCurrentView();
-            showToast("निजी डायरी अनलॉक हो गई।");
+    // =========================================================================
+    // 11A. ENCRYPTED PERSONAL DIARY VAULT (AES-256-GCM + IDB + BIOMETRIC + VIDEO + PDF)
+    // =========================================================================
+    let diarySessionMasterKey = null;
+    let diaryDecryptedNotes = [];
+    let diaryVaultMetaCache = null;
+
+    const DiaryVaultCrypto = {
+      b64Enc(bytes) {
+        let bin = "";
+        const arr = new Uint8Array(bytes);
+        const chunk = 0x8000;
+        for (let i = 0; i < arr.length; i += chunk) {
+          bin += String.fromCharCode.apply(null, arr.subarray(i, i + chunk));
+        }
+        return btoa(bin);
+      },
+      b64Dec(b64) {
+        const bin = atob(b64);
+        const arr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        return arr;
+      },
+      randBytes(n) {
+        const a = new Uint8Array(n);
+        crypto.getRandomValues(a);
+        return a;
+      },
+      async deriveKey(secret, saltBytes) {
+        const enc = new TextEncoder().encode(String(secret));
+        const base = await crypto.subtle.importKey("raw", enc, "PBKDF2", false, ["deriveKey"]);
+        return crypto.subtle.deriveKey(
+          { name: "PBKDF2", salt: saltBytes, iterations: 100000, hash: "SHA-256" },
+          base,
+          { name: "AES-GCM", length: 256 },
+          false,
+          ["encrypt", "decrypt"]
+        );
+      },
+      async genMasterKey() {
+        return crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+      },
+      async wrapMasterKey(masterKey, secret) {
+        const raw = new Uint8Array(await crypto.subtle.exportKey("raw", masterKey));
+        const salt = this.randBytes(16);
+        const iv = this.randBytes(12);
+        const kek = await this.deriveKey(secret, salt);
+        const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, kek, raw);
+        return { salt: this.b64Enc(salt), iv: this.b64Enc(iv), ct: this.b64Enc(ct) };
+      },
+      async unwrapMasterKey(wrapped, secret) {
+        const salt = this.b64Dec(wrapped.salt);
+        const iv = this.b64Dec(wrapped.iv);
+        const ct = this.b64Dec(wrapped.ct);
+        const kek = await this.deriveKey(secret, salt);
+        const raw = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, kek, ct);
+        return crypto.subtle.importKey("raw", raw, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+      },
+      async encryptJSON(masterKey, obj) {
+        const iv = this.randBytes(12);
+        const plain = new TextEncoder().encode(JSON.stringify(obj));
+        const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, masterKey, plain);
+        return { alg: "AES-256-GCM", iv: this.b64Enc(iv), ct: this.b64Enc(ct), updatedAt: new Date().toISOString() };
+      },
+      async decryptJSON(masterKey, encObj) {
+        if (!encObj || !encObj.iv || !encObj.ct) return [];
+        const iv = this.b64Dec(encObj.iv);
+        const ct = this.b64Dec(encObj.ct);
+        const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, masterKey, ct);
+        return JSON.parse(new TextDecoder().decode(plain));
+      },
+      makeRecoveryCode() {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        const r = this.randBytes(16);
+        let out = "";
+        for (let i = 0; i < 16; i++) {
+          if (i > 0 && i % 4 === 0) out += "-";
+          out += chars[r[i] % chars.length];
+        }
+        return out;
+      }
+    };
+
+    const DiaryVaultIDB = {
+      dbName: "MahaDiaryEncryptedVaultDB",
+      storeName: "vault",
+      open() {
+        return new Promise((resolve, reject) => {
+          const req = indexedDB.open(this.dbName, 1);
+          req.onupgradeneeded = () => {
+            if (!req.result.objectStoreNames.contains(this.storeName)) {
+              req.result.createObjectStore(this.storeName);
+            }
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      },
+      async get(key) {
+        try {
+          const db = await this.open();
+          return await new Promise((res, rej) => {
+            const tx = db.transaction(this.storeName, "readonly");
+            const r = tx.objectStore(this.storeName).get(key);
+            r.onsuccess = () => res(r.result || null);
+            r.onerror = () => rej(r.error);
+          });
+        } catch (e) {
+          try { return JSON.parse(localStorage.getItem("maha_dv_" + key) || "null"); } catch (_) { return null; }
+        }
+      },
+      async set(key, val) {
+        try {
+          const db = await this.open();
+          await new Promise((res, rej) => {
+            const tx = db.transaction(this.storeName, "readwrite");
+            tx.objectStore(this.storeName).put(val, key);
+            tx.oncomplete = () => res(true);
+            tx.onerror = () => rej(tx.error);
+          });
+        } catch (e) {
+          localStorage.setItem("maha_dv_" + key, JSON.stringify(val));
+        }
+      }
+    };
+
+    function isDiaryHidden() {
+      return localStorage.getItem("maha_diary_hidden_v1") === "1";
+    }
+
+    function applyDiaryHiddenUI() {
+      document.body.classList.toggle("diary-hidden-mode", isDiaryHidden());
+    }
+
+    function lockDiaryVaultNow(silent = false) {
+      state.diaryUnlocked = false;
+      diarySessionMasterKey = null;
+      diaryDecryptedNotes = [];
+      state.activeDiaryEditId = null;
+      state.diaryDraftAudio = null;
+      state.diaryDraftPhoto = null;
+      state.diaryDraftVideo = null;
+      if (!silent) showToast("🔒 निजी डायरी तुरंत लॉक हो गई।");
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && state.diaryUnlocked) {
+        lockDiaryVaultNow(true);
+        if (state.activeMainTab === "diary" || (state.activeMainTab === "house" && state.activeHouseTab === "diary")) {
+          renderCurrentView();
+        }
+      }
+    });
+
+    async function saveEncryptedDiaryVault() {
+      if (!diarySessionMasterKey) return false;
+      const encPayload = await DiaryVaultCrypto.encryptJSON(diarySessionMasterKey, diaryDecryptedNotes);
+      await DiaryVaultIDB.set("payload", encPayload);
+      // Clear any old unencrypted personalDiary from localStorage so zero plaintext stays on phone!
+      if (Array.isArray(state.data.personalDiary) && state.data.personalDiary.length > 0) {
+        state.data.personalDiary = [];
+        persistLocalDB();
+      }
+      return true;
+    }
+
+    async function downloadDiaryPDF(title, subtitle, bodyHtml) {
+      const safeName = `MahaHisab_Diary_${todayStr()}.pdf`;
+      const wrapper = document.createElement("div");
+      wrapper.style.cssText = "position:fixed;left:-9999px;top:0;width:760px;background:#ffffff;color:#0f172a;padding:24px;font-family:'Noto Sans Devanagari',sans-serif;";
+      wrapper.innerHTML = `
+        <div style="border-bottom:2px solid #0f766e;padding-bottom:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:18px;font-weight:800;color:#0f766e;">${escHtml(title)}</div>
+            <div style="font-size:12px;color:#475569;margin-top:2px;">${escHtml(subtitle)}</div>
+          </div>
+          <div style="text-align:right;font-size:10px;color:#64748b;">
+            <div style="font-weight:700;color:#0f172a;">MahaIndustries</div>
+            <div>निजी डायरी (Encrypted Vault)</div>
+          </div>
+        </div>
+        ${bodyHtml}`;
+      document.body.appendChild(wrapper);
+      try {
+        showToast("📄 PDF तैयार हो रही है...");
+        const blob = await generatePDFBlobFromElement(wrapper, safeName);
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = safeName;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 1500);
+          showToast("✅ डायरी PDF डाउनलोड हो गई!");
+        } else {
+          const w = window.open("", "_blank", "width=850,height=700");
+          if (w && w.document) {
+            w.document.open();
+            w.document.write(`<!DOCTYPE html><html lang="hi"><head><meta charset="utf-8"><title>${escHtml(title)}</title></head><body style="font-family:sans-serif;padding:20px;">${wrapper.innerHTML}<script>setTimeout(()=>window.print(),400)<\/script></body></html>`);
+            w.document.close();
           } else {
-            showToast("गलत डायरी PIN! फिर से प्रयास करें।", "error");
+            showToast("PDF लाइब्रेरी लोड नहीं हुई — कृपया इंटरनेट चेक करें।", "error");
           }
-        };
-        document.getElementById("diary-pin-unlock-btn")?.addEventListener("click", tryUnlock);
-        document.getElementById("diary-pin-unlock-inp")?.addEventListener("keydown", e => { if (e.key === "Enter") tryUnlock(); });
+        }
+      } catch (err) {
+        showToast("PDF बनाने में समस्या आई: " + (err?.message || "त्रुटि"), "error");
+      } finally {
+        wrapper.remove();
+      }
+    }
+    window.generateAndPrintPDF = downloadDiaryPDF;
+
+    async function exportEncryptedVaultFile() {
+      const meta = await DiaryVaultIDB.get("meta");
+      const payload = await DiaryVaultIDB.get("payload");
+      if (!meta || !payload) return showToast("पहले डायरी का Encrypted Vault सेटअप करें।", "error");
+      const bundle = { format: "MAHA_ENCRYPTED_DIARY_VAULT_V2", alg: "AES-256-GCM", exportedAt: new Date().toISOString(), meta, payload };
+      const blob = new Blob([JSON.stringify(bundle)], { type: "application/octet-stream" });
+      const fileName = `MahaDiary_Encrypted_Vault_${todayStr()}.mahavault`;
+      if (window.showSaveFilePicker) {
+        try {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: fileName,
+            types: [{ description: "Maha Encrypted Diary Vault", accept: { "application/octet-stream": [".mahavault"] } }]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          showToast("✅ Encrypted Vault फ़ाइल फोन में सुरक्षित सेव हो गई!");
+          return;
+        } catch (e) { if (e && e.name === "AbortError") return; }
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = fileName;
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 1500);
+      showToast("✅ Encrypted .mahavault फ़ाइल फोन के Downloads में सेव हो गई!");
+    }
+
+    async function importEncryptedVaultFile(file) {
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        if (parsed.format !== "MAHA_ENCRYPTED_DIARY_VAULT_V2" || !parsed.meta || !parsed.payload) {
+          return showToast("यह मान्य .mahavault फ़ाइल नहीं है।", "error");
+        }
+        await DiaryVaultIDB.set("meta", parsed.meta);
+        await DiaryVaultIDB.set("payload", parsed.payload);
+        diaryVaultMetaCache = parsed.meta;
+        state.diaryUnlocked = false;
+        diarySessionMasterKey = null;
+        showToast("✅ Encrypted Vault लोड हो गया! अब अपना पासवर्ड डालकर अनलॉक करें।");
+        renderCurrentView();
+      } catch (e) {
+        showToast("Vault फ़ाइल पढ़ने में त्रुटि: " + (e?.message || ""), "error");
+      }
+    }
+
+    async function enableDiaryBiometric(meta) {
+      if (!window.PublicKeyCredential || !navigator.credentials) {
+        return showToast("इस ब्राउज़र/फोन में फिंगरप्रिंट/फेस अनलॉक (WebAuthn) उपलब्ध नहीं है।", "error");
+      }
+      if (!diarySessionMasterKey) return showToast("पहले पासवर्ड से डायरी अनलॉक करें।", "error");
+      try {
+        const challenge = DiaryVaultCrypto.randBytes(32);
+        const userId = DiaryVaultCrypto.randBytes(16);
+        const cred = await navigator.credentials.create({
+          publicKey: {
+            challenge,
+            rp: { name: "MahaIndustries Encrypted Diary" },
+            user: { id: userId, name: "owner@mahaindustries", displayName: "Diary Owner" },
+            pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+            authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+            timeout: 60000
+          }
+        });
+        const credIdB64 = DiaryVaultCrypto.b64Enc(new Uint8Array(cred.rawId));
+        const bioSecret = DiaryVaultCrypto.b64Enc(DiaryVaultCrypto.randBytes(32));
+        meta.biometricCredId = credIdB64;
+        meta.biometricWrapped = await DiaryVaultCrypto.wrapMasterKey(diarySessionMasterKey, bioSecret);
+        localStorage.setItem("maha_diary_bio_token_v2", bioSecret);
+        await DiaryVaultIDB.set("meta", meta);
+        diaryVaultMetaCache = meta;
+        showToast("✅ फिंगरप्रिंट / फेस अनलॉक चालू हो गया!");
+        renderCurrentView();
+      } catch (e) {
+        showToast("फिंगरप्रिंट/फेस रजिस्टर नहीं हो सका (HTTPS वेबसाइट पर Android Chrome/iOS में चलता है)।", "error");
+      }
+    }
+
+    async function unlockDiaryWithBiometric(meta) {
+      if (!meta?.biometricCredId || !meta?.biometricWrapped) {
+        return showToast("पहले डायरी सेटिंग्स में जाकर फिंगरप्रिंट/फेस चालू करें।", "error");
+      }
+      const bioSecret = localStorage.getItem("maha_diary_bio_token_v2");
+      if (!bioSecret) return showToast("बायोमेट्रिक टोकन नहीं मिला, कृपया पासवर्ड से खोलें।", "error");
+      try {
+        await navigator.credentials.get({
+          publicKey: {
+            challenge: DiaryVaultCrypto.randBytes(32),
+            allowCredentials: [{ id: DiaryVaultCrypto.b64Dec(meta.biometricCredId), type: "public-key" }],
+            userVerification: "required",
+            timeout: 60000
+          }
+        });
+        const mk = await DiaryVaultCrypto.unwrapMasterKey(meta.biometricWrapped, bioSecret);
+        const payload = await DiaryVaultIDB.get("payload");
+        diarySessionMasterKey = mk;
+        diaryDecryptedNotes = payload ? await DiaryVaultCrypto.decryptJSON(mk, payload) : [];
+        state.diaryUnlocked = true;
+        showToast("🔓 फिंगरप्रिंट / फेस से डायरी अनलॉक हो गई!");
+        renderCurrentView();
+      } catch (e) {
+        showToast("फिंगरप्रिंट / फेस सत्यापन रद्द या विफल हुआ।", "error");
+      }
+    }
+
+    function openDiaryOfflineForgotModal(meta) {
+      openModal("🔑 पासवर्ड भूल गए? (ऑफ़लाइन रिकवरी)", `
+        <div class="space-y-3 text-xs">
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-amber-900">
+            बिना इंटरनेट के अपना पासवर्ड रीसेट करें — नीचे अपने <b>सुरक्षा सवालों के जवाब</b> या <b>मास्टर रिकवरी कोड</b> डालें। आपका एक भी नोट डिलीट नहीं होगा।
+          </div>
+          <div class="space-y-2 border-b border-slate-200 pb-3">
+            <div class="font-bold text-slate-800">तरीका 1: सुरक्षा सवाल (Security Questions)</div>
+            <div><label class="block font-semibold text-slate-600 mb-1">1. ${escHtml(meta.secQ1 || "आपका पसंदीदा शहर?")}</label><input type="text" id="rec-ans1" class="input-field py-1.5 text-xs" placeholder="जवाब लिखें..." /></div>
+            <div><label class="block font-semibold text-slate-600 mb-1">2. ${escHtml(meta.secQ2 || "आपका बचपन का नाम?")}</label><input type="text" id="rec-ans2" class="input-field py-1.5 text-xs" placeholder="जवाब लिखें..." /></div>
+          </div>
+          <div class="space-y-2 border-b border-slate-200 pb-3">
+            <div class="font-bold text-slate-800">या तरीका 2: 16-अक्षरों का मास्टर रिकवरी कोड</div>
+            <input type="text" id="rec-code-inp" class="input-field py-1.5 text-xs font-mono uppercase" placeholder="XXXX-XXXX-XXXX-XXXX" />
+          </div>
+          <div>
+            <label class="block font-bold text-purple-900 mb-1">नया डायरी पासवर्ड सेट करें (कम से कम 4 अक्षर/अंक)</label>
+            <input type="password" id="rec-new-pass" class="input-field py-2 text-xs font-bold" placeholder="नया पासवर्ड डालें..." />
+          </div>
+          <button type="button" id="rec-reset-confirm-btn" class="btn-primary w-full bg-purple-700 hover:bg-purple-800">🔓 ऑफ़लाइन पासवर्ड रीसेट व अनलॉक करें</button>
+        </div>`);
+
+      document.getElementById("rec-reset-confirm-btn")?.addEventListener("click", async () => {
+        const a1 = (document.getElementById("rec-ans1")?.value || "").trim().toLowerCase();
+        const a2 = (document.getElementById("rec-ans2")?.value || "").trim().toLowerCase();
+        const code = (document.getElementById("rec-code-inp")?.value || "").trim().toUpperCase();
+        const newPass = (document.getElementById("rec-new-pass")?.value || "").trim();
+        if (newPass.length < 4) return showToast("नया पासवर्ड कम से कम 4 अक्षर/अंक का रखें।", "error");
+
+        let mk = null;
+        if (code && meta.codeWrapped) {
+          try { mk = await DiaryVaultCrypto.unwrapMasterKey(meta.codeWrapped, code); } catch (e) {}
+        }
+        if (!mk && a1 && a2 && meta.qaWrapped) {
+          try { mk = await DiaryVaultCrypto.unwrapMasterKey(meta.qaWrapped, `${a1}::${a2}`); } catch (e) {}
+        }
+        if (!mk) return showToast("सुरक्षा जवाब या रिकवरी कोड गलत है!", "error");
+
+        meta.passWrapped = await DiaryVaultCrypto.wrapMasterKey(mk, newPass);
+        await DiaryVaultIDB.set("meta", meta);
+        diaryVaultMetaCache = meta;
+        const payload = await DiaryVaultIDB.get("payload");
+        diarySessionMasterKey = mk;
+        diaryDecryptedNotes = payload ? await DiaryVaultCrypto.decryptJSON(mk, payload) : [];
+        state.diaryUnlocked = true;
+        closeModal(true);
+        renderCurrentView();
+        showToast("✅ पासवर्ड ऑफ़लाइन रीसेट हो गया और डायरी अनलॉक हो गई!");
+      });
+    }
+
+    async function renderPersonalDiaryView(container) {
+      container.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">🔐 Encrypted Diary Vault लोड हो रहा है...</div>`;
+      const meta = await DiaryVaultIDB.get("meta");
+      diaryVaultMetaCache = meta;
+
+      // FIRST-TIME ENCRYPTED VAULT SETUP SCREEN
+      if (!meta || !meta.passWrapped) {
+        const legacyCount = (state.data.personalDiary || []).length;
+        const genCode = DiaryVaultCrypto.makeRecoveryCode();
+        container.innerHTML = `
+          <div class="max-w-lg mx-auto bg-white rounded-2xl border border-purple-200 p-5 space-y-4 shadow-sm">
+            <div class="text-center space-y-1">
+              <div class="text-4xl">🔐</div>
+              <h3 class="font-bold text-lg text-purple-950">निजी डायरी — AES-256 Encrypted Vault सेटअप</h3>
+              <p class="text-xs text-slate-500">आपकी पूरी डायरी (टेक्स्ट, फोटो, आवाज़ और वीडियो) फोन में <b>एन्क्रिप्टेड फॉर्मेट</b> में सेव होगी। कोई हिडन फ़ोल्डर खोलकर भी इसे पढ़ नहीं पाएगा।</p>
+              ${legacyCount ? `<div class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg py-1 px-2">आपके पुराने ${legacyCount} डायरी पन्ने अपने आप एन्क्रिप्ट होकर सुरक्षित हो जाएंगे।</div>` : ""}
+            </div>
+
+            <div class="space-y-2.5 text-xs">
+              <div><label class="block font-bold mb-1">1. डायरी पासवर्ड / PIN बनाएं (कम से कम 4 अक्षर/अंक)</label><input type="password" id="dv-setup-pass" placeholder="जैसे: 2580 या Ankit@123" class="input-field py-2 text-xs font-bold" /></div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div><label class="block font-bold mb-1">2. ऑफ़लाइन रिकवरी सवाल 1: पसंदीदा शहर?</label><input type="text" id="dv-setup-a1" placeholder="जैसे: आगरा / दिल्ली" class="input-field py-2 text-xs" /></div>
+                <div><label class="block font-bold mb-1">3. ऑफ़लाइन रिकवरी सवाल 2: बचपन का नाम?</label><input type="text" id="dv-setup-a2" placeholder="जैसे: सोनू / चिंटू" class="input-field py-2 text-xs" /></div>
+              </div>
+              <div class="bg-purple-50 border border-purple-200 rounded-xl p-3 space-y-1">
+                <div class="font-bold text-purple-900">🔑 आपका ऑफ़लाइन मास्टर रिकवरी कोड (इसे लिख लें):</div>
+                <div class="flex items-center justify-between gap-2">
+                  <code id="dv-setup-code" class="text-sm font-extrabold tracking-wider text-purple-950">${genCode}</code>
+                  <button type="button" id="dv-copy-code-btn" class="btn-secondary text-[11px] py-1 px-2">📋 कॉपी</button>
+                </div>
+              </div>
+              <button type="button" id="dv-create-vault-btn" class="btn-primary w-full bg-purple-700 hover:bg-purple-800 py-2.5">🔐 Encrypted डायरी चालू करें</button>
+            </div>
+
+            <div class="border-t border-slate-200 pt-3 text-center space-y-2">
+              <div class="text-[11px] text-slate-500">क्या आपने ऐप दोबारा इंस्टॉल किया है और फोन में पहले से <b>.mahavault</b> फ़ाइल है?</div>
+              <label class="btn-secondary inline-flex items-center gap-1.5 text-xs py-2 px-4 border-teal-300 text-teal-800 cursor-pointer">
+                📂 फोन से पुराना Encrypted Vault रिस्टोर करें
+                <input type="file" id="dv-restore-setup-inp" accept=".mahavault,.json" class="hidden" />
+              </label>
+            </div>
+          </div>`;
+
+        document.getElementById("dv-copy-code-btn")?.addEventListener("click", () => copyText(genCode, "मास्टर रिकवरी कोड कॉपी हो गया!"));
+        document.getElementById("dv-restore-setup-inp")?.addEventListener("change", e => {
+          const f = e.target.files?.[0];
+          if (f) importEncryptedVaultFile(f);
+        });
+        document.getElementById("dv-create-vault-btn")?.addEventListener("click", async () => {
+          const pass = (document.getElementById("dv-setup-pass")?.value || "").trim();
+          const a1 = (document.getElementById("dv-setup-a1")?.value || "").trim().toLowerCase();
+          const a2 = (document.getElementById("dv-setup-a2")?.value || "").trim().toLowerCase();
+          if (pass.length < 4) return showToast("कम से कम 4 अक्षर या अंक का पासवर्ड डालें।", "error");
+          if (!a1 || !a2) return showToast("ऑफ़लाइन पासवर्ड रिकवरी के लिए दोनों सवालों के जवाब भरें।", "error");
+
+          const mk = await DiaryVaultCrypto.genMasterKey();
+          const newMeta = {
+            version: 2,
+            secQ1: "आपका पसंदीदा शहर?",
+            secQ2: "आपका बचपन का नाम?",
+            passWrapped: await DiaryVaultCrypto.wrapMasterKey(mk, pass),
+            qaWrapped: await DiaryVaultCrypto.wrapMasterKey(mk, `${a1}::${a2}`),
+            codeWrapped: await DiaryVaultCrypto.wrapMasterKey(mk, genCode),
+            biometricCredId: "",
+            biometricWrapped: null
+          };
+          await DiaryVaultIDB.set("meta", newMeta);
+          diaryVaultMetaCache = newMeta;
+          diarySessionMasterKey = mk;
+          diaryDecryptedNotes = Array.isArray(state.data.personalDiary) ? [...state.data.personalDiary] : [];
+          state.diaryUnlocked = true;
+          await saveEncryptedDiaryVault();
+          showToast("🔐 AES-256 Encrypted डायरी तैयार हो गई!");
+          renderCurrentView();
+        });
         return;
       }
 
-      const notes = [...(state.data.personalDiary || [])].sort((a, b) => (b.updatedAt || b.date || "").localeCompare(a.updatedAt || a.date || ""));
+      // LOCKED VAULT SCREEN (PASSWORD + FINGERPRINT/FACE + OFFLINE FORGOT + VAULT RESTORE)
+      if (!state.diaryUnlocked || !diarySessionMasterKey) {
+        container.innerHTML = `
+          <div class="max-w-md mx-auto bg-white rounded-2xl border border-purple-200 p-6 text-center space-y-4 shadow-sm mt-4">
+            <div class="text-4xl">🔐</div>
+            <div>
+              <h3 class="font-bold text-lg text-purple-950">निजी डायरी एन्क्रिप्टेड व लॉक है</h3>
+              <p class="text-xs text-slate-500">डायरी से बाहर जाते ही यह अपने आप लॉक हो जाती है। खोलने के लिए फिंगरप्रिंट, फेस या पासवर्ड उपयोग करें।</p>
+            </div>
+
+            ${meta.biometricCredId ? `
+              <button type="button" id="dv-bio-unlock-btn" class="btn-primary w-full bg-teal-700 hover:bg-teal-800 py-2.5 text-sm">👆 फिंगरप्रिंट / फेस अनलॉक</button>
+              <div class="text-[11px] text-slate-400">— या पासवर्ड डालें —</div>` : ""}
+
+            <input type="password" id="dv-pass-unlock-inp" placeholder="डायरी पासवर्ड / PIN डालें" class="input-field text-center text-lg font-bold tracking-widest" />
+            <button type="button" id="dv-pass-unlock-btn" class="btn-primary w-full bg-purple-700 hover:bg-purple-800">🔓 पासवर्ड से अनलॉक करें</button>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs">
+              <button type="button" id="dv-forgot-btn" class="text-amber-700 font-bold underline">🔑 पासवर्ड भूल गए? (Offline)</button>
+              <label class="text-teal-700 font-bold underline cursor-pointer">📂 .mahavault रिस्टोर<input type="file" id="dv-restore-lock-inp" accept=".mahavault,.json" class="hidden" /></label>
+            </div>
+          </div>`;
+
+        const tryPassUnlock = async () => {
+          const pass = (document.getElementById("dv-pass-unlock-inp")?.value || "").trim();
+          if (!pass) return showToast("कृपया पासवर्ड डालें।", "error");
+          try {
+            const mk = await DiaryVaultCrypto.unwrapMasterKey(meta.passWrapped, pass);
+            const payload = await DiaryVaultIDB.get("payload");
+            diarySessionMasterKey = mk;
+            diaryDecryptedNotes = payload ? await DiaryVaultCrypto.decryptJSON(mk, payload) : [];
+            state.diaryUnlocked = true;
+            showToast("🔓 डायरी अनलॉक हो गई!");
+            renderCurrentView();
+          } catch (e) {
+            showToast("गलत पासवर्ड! फिर से कोशिश करें या 'पासवर्ड भूल गए?' दबाएं।", "error");
+          }
+        };
+        document.getElementById("dv-pass-unlock-btn")?.addEventListener("click", tryPassUnlock);
+        document.getElementById("dv-pass-unlock-inp")?.addEventListener("keydown", e => { if (e.key === "Enter") tryPassUnlock(); });
+        document.getElementById("dv-bio-unlock-btn")?.addEventListener("click", () => unlockDiaryWithBiometric(meta));
+        document.getElementById("dv-forgot-btn")?.addEventListener("click", () => openDiaryOfflineForgotModal(meta));
+        document.getElementById("dv-restore-lock-inp")?.addEventListener("change", e => {
+          const f = e.target.files?.[0];
+          if (f) importEncryptedVaultFile(f);
+        });
+        return;
+      }
+
+      // UNLOCKED ENCRYPTED DIARY EDITOR & SAVED NOTES
+      const notes = [...diaryDecryptedNotes].sort((a, b) => (b.updatedAt || b.date || "").localeCompare(a.updatedAt || a.date || ""));
       const q = (state.diarySearch || "").toLowerCase();
       const filtered = notes.filter(n => !q || `${n.date} ${n.title} ${n.tag} ${n.content}`.toLowerCase().includes(q));
       const editing = state.activeDiaryEditId ? notes.find(n => n.id === state.activeDiaryEditId) : null;
       const currentAudio = state.diaryDraftAudio !== null ? state.diaryDraftAudio : (editing?.audioData || "");
       const currentPhoto = state.diaryDraftPhoto !== null ? state.diaryDraftPhoto : (editing?.photoData || "");
+      const currentVideo = state.diaryDraftVideo !== null ? state.diaryDraftVideo : (editing?.videoData || "");
+      const hiddenNow = isDiaryHidden();
       const moods = ["📝 सामान्य नोट", "😊 खुश", "🙏 आभार", "💡 विचार", "📌 ज़रूरी काम", "💼 बिज़नेस", "🏠 परिवार"];
 
       container.innerHTML = `
-        <!-- Auto-Save Voice, Audio & Photo Diary Editor -->
+        <!-- Security & Stealth Control Bar -->
+        <div class="bg-purple-950 text-white rounded-2xl p-3 flex flex-wrap items-center justify-between gap-2 text-xs shadow-sm">
+          <div class="flex items-center gap-2">
+            <span>🛡️</span>
+            <span><b>AES-256 Encrypted</b> • बैक करते ही ऑटो-लॉक</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" id="dv-setup-bio-btn" class="px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-500 font-bold">${meta.biometricCredId ? "✅ फिंगर/फेस चालू" : "👆 फिंगर/फेस जोड़ें"}</button>
+            <button type="button" id="dv-toggle-hide-btn" class="px-2.5 py-1 rounded-lg ${hiddenNow ? "bg-amber-500 text-slate-950" : "bg-white/15 hover:bg-white/25"} font-bold">${hiddenNow ? "👁️ डायरी दिखाएं (Unhide)" : "🕵️ डायरी छिपाएं (Hide)"}</button>
+            <button type="button" id="dv-export-vault-btn" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-bold">💾 Encrypted फ़ाइल सेव</button>
+            <button type="button" id="dv-lock-now-btn" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 font-bold">🔒 लॉक करें</button>
+          </div>
+        </div>
+        ${hiddenNow ? `<div class="bg-amber-50 border border-amber-300 text-amber-950 rounded-xl px-3 py-2 text-[11px] font-semibold">🕵️ डायरी अभी ऐप से छिपी (Hidden) है। बाहर जाने के बाद इसे दोबारा खोलने के लिए ऊपर बाईं ओर <b>ऐप के लोगो पर लगातार 5 बार टैप</b> करें।</div>` : ""}
+
+        <!-- Auto-Save Voice, Audio, Photo & Video Diary Editor -->
         <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 shadow-sm">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 class="font-bold text-base text-purple-900">📓 निजी डायरी (Voice, Audio व Photo Diary)</h3>
-              <div class="text-[11px] text-slate-500">बोलकर लिखें, असली आवाज़ रिकॉर्ड करें, फोटो जोड़ें — सब अपने आप (Auto-Save) सेव होगा।</div>
+              <h3 class="font-bold text-base text-purple-900">📓 निजी डायरी (Voice, Audio, Photo व Video)</h3>
+              <div class="text-[11px] text-slate-500">सब कुछ फोन में एन्क्रिप्टेड ऑटो-सेव होता है।</div>
             </div>
             <div class="flex flex-wrap items-center gap-1.5">
-              <span id="diary-autosave-badge" class="text-[11px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">✓ ऑटो-सेव तैयार</span>
-              <button type="button" id="diary-pin-cfg-btn" class="btn-secondary text-xs py-1.5 px-2.5 min-h-[34px] border-purple-300 text-purple-800">${diaryPin ? "🔐 PIN बदलें/लॉक" : "🔐 डायरी PIN लगाएं"}</button>
-              ${diaryPin ? `<button type="button" id="diary-lock-now-btn" class="btn-secondary text-xs py-1.5 px-2.5 min-h-[34px] border-rose-300 text-rose-700">🔒 लॉक करें</button>` : ""}
+              <span id="diary-autosave-badge" class="text-[11px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">✓ Encrypted ऑटो-सेव</span>
               ${editing ? `<button type="button" id="diary-new-btn" class="btn-secondary text-xs py-1.5 px-2.5 min-h-[34px]">+ नया पन्ना</button>` : ""}
             </div>
           </div>
@@ -5642,25 +6141,27 @@
 
           <div>
             <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
-              <label class="text-xs font-bold text-slate-700">डायरी का पन्ना (बोलकर या टाइप करके लिखें)</label>
+              <label class="text-xs font-bold text-slate-700">डायरी का पन्ना</label>
               <div class="flex flex-wrap gap-1.5">
                 <button type="button" id="diary-dictate-btn" class="btn-primary text-xs py-1.5 px-3 min-h-[34px] bg-purple-700 hover:bg-purple-800">🎙️ बोलकर लिखें</button>
-                <button type="button" id="diary-rec-audio-btn" class="btn-secondary text-xs py-1.5 px-3 min-h-[34px] border-rose-300 text-rose-800 bg-rose-50">🔴 आवाज़ रिकॉर्ड</button>
+                <button type="button" id="diary-rec-audio-btn" class="btn-secondary text-xs py-1.5 px-3 min-h-[34px] border-rose-300 text-rose-800 bg-rose-50">🔴 आवाज़</button>
                 <label class="btn-secondary text-xs py-1.5 px-3 min-h-[34px] border-blue-300 text-blue-800 bg-blue-50 cursor-pointer inline-flex items-center gap-1">📷 फोटो <input type="file" id="diary-photo-inp" accept="image/*" class="hidden" /></label>
-                <button type="button" id="diary-read-editor-btn" class="btn-secondary text-xs py-1.5 px-3 min-h-[34px] border-teal-300 text-teal-800">🔊 बोलकर सुनें</button>
+                <label class="btn-secondary text-xs py-1.5 px-3 min-h-[34px] border-indigo-300 text-indigo-800 bg-indigo-50 cursor-pointer inline-flex items-center gap-1">🎥 वीडियो <input type="file" id="diary-video-inp" accept="video/*" class="hidden" /></label>
+                <button type="button" id="diary-read-editor-btn" class="btn-secondary text-xs py-1.5 px-3 min-h-[34px] border-teal-300 text-teal-800">🔊 सुनें</button>
               </div>
             </div>
             <textarea id="diary-content" rows="5" placeholder="यहाँ अपनी बात लिखें या ऊपर '🎙️ बोलकर लिखें' दबाकर हिंदी में बोलना शुरू करें..." class="input-field text-sm leading-relaxed">${escHtml(editing?.content || "")}</textarea>
           </div>
 
-          ${(currentAudio || currentPhoto) ? `
+          ${(currentAudio || currentPhoto || currentVideo) ? `
             <div class="flex flex-wrap items-center gap-3 p-2.5 rounded-xl bg-purple-50/70 border border-purple-200">
-              ${currentAudio ? `<div class="flex items-center gap-2"><audio controls src="${currentAudio}" class="h-8 max-w-[220px]"></audio><button type="button" id="diary-rm-audio" class="text-xs text-red-600 font-bold">✕ आवाज़ हटाएं</button></div>` : ""}
-              ${currentPhoto ? `<div class="flex items-center gap-2"><img src="${currentPhoto}" alt="Diary Photo" class="h-14 w-14 object-cover rounded-lg border border-purple-300" /><button type="button" id="diary-rm-photo" class="text-xs text-red-600 font-bold">✕ फोटो हटाएं</button></div>` : ""}
+              ${currentAudio ? `<div class="flex items-center gap-2"><audio controls src="${currentAudio}" class="h-8 max-w-[200px]"></audio><button type="button" id="diary-rm-audio" class="text-xs text-red-600 font-bold">✕ आवाज़</button></div>` : ""}
+              ${currentPhoto ? `<div class="flex items-center gap-2"><img src="${currentPhoto}" alt="Diary Photo" class="h-14 w-14 object-cover rounded-lg border border-purple-300" /><button type="button" id="diary-rm-photo" class="text-xs text-red-600 font-bold">✕ फोटो</button></div>` : ""}
+              ${currentVideo ? `<div class="flex items-center gap-2"><video controls playsinline src="${currentVideo}" class="h-20 rounded-lg bg-black"></video><button type="button" id="diary-rm-video" class="text-xs text-red-600 font-bold">✕ वीडियो</button></div>` : ""}
             </div>` : ""}
 
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <span class="text-[11px] text-slate-400">कुल सहेजे गए पन्ने: <b>${notes.length}</b></span>
+            <span class="text-[11px] text-slate-400">कुल एन्क्रिप्टेड पन्ने: <b>${notes.length}</b></span>
             <div class="flex gap-2">
               <button type="button" id="diary-export-all-pdf" class="btn-secondary text-xs py-1.5 px-3 min-h-[36px] border-blue-300 text-blue-800">📄 पूरी डायरी PDF</button>
               <button type="button" id="diary-save-now-btn" class="btn-primary text-xs py-1.5 px-4 min-h-[36px]">💾 सेव व नया पन्ना</button>
@@ -5682,7 +6183,8 @@
                   <div class="text-[11px] text-slate-500">${escHtml(n.date)} • <span class="font-semibold text-purple-800">${escHtml(n.tag || "📝 सामान्य नोट")}</span></div>
                 </div>
               </div>
-              ${n.photoData ? `<img src="${n.photoData}" alt="Diary Memory" class="w-full max-h-44 object-cover rounded-xl border border-slate-200" />` : ""}
+              ${n.photoData ? `<img src="${n.photoData}" alt="Diary Memory" class="w-full max-h-48 object-cover rounded-xl border border-slate-200" />` : ""}
+              ${n.videoData ? `<video controls playsinline src="${n.videoData}" class="w-full max-h-56 rounded-xl bg-black"></video>` : ""}
               ${n.content ? `<div class="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed bg-slate-50 rounded-xl p-2.5 border border-slate-100 max-h-40 overflow-y-auto">${escHtml(n.content)}</div>` : ""}
               ${n.audioData ? `<audio controls src="${n.audioData}" class="w-full h-8"></audio>` : ""}
               <div class="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100 text-xs">
@@ -5692,7 +6194,7 @@
                 <button type="button" data-diary-del="${n.id}" class="ml-auto px-2 py-1 rounded-lg text-red-600 font-bold">🗑️ Delete</button>
               </div>
             </div>
-          `).join("") : `<div class="col-span-full bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-sm">अभी आपकी निजी डायरी खाली है। ऊपर <b>🎙️ बोलकर लिखें</b> या <b>🔴 आवाज़ रिकॉर्ड</b> दबाकर अपना पहला नोट बनाएं।</div>`}
+          `).join("") : `<div class="col-span-full bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-sm">अभी आपकी एन्क्रिप्टेड डायरी खाली है। ऊपर <b>🎙️ बोलकर लिखें</b>, <b>📷 फोटो</b> या <b>🎥 वीडियो</b> जोड़ें।</div>`}
         </div>`;
 
       const dateEl = document.getElementById("diary-date");
@@ -5702,105 +6204,68 @@
       const badgeEl = document.getElementById("diary-autosave-badge");
       const dictBtn = document.getElementById("diary-dictate-btn");
 
-      const autoSaveDiaryDraft = (refreshListAfter = false) => {
+      const autoSaveDiaryDraft = async (refreshListAfter = false) => {
         const content = contentEl.value.trim();
         const title = titleEl.value.trim();
         const audioData = state.diaryDraftAudio !== null ? state.diaryDraftAudio : (editing?.audioData || "");
         const photoData = state.diaryDraftPhoto !== null ? state.diaryDraftPhoto : (editing?.photoData || "");
-        if (!content && !title && !audioData && !photoData) return;
+        const videoData = state.diaryDraftVideo !== null ? state.diaryDraftVideo : (editing?.videoData || "");
+        if (!content && !title && !audioData && !photoData && !videoData) return;
         const now = new Date().toISOString();
-        const devTag = getDeviceName();
         if (!state.activeDiaryEditId) state.activeDiaryEditId = generateId("dry");
         const id = state.activeDiaryEditId;
         const rec = {
           id,
           date: dateEl.value || state.selectedDate,
           tag: tagEl.value,
-          title: title || (content ? content.slice(0, 34) : "आवाज़ / फोटो डायरी नोट"),
+          title: title || (content ? content.slice(0, 34) : "मीडिया डायरी नोट"),
           content,
           audioData,
           photoData,
-          updatedBy: devTag,
+          videoData,
           updatedAt: now,
-          createdAt: (state.data.personalDiary.find(x => x.id === id)?.createdAt) || now
+          createdAt: (diaryDecryptedNotes.find(x => x.id === id)?.createdAt) || now
         };
-        const idx = state.data.personalDiary.findIndex(x => x.id === id);
-        if (idx >= 0) state.data.personalDiary[idx] = rec;
-        else state.data.personalDiary.push(rec);
-        persistLocalDB();
-        if (isCloudSyncEnabled() && cloudUser && navigator.onLine) {
-          const { id: _id, ...cloudPayload } = rec;
-          privateRtdbRest(`data/personalDiary/${id}`, "PUT", cloudPayload).catch(() => {});
-        }
+        const idx = diaryDecryptedNotes.findIndex(x => x.id === id);
+        if (idx >= 0) diaryDecryptedNotes[idx] = rec;
+        else diaryDecryptedNotes.push(rec);
+        await saveEncryptedDiaryVault();
         const t = new Date().toLocaleTimeString("hi-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-        if (badgeEl) badgeEl.textContent = `✓ ऑटो-सेव (${t})`;
+        if (badgeEl) badgeEl.textContent = `✓ Encrypted सेव (${t})`;
         if (refreshListAfter) renderCurrentView();
       };
 
       let saveTimer = null;
       const scheduleAutoSave = () => {
-        if (badgeEl) badgeEl.textContent = "⏳ सेव हो रहा है...";
+        if (badgeEl) badgeEl.textContent = "⏳ एन्क्रिप्ट हो रहा है...";
         clearTimeout(saveTimer);
         saveTimer = setTimeout(() => autoSaveDiaryDraft(false), 1100);
       };
-
       [dateEl, tagEl, titleEl, contentEl].forEach(el => {
         el.addEventListener("input", scheduleAutoSave);
         el.addEventListener("change", scheduleAutoSave);
       });
 
-      // Secret Diary PIN Setup / Remove
-      document.getElementById("diary-pin-cfg-btn")?.addEventListener("click", () => {
-        openModal("🔐 निजी डायरी सीक्रेट PIN", `
-          <div class="space-y-3 text-xs">
-            <p class="text-slate-600">यह PIN सिर्फ आपकी <b>निजी डायरी</b> को लॉक करेगा, ताकि कोई और आपका फोन चलाए तो आपकी निजी बातें न पढ़ सके।</p>
-            <div><label class="block font-bold mb-1">नया 4-अंकों का डायरी PIN (हटाने के लिए खाली छोड़ें)</label>
-              <input type="password" inputmode="numeric" maxlength="4" id="set-diary-pin-inp" placeholder="जैसे: 2580" class="input-field text-center text-lg tracking-widest font-bold" />
-            </div>
-            <div class="flex gap-2">
-              <button type="button" id="save-diary-pin-btn" class="btn-primary flex-1">💾 PIN सेव करें</button>
-              ${diaryPin ? `<button type="button" id="clear-diary-pin-btn" class="btn-secondary text-red-700 border-red-300">🗑️ PIN हटाएं</button>` : ""}
-            </div>
-          </div>`);
-        document.getElementById("save-diary-pin-btn")?.addEventListener("click", () => {
-          const p = (document.getElementById("set-diary-pin-inp")?.value || "").trim();
-          if (p && !/^\d{4}$/.test(p)) return showToast("कृपया ठीक 4 अंकों का PIN डालें।", "error");
-          if (p) {
-            localStorage.setItem("maha_diary_pin_v1", p);
-            state.diaryUnlocked = true;
-            showToast("डायरी सीक्रेट PIN सेट हो गया!");
-          } else {
-            localStorage.removeItem("maha_diary_pin_v1");
-            showToast("डायरी PIN हटा दिया गया।");
-          }
-          closeModal();
-          renderCurrentView();
-        });
-        document.getElementById("clear-diary-pin-btn")?.addEventListener("click", () => {
-          localStorage.removeItem("maha_diary_pin_v1");
-          closeModal();
-          renderCurrentView();
-          showToast("डायरी PIN हटा दिया गया।");
-        });
-      });
-
-      document.getElementById("diary-lock-now-btn")?.addEventListener("click", () => {
-        state.diaryUnlocked = false;
+      // Security bar handlers
+      document.getElementById("dv-setup-bio-btn")?.addEventListener("click", () => enableDiaryBiometric(meta));
+      document.getElementById("dv-export-vault-btn")?.addEventListener("click", exportEncryptedVaultFile);
+      document.getElementById("dv-lock-now-btn")?.addEventListener("click", () => { lockDiaryVaultNow(false); renderCurrentView(); });
+      document.getElementById("dv-toggle-hide-btn")?.addEventListener("click", () => {
+        const next = isDiaryHidden() ? "0" : "1";
+        localStorage.setItem("maha_diary_hidden_v1", next);
+        applyDiaryHiddenUI();
         renderCurrentView();
-        showToast("निजी डायरी लॉक हो गई।");
+        showToast(next === "1" ? "🕵️ डायरी ऐप से छिपा दी गई! दोबारा खोलने के लिए लोगो पर 5 बार टैप करें।" : "👁️ डायरी अब फिर से ऐप में दिखने लगी है।");
       });
 
-      // Real Audio Voice Note Recording (MediaRecorder)
+      // Real Audio Recording
       let mediaRec = null;
       let audioChunks = [];
       const recBtn = document.getElementById("diary-rec-audio-btn");
       recBtn?.addEventListener("click", async () => {
-        if (mediaRec && mediaRec.state === "recording") {
-          mediaRec.stop();
-          return;
-        }
+        if (mediaRec && mediaRec.state === "recording") { mediaRec.stop(); return; }
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === "undefined") {
-          return showToast("इस ब्राउज़र में ऑडियो रिकॉर्डिंग सपोर्ट नहीं है। Chrome में खोलें।", "error");
+          return showToast("इस ब्राउज़र में ऑडियो रिकॉर्डिंग सपोर्ट नहीं है।", "error");
         }
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -5809,68 +6274,74 @@
           mediaRec.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
           mediaRec.onstop = () => {
             stream.getTracks().forEach(t => t.stop());
-            recBtn.textContent = "🔴 आवाज़ रिकॉर्ड";
+            recBtn.textContent = "🔴 आवाज़";
             recBtn.classList.remove("animate-pulse", "bg-red-600", "text-white");
             const blob = new Blob(audioChunks, { type: mediaRec.mimeType || "audio/webm" });
             const reader = new FileReader();
-            reader.onloadend = () => {
+            reader.onloadend = async () => {
               state.diaryDraftAudio = reader.result;
-              autoSaveDiaryDraft(true);
-              showToast("आवाज़ रिकॉर्ड होकर ऑटो-सेव हो गई!");
+              await autoSaveDiaryDraft(true);
+              showToast("आवाज़ एन्क्रिप्ट होकर सेव हो गई!");
             };
             reader.readAsDataURL(blob);
           };
           mediaRec.start();
-          recBtn.textContent = "⏹️ रिकॉर्डिंग रोकें";
+          recBtn.textContent = "⏹️ रोकें";
           recBtn.classList.add("animate-pulse", "bg-red-600", "text-white");
-          showToast("माइक चालू है — बोलें और पूरा होने पर 'रिकॉर्डिंग रोकें' दबाएं।");
-        } catch (err) {
-          showToast("माइक की अनुमति नहीं मिली।", "error");
-        }
+        } catch (err) { showToast("माइक की अनुमति नहीं मिली।", "error"); }
       });
 
-      // Photo Attachment (compressed JPEG so localStorage stays fast)
+      // Photo Upload
       document.getElementById("diary-photo-inp")?.addEventListener("change", e => {
         const file = e.target.files?.[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = ev => {
           const img = new Image();
-          img.onload = () => {
-            const maxW = 800;
+          img.onload = async () => {
+            const maxW = 900;
             const scale = img.width > maxW ? maxW / img.width : 1;
             const canvas = document.createElement("canvas");
             canvas.width = Math.round(img.width * scale);
             canvas.height = Math.round(img.height * scale);
             canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-            state.diaryDraftPhoto = canvas.toDataURL("image/jpeg", 0.72);
-            autoSaveDiaryDraft(true);
-            showToast("फोटो डायरी में ऑटो-सेव हो गई!");
+            state.diaryDraftPhoto = canvas.toDataURL("image/jpeg", 0.78);
+            await autoSaveDiaryDraft(true);
+            showToast("फोटो एन्क्रिप्ट होकर सेव हो गई!");
           };
           img.src = ev.target.result;
         };
         reader.readAsDataURL(file);
       });
 
-      document.getElementById("diary-rm-audio")?.addEventListener("click", () => {
-        state.diaryDraftAudio = "";
-        autoSaveDiaryDraft(true);
-      });
-      document.getElementById("diary-rm-photo")?.addEventListener("click", () => {
-        state.diaryDraftPhoto = "";
-        autoSaveDiaryDraft(true);
+      // Video Upload (stored encrypted inside IndexedDB — supports up to ~25MB smoothly)
+      document.getElementById("diary-video-inp")?.addEventListener("change", e => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (file.size > 28 * 1024 * 1024) {
+          return showToast("कृपया 25MB से छोटा वीडियो चुनें ताकि एन्क्रिप्शन तेज़ रहे।", "error");
+        }
+        showToast("🎥 वीडियो एन्क्रिप्ट हो रहा है, कृपया 2 सेकंड रुकें...");
+        const reader = new FileReader();
+        reader.onload = async ev => {
+          state.diaryDraftVideo = ev.target.result;
+          await autoSaveDiaryDraft(true);
+          showToast("✅ वीडियो एन्क्रिप्ट होकर डायरी में सेव हो गया!");
+        };
+        reader.readAsDataURL(file);
       });
 
-      // Continuous Hindi Voice Dictation into Diary
+      document.getElementById("diary-rm-audio")?.addEventListener("click", async () => { state.diaryDraftAudio = ""; await autoSaveDiaryDraft(true); });
+      document.getElementById("diary-rm-photo")?.addEventListener("click", async () => { state.diaryDraftPhoto = ""; await autoSaveDiaryDraft(true); });
+      document.getElementById("diary-rm-video")?.addEventListener("click", async () => { state.diaryDraftVideo = ""; await autoSaveDiaryDraft(true); });
+
+      // Voice Dictation
       let diaryRec = null;
       let isDictating = false;
       dictBtn.addEventListener("click", () => {
-        if (isDictating && diaryRec) {
-          try { diaryRec.stop(); } catch (e) {}
-          return;
-        }
+        if (isDictating && diaryRec) { try { diaryRec.stop(); } catch (e) {} return; }
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) return showToast("आपके ब्राउज़र में बोलकर लिखने की सुविधा उपलब्ध नहीं है। Chrome में खोलें।", "error");
+        if (!SR) return showToast("आपके ब्राउज़र में बोलकर लिखने की सुविधा उपलब्ध नहीं है।", "error");
         diaryRec = new SR();
         diaryRec.lang = "hi-IN";
         diaryRec.continuous = true;
@@ -5878,7 +6349,6 @@
         isDictating = true;
         dictBtn.textContent = "⏹️ बोलना रोकें";
         dictBtn.classList.add("animate-pulse", "bg-red-600");
-        showToast("माइक चालू है — अपनी बात हिंदी में बोलें...");
         diaryRec.onresult = ev => {
           let spoken = "";
           for (let i = ev.resultIndex; i < ev.results.length; i++) {
@@ -5889,17 +6359,8 @@
             autoSaveDiaryDraft(false);
           }
         };
-        diaryRec.onerror = () => {
-          isDictating = false;
-          dictBtn.textContent = "🎙️ बोलकर लिखें";
-          dictBtn.classList.remove("animate-pulse", "bg-red-600");
-        };
-        diaryRec.onend = () => {
-          isDictating = false;
-          dictBtn.textContent = "🎙️ बोलकर लिखें";
-          dictBtn.classList.remove("animate-pulse", "bg-red-600");
-          autoSaveDiaryDraft(true);
-        };
+        diaryRec.onerror = () => { isDictating = false; dictBtn.textContent = "🎙️ बोलकर लिखें"; dictBtn.classList.remove("animate-pulse", "bg-red-600"); };
+        diaryRec.onend = () => { isDictating = false; dictBtn.textContent = "🎙️ बोलकर लिखें"; dictBtn.classList.remove("animate-pulse", "bg-red-600"); autoSaveDiaryDraft(true); };
         try { diaryRec.start(); } catch (e) {}
       });
 
@@ -5909,20 +6370,22 @@
         speakHindiText(txt);
       });
 
-      document.getElementById("diary-save-now-btn").addEventListener("click", () => {
-        autoSaveDiaryDraft(false);
+      document.getElementById("diary-save-now-btn").addEventListener("click", async () => {
+        await autoSaveDiaryDraft(false);
         state.activeDiaryEditId = null;
         state.diaryDraftAudio = null;
         state.diaryDraftPhoto = null;
+        state.diaryDraftVideo = null;
         renderCurrentView();
-        showToast("डायरी पन्ना सेव हो गया! नया पन्ना तैयार है।");
+        showToast("डायरी पन्ना एन्क्रिप्ट होकर सेव हो गया!");
       });
 
-      document.getElementById("diary-new-btn")?.addEventListener("click", () => {
-        autoSaveDiaryDraft(false);
+      document.getElementById("diary-new-btn")?.addEventListener("click", async () => {
+        await autoSaveDiaryDraft(false);
         state.activeDiaryEditId = null;
         state.diaryDraftAudio = null;
         state.diaryDraftPhoto = null;
+        state.diaryDraftVideo = null;
         renderCurrentView();
       });
 
@@ -5931,51 +6394,63 @@
         renderCurrentView();
       });
 
+      // FIXED: Real PDF Download for Full Diary
       document.getElementById("diary-export-all-pdf").addEventListener("click", () => {
         if (!notes.length) return showToast("डायरी में कोई पन्ना नहीं है।", "error");
         const body = notes.map(n => `
-          <div style="border:1px solid #cbd5e1;border-radius:10px;padding:12px;margin-bottom:12px;background:#faf5ff;">
+          <div style="border:1px solid #cbd5e1;border-radius:10px;padding:12px;margin-bottom:12px;background:#faf5ff;page-break-inside:avoid;">
             <div style="font-weight:700;font-size:14px;color:#4c1d95;">${escHtml(n.title || "निजी डायरी नोट")}</div>
-            <div style="font-size:11px;color:#64748b;margin-bottom:6px;">तारीख: ${escHtml(n.date)} | ${escHtml(n.tag || "")}</div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:6px;">तारीख: ${escHtml(n.date)} | ${escHtml(n.tag || "")} ${n.videoData ? "| 🎥 वीडियो संलग्न" : ""} ${n.audioData ? "| 🔊 ऑडियो संलग्न" : ""}</div>
             ${n.photoData ? `<img src="${n.photoData}" style="max-height:180px;border-radius:8px;margin-bottom:8px;" />` : ""}
             <div style="font-size:13px;white-space:pre-wrap;line-height:1.6;">${escHtml(n.content || "")}</div>
           </div>`).join("");
-        generateAndPrintPDF("निजी डायरी (Personal Voice Diary)", `कुल पन्ने: ${notes.length}`, body);
+        downloadDiaryPDF("निजी डायरी (Personal Encrypted Diary)", `कुल पन्ने: ${notes.length}`, body);
       });
 
       container.querySelectorAll("[data-diary-speak]").forEach(b => b.addEventListener("click", () => {
         const n = notes.find(x => x.id === b.dataset.diarySpeak);
-        if (n) speakHindiText(`तारीख ${n.date}। ${n.title || ""}। ${n.content || "ऑडियो नोट"}`);
+        if (n) speakHindiText(`तारीख ${n.date}। ${n.title || ""}। ${n.content || "मीडिया नोट"}`);
       }));
 
       container.querySelectorAll("[data-diary-edit]").forEach(b => b.addEventListener("click", () => {
         state.activeDiaryEditId = b.dataset.diaryEdit;
         state.diaryDraftAudio = null;
         state.diaryDraftPhoto = null;
+        state.diaryDraftVideo = null;
         renderCurrentView();
         window.scrollTo({ top: 0, behavior: "smooth" });
       }));
 
+      // FIXED: Real PDF Download for Single Note
       container.querySelectorAll("[data-diary-pdf]").forEach(b => b.addEventListener("click", () => {
         const n = notes.find(x => x.id === b.dataset.diaryPdf);
         if (!n) return;
-        const body = `<div style="border:1px solid #cbd5e1;border-radius:10px;padding:16px;">
-          <div style="font-size:12px;color:#64748b;margin-bottom:8px;">तारीख: ${escHtml(n.date)} | ${escHtml(n.tag || "")}</div>
+        const body = `<div style="border:1px solid #cbd5e1;border-radius:10px;padding:16px;background:#faf5ff;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:8px;">तारीख: ${escHtml(n.date)} | ${escHtml(n.tag || "")} ${n.videoData ? "| 🎥 वीडियो संलग्न" : ""}</div>
           ${n.photoData ? `<img src="${n.photoData}" style="max-height:240px;border-radius:8px;margin-bottom:10px;" />` : ""}
           <div style="font-size:14px;white-space:pre-wrap;line-height:1.7;">${escHtml(n.content || "")}</div>
         </div>`;
-        generateAndPrintPDF(n.title || "निजी डायरी नोट", `तारीख: ${n.date}`, body);
+        downloadDiaryPDF(n.title || "निजी डायरी नोट", `तारीख: ${n.date}`, body);
       }));
 
       container.querySelectorAll("[data-diary-del]").forEach(b => b.addEventListener("click", async () => {
-        const n = notes.find(x => x.id === b.dataset.diaryDel);
-        if (n && await deleteDocById("personalDiary", n.id, n.title || "डायरी नोट")) {
-          if (state.activeDiaryEditId === b.dataset.diaryDel) {
-            state.activeDiaryEditId = null;
-            state.diaryDraftAudio = null;
-            state.diaryDraftPhoto = null;
-          }
+        if (typeof isStaffMode === "function" && isStaffMode()) {
+          return showToast("स्टाफ मोड में डिलीट बंद है।", "error");
         }
+        const n = notes.find(x => x.id === b.dataset.diaryDel);
+        if (!n) return;
+        const ok = await showConfirm("डायरी नोट हटाएं", `क्या आप "${n.title || "यह डायरी नोट"}" स्थायी रूप से हटाना चाहते हैं?`);
+        if (!ok) return;
+        diaryDecryptedNotes = diaryDecryptedNotes.filter(x => x.id !== n.id);
+        await saveEncryptedDiaryVault();
+        if (state.activeDiaryEditId === n.id) {
+          state.activeDiaryEditId = null;
+          state.diaryDraftAudio = null;
+          state.diaryDraftPhoto = null;
+          state.diaryDraftVideo = null;
+        }
+        renderCurrentView();
+        showToast("डायरी नोट हटा दिया गया।");
       }));
     }
 
@@ -6904,6 +7379,19 @@
       document.getElementById("header-back-btn")?.addEventListener("click", () => goBackScreen(false));
       document.getElementById("header-install-btn")?.addEventListener("click", triggerAppInstall);
       initHardwareBackSupport();
+      applyDiaryHiddenUI();
+      let _logoTaps = 0, _logoTapTimer = null;
+      document.getElementById("app-header-logo-wrap")?.addEventListener("click", () => {
+        _logoTaps++;
+        clearTimeout(_logoTapTimer);
+        _logoTapTimer = setTimeout(() => { _logoTaps = 0; }, 1600);
+        if (_logoTaps >= 5) {
+          _logoTaps = 0;
+          state.activeMainTab = "diary";
+          renderCurrentView();
+          showToast("🕵️ सीक्रेट डायरी वॉल्ट खुल गया!");
+        }
+      });
       document.getElementById("header-share-app-btn").addEventListener("click", shareAppAction);
       document.getElementById("modal-close-btn").addEventListener("click", closeModal);
       document.getElementById("app-modal").addEventListener("click", (e) => { if (e.target.id === "app-modal") closeModal(); });
