@@ -106,6 +106,47 @@
     body.diary-hidden-mode [data-house-tab="diary"] {
       display: none !important;
     }
+
+    /* Strict Admin-Only UI isolation */
+    body.non-admin-user .admin-only {
+      display: none !important;
+    }
+
+    /* Colorful, Easy User-Friendly Dashboard KPI Cards */
+    #main-content .kpi-card {
+      border-radius: 16px;
+      border-width: 1.5px;
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05);
+    }
+    body:not(.dark-mode) #main-content .grid > .kpi-card:nth-child(6n+1) { background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 70%); border-color: #a7f3d0; border-left: 4px solid #10b981; }
+    body:not(.dark-mode) #main-content .grid > .kpi-card:nth-child(6n+2) { background: linear-gradient(135deg, #eff6ff 0%, #ffffff 70%); border-color: #bfdbfe; border-left: 4px solid #3b82f6; }
+    body:not(.dark-mode) #main-content .grid > .kpi-card:nth-child(6n+3) { background: linear-gradient(135deg, #fffbeb 0%, #ffffff 70%); border-color: #fde68a; border-left: 4px solid #f59e0b; }
+    body:not(.dark-mode) #main-content .grid > .kpi-card:nth-child(6n+4) { background: linear-gradient(135deg, #faf5ff 0%, #ffffff 70%); border-color: #e9d5ff; border-left: 4px solid #8b5cf6; }
+    body:not(.dark-mode) #main-content .grid > .kpi-card:nth-child(6n+5) { background: linear-gradient(135deg, #fff1f2 0%, #ffffff 70%); border-color: #fecdd3; border-left: 4px solid #f43f5e; }
+    body:not(.dark-mode) #main-content .grid > .kpi-card:nth-child(6n+6) { background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 70%); border-color: #99f6e4; border-left: 4px solid #14b8a6; }
+
+    /* Left Vertical Scrollable Accordion Sidebar (Phone + Desktop) */
+    #app-left-sidebar {
+      transition: transform 0.22s ease;
+    }
+    #app-left-sidebar.drawer-open {
+      transform: translateX(0) !important;
+    }
+    .acc-sub-btn {
+      width: 100%;
+      text-align: left;
+      padding: 8px 12px 8px 34px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .acc-sub-btn:hover { background: #f1f5f9; color: #0f766e; }
+    .acc-sub-btn.active { background: #ccfbf1; color: #115e59; font-weight: 800; }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-900">
@@ -135,7 +176,8 @@
   <div id="app-shell" class="min-h-screen flex flex-col md:flex-row">
 
     <!-- Desktop Sidebar -->
-    <aside class="hidden md:flex md:flex-col md:w-64 bg-white border-r border-slate-200 fixed inset-y-0 left-0 z-30">
+    <div id="mobile-sidebar-backdrop" class="hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-[1px] md:hidden"></div>
+    <aside id="app-left-sidebar" class="flex flex-col w-72 md:w-64 bg-white border-r border-slate-200 fixed inset-y-0 left-0 z-50 md:z-30 -translate-x-full md:translate-x-0 shadow-2xl md:shadow-none">
       <div class="p-3.5 border-b border-slate-200 bg-teal-700 text-white space-y-2">
         <div class="bg-white rounded-xl px-2.5 py-1.5 shadow flex items-center justify-center">
           <img src="data:image/png;base64,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" alt="MahaIndustries Logo" class="h-10 w-auto max-w-full object-contain" />
@@ -145,15 +187,11 @@
           <div id="sidebar-user-name" class="text-[11px] text-teal-100 truncate">फोन लोकल स्टोरेज (निजी व सुरक्षित)</div>
         </div>
       </div>
-      <nav class="flex-1 p-3 space-y-1.5 overflow-y-auto">
-        <button type="button" data-main-tab="home" class="desktop-nav-btn active w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>📊</span><span>डैशबोर्ड (Home)</span></button>
-        <button type="button" data-main-tab="house" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>🏡</span><span>घर का हिसाब (House)</span></button>
-        <button type="button" data-main-tab="parchuni" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>🏪</span><span>परचूनी दुकान (Kirana)</span></button>
-        <button type="button" data-main-tab="dairy" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>🥛</span><span>डेयरी हिसाब (Dairy)</span></button>
-        <button type="button" data-main-tab="diary" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>📓</span><span>निजी डायरी (Diary)</span></button>
-        <button type="button" data-main-tab="reports" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>📑</span><span>रिपोर्ट सेंटर (Reports)</span></button>
-        <button type="button" data-main-tab="settings" class="desktop-nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100"><span>⚙️</span><span>सेटिंग्स (Settings)</span></button>
-      </nav>
+      <div class="md:hidden flex items-center justify-between px-3.5 py-2 bg-teal-50 border-b border-teal-100">
+        <span class="text-xs font-extrabold text-teal-900">📂 सभी श्रेणियाँ (Categories)</span>
+        <button type="button" id="mobile-sidebar-close-btn" class="px-2.5 py-1 rounded-lg bg-white border border-teal-200 text-teal-900 text-xs font-bold">✕ बंद</button>
+      </div>
+      <nav id="left-accordion-nav" class="flex-1 p-2.5 space-y-1 overflow-y-auto overscroll-contain"></nav>
       <div class="p-3 border-t border-slate-200 space-y-2">
         <div id="sync-status-desktop" class="text-xs px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 font-semibold flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>फोन में सेव (निजी व ऑफ़लाइन)</span>
@@ -167,6 +205,8 @@
     <!-- Main Content Column -->
     <div class="flex-1 md:ml-64 flex flex-col min-h-screen pb-20 md:pb-6">
       <header class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200 px-2.5 sm:px-4 py-2 flex items-center gap-2">
+        <!-- Mobile Left Category Drawer Toggle -->
+        <button type="button" id="mobile-sidebar-toggle" class="md:hidden shrink-0 btn-secondary text-sm font-extrabold px-2.5 py-1.5 min-h-[36px] border-teal-400 text-teal-900 bg-teal-50" title="सभी श्रेणियाँ खोलें">☰</button>
         <!-- Sticky Universal Back Button -->
         <button type="button" id="header-back-btn" class="hidden shrink-0 btn-secondary text-sm font-extrabold px-2.5 py-1.5 min-h-[36px] border-teal-300 text-teal-900 bg-teal-50" title="पिछली स्क्रीन पर वापस जाएं">←</button>
         <!-- Fixed Logo & Title (Never overlaps or shrinks on mobile) -->
@@ -856,7 +896,9 @@
         const stnM = norm.match(/stn[_\s\-]*name\s*[:=\-]?\s*([^\r\n]+)/i);
         const firstLine = (stnM ? stnM[1].trim() : "")
           || norm.split(/\r?\n/).map(l => l.trim()).find(l => l.length >= 3 && !/^\d/.test(l)) || "";
-        return { dairyName: firstLine.slice(0, 40), date, shift, milkType, quantity, fat, snf, rate, amount, raw };
+        const codeM = norm.match(/\b(?:code|c0de|कोड)\s*[:=\-]?\s*([0-9oO]{1,6})/i);
+        const code = codeM ? String(codeM[1]).replace(/[oO]/g, "0").trim() : "";
+        return { code, dairyName: firstLine.slice(0, 40), date, shift, milkType, quantity, fat, snf, rate, amount, raw };
       },
       parseDairySupplyVoiceEntry(transcript) {
         const raw = String(transcript || "").trim();
@@ -1830,6 +1872,124 @@
       document.getElementById("install-share-now-btn")?.addEventListener("click", () => { closeModal(true); shareAppAction(); });
     }
 
+    // =========================================================================
+    // 7D. VERTICAL SCROLLABLE LEFT ACCORDION SIDEBAR (MOBILE + DESKTOP)
+    // =========================================================================
+    const sidebarExpanded = { house: false, parchuni: false, dairy: false };
+
+    function closeMobileSidebar() {
+      document.getElementById("app-left-sidebar")?.classList.remove("drawer-open");
+      document.getElementById("mobile-sidebar-backdrop")?.classList.add("hidden");
+    }
+
+    function openMobileSidebar() {
+      document.getElementById("app-left-sidebar")?.classList.add("drawer-open");
+      document.getElementById("mobile-sidebar-backdrop")?.classList.remove("hidden");
+    }
+
+    function renderLeftAccordionSidebar() {
+      const nav = document.getElementById("left-accordion-nav");
+      if (!nav) return;
+      const groups = [
+        { id: "home", icon: "📊", label: "डैशबोर्ड (Home)", color: "text-teal-800", subs: [] },
+        {
+          id: "house", icon: "🏡", label: "घर का हिसाब (House)", color: "text-emerald-800",
+          subs: [
+            { id: "expenses", label: "🛒 घर का खर्च" },
+            { id: "shops", label: "🏪 दुकान खाता" },
+            { id: "budget", label: "📅 मासिक बजट" },
+            { id: "income", label: "💰 आय (Income)" },
+            { id: "accounts", label: "🏦 Cash/Bank/UPI" },
+            { id: "loans", label: "🤝 उधार (Lend/Borrow)" },
+            { id: "friends", label: "👥 दोस्त खाता (Split)" },
+            { id: "bills", label: "🔔 फिक्स बिल" },
+            { id: "goals", label: "🎯 बचत लक्ष्य" },
+            { id: "vault", label: "🧾 रसीद गैलरी" },
+            { id: "simulator", label: "📈 क्या होगा? Simulator" }
+          ]
+        },
+        {
+          id: "parchuni", icon: "🏪", label: "परचूनी दुकान (Kirana)", color: "text-blue-800",
+          subs: [
+            { id: "customers", label: "👥 ग्राहक उधार खाता" },
+            { id: "entries", label: "📒 सभी उधार / जमा" },
+            { id: "pos", label: "🧾 POS बिलिंग व स्टॉक" },
+            { id: "salesmen", label: "🚚 सेल्समैन ऑर्डर" },
+            { id: "trust", label: "⭐ ट्रस्ट स्कोर व रिकवरी" },
+            { id: "stock_intel", label: "📊 डेड-स्टॉक व मुनाफा" }
+          ]
+        },
+        {
+          id: "dairy", icon: "🥛", label: "डेयरी हिसाब (Dairy)", color: "text-amber-800",
+          subs: [
+            { id: "dairy_supply", label: "🚚 डेयरी पर दूध भेजें" },
+            { id: "bulk_delivery", label: "⚡ 1-Tap डिलीवरी" },
+            { id: "production", label: "🐄 दूध उत्पादन" },
+            { id: "sales", label: "🥛 दूध बिक्री (Parchi)" },
+            { id: "purchase", label: "🚚 दूध खरीद (Code/Parchi)" },
+            { id: "recon", label: "⚖️ दैनिक मिलान" },
+            { id: "customers", label: "👥 दूध ग्राहक खाता" },
+            { id: "suppliers", label: "📇 सप्लायर मास्टर" },
+            { id: "expenses", label: "🌾 डेयरी खर्च" },
+            { id: "animals", label: "🐃 पशु प्रबंधन" },
+            { id: "animal_health", label: "🩺 पशु स्वास्थ्य व ब्यात" },
+            { id: "animal_profit", label: "💰 पशुवार मुनाफा" },
+            { id: "pl", label: "📈 डेयरी P&L" }
+          ]
+        },
+        { id: "diary", icon: "📓", label: "निजी डायरी (Encrypted)", color: "text-purple-800", subs: [] },
+        { id: "reports", icon: "📑", label: "रिपोर्ट सेंटर (Reports)", color: "text-indigo-800", subs: [] },
+        { id: "settings", icon: "⚙️", label: "सेटिंग्स (Settings)", color: "text-slate-700", subs: [] }
+      ];
+
+      // Auto-expand currently active main category so user sees its sub-categories clearly
+      if (state.activeMainTab in sidebarExpanded) sidebarExpanded[state.activeMainTab] = true;
+
+      nav.innerHTML = groups.map(g => {
+        const isActive = state.activeMainTab === g.id;
+        const isOpen = !!sidebarExpanded[g.id];
+        const activeSub = g.id === "house" ? state.activeHouseTab : (g.id === "parchuni" ? state.activeParchuniTab : state.activeDairyTab);
+        return `
+          <div class="space-y-0.5" data-main-tab="${g.id}">
+            <div class="flex items-center gap-1">
+              <button type="button" data-acc-main="${g.id}" class="desktop-nav-btn ${isActive ? "active" : ""} flex-1 flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold ${isActive ? "" : g.color} hover:bg-slate-100">
+                <span>${g.icon}</span><span class="truncate">${g.label}</span>
+              </button>
+              ${g.subs.length ? `<button type="button" data-acc-toggle="${g.id}" class="px-2.5 py-2.5 rounded-xl text-xs font-extrabold text-slate-500 hover:bg-slate-100" title="सब-कैटेगरी खोलें/बंद करें">${isOpen ? "▴" : "▾"}</button>` : ""}
+            </div>
+            ${(g.subs.length && isOpen) ? `
+              <div class="space-y-0.5 pb-1">
+                ${g.subs.map(s => `<button type="button" data-acc-sub="${g.id}::${s.id}" data-${g.id}-tab="${s.id}" class="acc-sub-btn ${isActive && activeSub === s.id ? "active" : ""}">${s.label}</button>`).join("")}
+              </div>` : ""}
+          </div>`;
+      }).join("");
+
+      nav.querySelectorAll("[data-acc-main]").forEach(btn => btn.addEventListener("click", () => {
+        const id = btn.dataset.accMain;
+        if (id in sidebarExpanded) sidebarExpanded[id] = !sidebarExpanded[id] || state.activeMainTab !== id;
+        state.activeMainTab = id;
+        renderCurrentView();
+        if (!(id in sidebarExpanded)) closeMobileSidebar();
+      }));
+
+      nav.querySelectorAll("[data-acc-toggle]").forEach(btn => btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.accToggle;
+        sidebarExpanded[id] = !sidebarExpanded[id];
+        renderLeftAccordionSidebar();
+      }));
+
+      nav.querySelectorAll("[data-acc-sub]").forEach(btn => btn.addEventListener("click", () => {
+        const [mainId, subId] = btn.dataset.accSub.split("::");
+        state.activeMainTab = mainId;
+        if (mainId === "house") state.activeHouseTab = subId;
+        else if (mainId === "parchuni") state.activeParchuniTab = subId;
+        else if (mainId === "dairy") state.activeDairyTab = subId;
+        closeMobileSidebar();
+        renderCurrentView();
+      }));
+    }
+
     function renderCurrentView() {
       const isDiaryScreen = state.activeMainTab === "diary" || (state.activeMainTab === "house" && state.activeHouseTab === "diary");
       if (!isDiaryScreen && typeof lockDiaryVaultNow === "function" && state.diaryUnlocked) {
@@ -1870,6 +2030,7 @@
       }
       lastRouteSnap = curSnap;
       updateBackButtonUI();
+      renderLeftAccordionSidebar();
     }
 
     function destroyCharts() {
@@ -2901,6 +3062,25 @@
         if (await saveDoc("milkSales", payload, existing?.id || null)) closeModal();
       });
     }
+    function normalizeSupCode(c) {
+      const s = String(c || "").trim();
+      if (!s) return "";
+      const num = s.replace(/^0+/, "");
+      return num || "0";
+    }
+
+    function findSupplierByCode(code) {
+      const norm = normalizeSupCode(code);
+      if (!norm) return null;
+      return (state.data.suppliers || []).find(s => normalizeSupCode(s.code) === norm) || null;
+    }
+
+    function findSupplierByName(name) {
+      const n = String(name || "").trim().toLowerCase();
+      if (!n) return null;
+      return (state.data.suppliers || []).find(s => (s.name || "").trim().toLowerCase() === n) || null;
+    }
+
     function getMilkPurchaseSupplierNames() {
       const set = new Set();
       (state.data.suppliers || []).forEach(s => { if (s.name && s.name.trim()) set.add(s.name.trim()); });
@@ -2909,34 +3089,183 @@
       return [...set];
     }
 
+    function buildSupplierDailyReceiptText(entry, supplierObj = null) {
+      const code = entry.supplierCode || supplierObj?.code || "-";
+      const name = entry.supplierName || supplierObj?.name || "सप्लायर";
+      return `नमस्ते ${name} जी (कोड: ${code}) 🙏\n*MahaIndustries दूध खरीद पर्ची (${entry.date})*\n• मात्रा (WT): ${fmtL(entry.quantity)}\n• FAT: ${entry.fat || "-"} | SNF: ${entry.snf || "-"}\n• दर (RT/LT): ₹${entry.rate}/ली.\n• कुल राशि: ${fmtRs(entry.amount)}\nधन्यवाद!`;
+    }
+
+    function openDailySupplierMsgModal(targetDate = null) {
+      const dStr = targetDate || state.selectedDate || todayStr();
+      const dayEntries = (state.data.milkPurchases || []).filter(p => p.date === dStr);
+      // Group by supplier (code or name) so if morning+evening exist, both show clearly in 1 message!
+      const grouped = {};
+      dayEntries.forEach(p => {
+        const sup = (p.supplierCode ? findSupplierByCode(p.supplierCode) : null) || findSupplierByName(p.supplierName);
+        const key = (sup?.id || p.supplierCode || p.supplierName || "unknown").toLowerCase();
+        if (!grouped[key]) {
+          grouped[key] = {
+            code: p.supplierCode || sup?.code || "-",
+            name: sup?.name || p.supplierName || "सप्लायर",
+            mobile: (sup?.mobile || sup?.phone || "").replace(/\D/g, ""),
+            entries: []
+          };
+        }
+        grouped[key].entries.push(p);
+      });
+      const list = Object.values(grouped).map(g => {
+        const totQty = AccountingEngine.round2(g.entries.reduce((s, e) => s + Number(e.quantity || 0), 0));
+        const totAmt = AccountingEngine.round2(g.entries.reduce((s, e) => s + Number(e.amount || 0), 0));
+        const avgFat = AccountingEngine.round2(g.entries.reduce((s, e) => s + Number(e.fat || 0), 0) / g.entries.length);
+        const avgSnf = AccountingEngine.round2(g.entries.reduce((s, e) => s + Number(e.snf || 0), 0) / g.entries.length);
+        const avgRate = totQty > 0 ? AccountingEngine.round2(totAmt / totQty) : Number(g.entries[0]?.rate || 0);
+        const lines = g.entries.map(e => `  • ${e.milkType || "मिक्स"}: ${fmtL(e.quantity)} | FAT ${e.fat || "-"} | SNF ${e.snf || "-"} | ₹${e.rate} = ${fmtRs(e.amount)}`).join("\n");
+        const msg = `नमस्ते ${g.name} जी (कोड: ${g.code}) 🙏\n*MahaIndustries दैनिक दूध खरीद हिसाब (${dStr})*\n${lines}\n• कुल मात्रा: ${fmtL(totQty)}\n• औसत FAT: ${avgFat || "-"} | SNF: ${avgSnf || "-"}\n• दर: ₹${avgRate}/ली.\n• आज की कुल राशि: ${fmtRs(totAmt)}\nधन्यवाद!`;
+        return { ...g, totQty, totAmt, avgFat, avgSnf, avgRate, msg };
+      });
+
+      openModal(`📲 दैनिक सप्लायर मैसेज सेंटर (${dStr})`, `
+        <div class="space-y-3 text-xs">
+          <div class="flex flex-wrap items-center justify-between gap-2 bg-teal-50 border border-teal-200 rounded-xl p-3">
+            <div>
+              <div class="font-bold text-teal-950">तारीख चुनें व 1-क्लिक में सभी को भेजें</div>
+              <div class="text-[11px] text-teal-800">हर मैसेज में कोड, FAT, SNF, मात्रा, दर और राशि अपने आप जाएगी।</div>
+            </div>
+            <input type="date" id="dmsg-date-inp" value="${dStr}" class="input-field py-1.5 text-xs w-36 font-bold" />
+          </div>
+
+          ${list.length ? `
+            <div class="flex flex-wrap gap-2 bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 items-center justify-between">
+              <div id="dmsg-queue-status" class="font-bold text-emerald-950">कुल सप्लायर: ${list.length}</div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" id="dmsg-bulk-wa-btn" class="btn-primary text-xs py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700">⚡ 1-Click सभी को WhatsApp</button>
+                <button type="button" id="dmsg-bulk-sms-btn" class="btn-secondary text-xs py-1.5 px-3 border-blue-400 text-blue-900">💬 1-Click सभी को SMS</button>
+              </div>
+            </div>
+
+            <div class="space-y-2 max-h-[52vh] overflow-y-auto pr-1">
+              ${list.map((item, idx) => `
+                <div class="bg-white border border-slate-200 rounded-xl p-2.5 space-y-1.5" id="dmsg-row-${idx}">
+                  <div class="flex flex-wrap items-center justify-between gap-1">
+                    <div class="font-bold text-slate-900"><span class="px-1.5 py-0.5 rounded bg-purple-100 text-purple-900 mr-1">#${escHtml(item.code)}</span>${escHtml(item.name)} <span class="text-[11px] font-normal text-slate-500">(${item.mobile || "नंबर नहीं"})</span></div>
+                    <span class="font-extrabold text-amber-800">${fmtL(item.totQty)} • ${fmtRs(item.totAmt)}</span>
+                  </div>
+                  <div class="text-[11px] text-slate-600">FAT: <b>${item.avgFat || "-"}</b> • SNF: <b>${item.avgSnf || "-"}</b> • दर: <b>₹${item.avgRate}</b></div>
+                  <div class="flex flex-wrap gap-1.5 pt-1 border-t border-slate-100">
+                    <button type="button" data-dmsg-wa="${idx}" class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">📲 WhatsApp</button>
+                    <button type="button" data-dmsg-sms="${idx}" class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 font-bold border border-blue-200">💬 SMS</button>
+                    <button type="button" data-dmsg-speak="${idx}" class="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 font-bold">🔊 सुनें</button>
+                    <span id="dmsg-sent-${idx}" class="ml-auto text-[11px] font-bold text-emerald-700 hidden">✅ भेजा गया</span>
+                  </div>
+                </div>`).join("")}
+            </div>` : `<div class="p-6 text-center text-slate-400">तारीख <b>${dStr}</b> के लिए कोई दूध खरीद एंट्री नहीं है।</div>`}
+        </div>`);
+
+      document.getElementById("dmsg-date-inp")?.addEventListener("change", (e) => {
+        openDailySupplierMsgModal(e.target.value);
+      });
+
+      const sendOne = (idx, channel) => {
+        const it = list[idx];
+        if (!it) return;
+        const ph = it.mobile ? it.mobile.slice(-10) : "";
+        if (channel === "wa") {
+          const url = ph ? `https://wa.me/91${ph}?text=${encodeURIComponent(it.msg)}` : `https://wa.me/?text=${encodeURIComponent(it.msg)}`;
+          window.open(url, "_blank");
+        } else {
+          window.location.href = `sms:${ph ? "+91" + ph : ""}?body=${encodeURIComponent(it.msg)}`;
+        }
+        document.getElementById(`dmsg-sent-${idx}`)?.classList.remove("hidden");
+      };
+
+      document.querySelectorAll("[data-dmsg-wa]").forEach(b => b.addEventListener("click", () => sendOne(Number(b.dataset.dmsgWa), "wa")));
+      document.querySelectorAll("[data-dmsg-sms]").forEach(b => b.addEventListener("click", () => sendOne(Number(b.dataset.dmsgSms), "sms")));
+      document.querySelectorAll("[data-dmsg-speak]").forEach(b => b.addEventListener("click", () => {
+        const it = list[Number(b.dataset.dmsgSpeak)];
+        if (it) speakHindiText(`कोड ${it.code}, ${it.name} जी, तारीख ${dStr}, कुल दूध ${it.totQty} लीटर, फैट ${it.avgFat || 0}, एसएनएफ ${it.avgSnf || 0}, दर ${it.avgRate} रुपये, कुल राशि ${it.totAmt} रुपये।`);
+      }));
+
+      // 1-Click Bulk Sequential Queue Sender (works smoothly on Android & Desktop without popup blocking)
+      let bulkIdx = 0;
+      const runBulkStep = (channel) => {
+        if (bulkIdx >= list.length) {
+          showToast("✅ आज के सभी सप्लायर्स को मैसेज भेज दिए गए!");
+          bulkIdx = 0;
+          return;
+        }
+        sendOne(bulkIdx, channel);
+        bulkIdx++;
+        const st = document.getElementById("dmsg-queue-status");
+        if (st) st.textContent = bulkIdx < list.length
+          ? `✅ ${bulkIdx}/${list.length} भेजा गया — अगले (${list[bulkIdx].name}) के लिए फिर क्लिक करें`
+          : `🎉 सभी ${list.length}/${list.length} सप्लायर्स को मैसेज भेज दिए गए!`;
+      };
+      document.getElementById("dmsg-bulk-wa-btn")?.addEventListener("click", () => runBulkStep("wa"));
+      document.getElementById("dmsg-bulk-sms-btn")?.addEventListener("click", () => runBulkStep("sms"));
+    }
+
     function renderMilkPurchaseTab(container) {
-      const rows = [...state.data.milkPurchases].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      const q = (state.mpFilter || "").trim().toLowerCase();
+      const allRows = [...state.data.milkPurchases].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      const rows = allRows.filter(r => !q || `${r.supplierCode || ""} ${r.supplierName || ""} ${r.date || ""}`.toLowerCase().includes(q));
       const totalL = AccountingEngine.round2(rows.reduce((s, x) => s + (Number(x.quantity) || 0), 0));
       const totalAmt = AccountingEngine.round2(rows.reduce((s, x) => s + (Number(x.amount) || 0), 0));
+      const totalPaid = AccountingEngine.round2(rows.reduce((s, x) => s + (Number(x.paid) || 0), 0));
+      const totalDue = AccountingEngine.round2(Math.max(0, totalAmt - totalPaid));
+      const avgFat = rows.length ? AccountingEngine.round2(rows.reduce((s, x) => s + (Number(x.fat) || 0), 0) / rows.length) : 0;
+      const avgSnf = rows.length ? AccountingEngine.round2(rows.reduce((s, x) => s + (Number(x.snf) || 0), 0) / rows.length) : 0;
+
       container.innerHTML = `
-        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
-          <div><div class="text-xs text-slate-500">कुल बाहर से दूध खरीद (${rows.length} एंट्री)</div><div class="text-lg font-bold text-amber-700">${fmtL(totalL)} • ${fmtRs(totalAmt)}</div></div>
-          <div class="flex flex-wrap gap-2">
-            <label class="btn-secondary text-xs border-amber-400 text-amber-900 bg-amber-50 cursor-pointer inline-flex items-center gap-1.5 font-bold">
-              📸 पर्ची स्कैन (Auto-Fill)
-              <input type="file" id="mp-quick-parchi-inp" accept="image/*" capture="environment" class="hidden" />
-            </label>
-            <button type="button" id="add-mp-btn" class="btn-primary">+ दूध खरीद जोड़ें</button>
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div class="text-xs text-slate-500">${q ? `फ़िल्टर हिसाब ("${escHtml(state.mpFilter)}") • ` : ""}कुल दूध खरीद (${rows.length} एंट्री)</div>
+              <div class="text-lg font-bold text-amber-700">${fmtL(totalL)} • ${fmtRs(totalAmt)} <span class="text-xs text-red-600">(बाकी: ${fmtRs(totalDue)})</span></div>
+              <div class="text-[11px] text-slate-500">औसत FAT: <b>${avgFat || "-"}</b> • औसत SNF: <b>${avgSnf || "-"}</b></div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <label class="btn-secondary text-xs border-amber-400 text-amber-900 bg-amber-50 cursor-pointer inline-flex items-center gap-1.5 font-bold">
+                📸 पर्ची स्कैन (Code Auto-Fill)
+                <input type="file" id="mp-quick-parchi-inp" accept="image/*" capture="environment" class="hidden" />
+              </label>
+              <button type="button" id="mp-daily-msg-btn" class="btn-secondary text-xs border-emerald-400 text-emerald-900 bg-emerald-50 font-bold">📲 1-Click दैनिक मैसेज</button>
+              <button type="button" id="add-mp-btn" class="btn-primary">+ दूध खरीद जोड़ें</button>
+            </div>
+          </div>
+
+          <!-- Code-wise or Name-wise Hisab Search + Voice Read-Aloud -->
+          <div class="flex flex-wrap gap-2 items-center pt-2 border-t border-slate-100">
+            <input type="search" id="mp-filter-inp" value="${escHtml(state.mpFilter || "")}" placeholder="कोड (जैसे 033) या सप्लायर नाम से हिसाब खोजें..." class="input-field py-2 text-xs flex-1 min-w-[200px]" />
+            <button type="button" id="mp-speak-hisab-btn" class="btn-secondary text-xs py-2 px-3 border-teal-300 text-teal-900 bg-teal-50 font-bold">🔊 हिसाब बोलकर सुनें</button>
+            <button type="button" id="mp-open-master-btn" class="btn-secondary text-xs py-2 px-3 border-purple-300 text-purple-900 bg-purple-50 font-bold">📇 सप्लायर मास्टर</button>
           </div>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto"><table class="data-table"><thead><tr><th>तारीख</th><th>सप्लायर</th><th>प्रकार</th><th>FAT</th><th>SNF</th><th>मात्रा × दर</th><th>कुल राशि</th><th>भुगतान</th><th>बाकी</th><th>क्रिया</th></tr></thead><tbody>${rows.length ? rows.map(r => { const due = AccountingEngine.calcRemaining(r.amount, r.paid); return `<tr><td>${escHtml(r.date)}</td><td class="font-bold">${escHtml(r.supplierName)}</td><td class="text-xs">${escHtml(r.milkType || "भैंस")}</td><td class="text-xs font-bold text-purple-800">${r.fat ? escHtml(String(r.fat)) : "-"}</td><td class="text-xs font-bold text-indigo-800">${r.snf ? escHtml(String(r.snf)) : "-"}</td><td class="text-xs">${fmtL(r.quantity)} × ₹${r.rate}</td><td class="font-bold text-amber-700">${fmtRs(r.amount)}</td><td class="text-emerald-700 font-semibold">${fmtRs(r.paid)}</td><td class="${due > 0 ? "text-red-600 font-bold" : "text-slate-400"}">${fmtRs(due)}</td><td class="whitespace-nowrap"><button type="button" data-edit-mp="${r.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button><button type="button" data-del-mp="${r.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`; }).join("") : `<tr><td colspan="10" class="text-center py-8 text-slate-400">कोई दूध खरीद एंट्री नहीं है।</td></tr>`}</tbody></table></div>`;
+
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto"><table class="data-table"><thead><tr><th>तारीख</th><th>कोड</th><th>सप्लायर</th><th>प्रकार</th><th>FAT</th><th>SNF</th><th>मात्रा × दर</th><th>कुल राशि</th><th>भुगतान</th><th>बाकी</th><th>क्रिया</th></tr></thead><tbody>${rows.length ? rows.map(r => { const due = AccountingEngine.calcRemaining(r.amount, r.paid); return `<tr><td>${escHtml(r.date)}</td><td class="text-xs font-extrabold text-purple-900">${escHtml(r.supplierCode || "-")}</td><td class="font-bold">${escHtml(r.supplierName)}</td><td class="text-xs">${escHtml(r.milkType || "मिक्स")}</td><td class="text-xs font-bold text-purple-800">${r.fat ? escHtml(String(r.fat)) : "-"}</td><td class="text-xs font-bold text-indigo-800">${r.snf ? escHtml(String(r.snf)) : "-"}</td><td class="text-xs">${fmtL(r.quantity)} × ₹${r.rate}</td><td class="font-bold text-amber-700">${fmtRs(r.amount)}</td><td class="text-emerald-700 font-semibold">${fmtRs(r.paid)}</td><td class="${due > 0 ? "text-red-600 font-bold" : "text-slate-400"}">${fmtRs(due)}</td><td class="whitespace-nowrap"><button type="button" data-msg-mp="${r.id}" class="text-xs font-bold text-emerald-700 mr-2" title="WhatsApp मैसेज भेजें">📲</button><button type="button" data-edit-mp="${r.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button><button type="button" data-del-mp="${r.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`; }).join("") : `<tr><td colspan="11" class="text-center py-8 text-slate-400">कोई दूध खरीद एंट्री नहीं है।</td></tr>`}</tbody></table></div>`;
+
       document.getElementById("add-mp-btn").addEventListener("click", () => openMilkPurchaseModal());
+      document.getElementById("mp-daily-msg-btn")?.addEventListener("click", () => openDailySupplierMsgModal(state.selectedDate));
+      document.getElementById("mp-open-master-btn")?.addEventListener("click", () => { state.activeDairyTab = "suppliers"; renderCurrentView(); });
+      document.getElementById("mp-filter-inp")?.addEventListener("input", (e) => { state.mpFilter = e.target.value; renderCurrentView(); });
+      document.getElementById("mp-speak-hisab-btn")?.addEventListener("click", () => {
+        const label = state.mpFilter ? `कोड या नाम ${state.mpFilter} का` : "कुल दूध खरीद का";
+        speakHindiText(`${label} हिसाब: कुल ${rows.length} एंट्री, कुल दूध ${totalL} लीटर, औसत फैट ${avgFat}, औसत एसएनएफ ${avgSnf}, कुल राशि ${totalAmt} रुपये, भुगतान ${totalPaid} रुपये और बाकी ${totalDue} रुपये है।`);
+      });
+
       document.getElementById("mp-quick-parchi-inp")?.addEventListener("change", async (e) => {
         const f = e.target.files?.[0];
         if (!f) return;
-        showToast("📸 दूध खरीद पर्ची से Date, WT, RT/LT, FAT व SNF पढ़ा जा रहा है...");
+        showToast("📸 पर्ची से CODE, Date, WT, RT/LT, FAT व SNF पढ़ा जा रहा है...");
         try {
           const { parsed } = await scanMilkSaleParchiFile(f);
+          const matchedSup = parsed.code ? findSupplierByCode(parsed.code) : null;
           const noteParts = [];
           if (parsed.shift) noteParts.push(parsed.shift);
           if (parsed.dairyName) noteParts.push(parsed.dairyName);
           openMilkPurchaseModal(null, {
             date: parsed.date || state.selectedDate,
+            supplierCode: parsed.code || matchedSup?.code || "",
+            supplierName: matchedSup?.name || "",
             milkType: parsed.milkType || "मिक्स",
             quantity: parsed.quantity || "",
             rate: parsed.rate || "",
@@ -2945,12 +3274,21 @@
             amount: parsed.amount || 0,
             note: noteParts.join(" | ")
           });
-          showToast("✅ खरीद पर्ची का पूरा डेटा (FAT/SNF सहित) भर दिया गया!");
+          showToast(matchedSup
+            ? `✅ कोड ${parsed.code} से सप्लायर "${matchedSup.name}" अपने आप उठा लिया गया!`
+            : `✅ पर्ची पढ़ी गई (कोड: ${parsed.code || "-"})! सप्लायर नाम चुनें या जोड़ें।`);
         } catch (err) {
           showToast("पर्ची पढ़ने में समस्या: " + (err?.message || "त्रुटि"), "error");
           openMilkPurchaseModal();
         }
       });
+
+      container.querySelectorAll("[data-msg-mp]").forEach(b => b.addEventListener("click", () => {
+        const r = state.data.milkPurchases.find(x => x.id === b.dataset.msgMp);
+        if (!r) return;
+        const sup = (r.supplierCode ? findSupplierByCode(r.supplierCode) : null) || findSupplierByName(r.supplierName);
+        openWhatsAppMessage(sup?.mobile || sup?.phone || "", buildSupplierDailyReceiptText(r, sup));
+      }));
       container.querySelectorAll("[data-edit-mp]").forEach(b => b.addEventListener("click", () => { const it = state.data.milkPurchases.find(x => x.id === b.dataset.editMp); if (it) openMilkPurchaseModal(it); }));
       container.querySelectorAll("[data-del-mp]").forEach(b => b.addEventListener("click", () => deleteDocById("milkPurchases", b.dataset.delMp, "दूध खरीद")));
     }
@@ -2959,16 +3297,18 @@
       const src = existing || prefill || {};
       const accs = getAccountOptions();
       const supNames = getMilkPurchaseSupplierNames();
-      const initialSup = (src.supplierName && src.supplierName.trim()) ? src.supplierName.trim() : supNames[0];
+      const codeMatchedSup = src.supplierCode ? findSupplierByCode(src.supplierCode) : null;
+      const initialSup = (src.supplierName && src.supplierName.trim()) ? src.supplierName.trim() : (codeMatchedSup?.name || supNames[0]);
+      const initialCode = src.supplierCode || findSupplierByName(initialSup)?.code || "";
       if (initialSup && !supNames.includes(initialSup)) supNames.push(initialSup);
 
-      openModal(existing ? "दूध खरीद संपादित करें" : "दूध खरीद जोड़ें (पर्ची ऑटो-फिल सहित)", `
+      openModal(existing ? "दूध खरीद संपादित करें" : "दूध खरीद जोड़ें (कोड व पर्ची ऑटो-फिल सहित)", `
         <form id="mp-form" class="space-y-3">
           ${!existing ? `
             <div class="bg-amber-50 border border-amber-200 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
               <div>
-                <div class="font-bold text-amber-950">📸 पर्ची से ऑटो-फिल (Date, WT, RT/LT, FAT, SNF)</div>
-                <div id="mp-ocr-status" class="text-[11px] text-amber-800">${prefill ? "✅ पर्ची का डेटा भर दिया गया है — नीचे जांचें।" : "दूध की पर्ची की फोटो चुनें, तारीख, वजन, रेट, FAT व SNF अपने आप भर जाएगा।"}</div>
+                <div class="font-bold text-amber-950">📸 पर्ची से ऑटो-फिल (CODE, Date, WT, RT/LT, FAT, SNF)</div>
+                <div id="mp-ocr-status" class="text-[11px] text-amber-800">${prefill ? `✅ पर्ची पढ़ी गई (कोड: ${escHtml(initialCode || "-")}) — नीचे जांचें।` : "पर्ची चुनें — कोड से सप्लायर का नाम अपने आप उठ जाएगा।"}</div>
               </div>
               <label class="btn-primary text-xs py-1.5 px-3 cursor-pointer shrink-0 bg-amber-600 hover:bg-amber-700">
                 📷 पर्ची चुनें
@@ -2979,13 +3319,19 @@
             <div><label class="block text-xs font-bold mb-1">तारीख (DATE)*</label><input type="date" id="mp-date" value="${src.date || state.selectedDate}" required class="input-field" /></div>
             <div><label class="block text-xs font-bold mb-1">दूध प्रकार</label><select id="mp-type" class="input-field">${["भैंस", "गाय", "मिक्स"].map(t => `<option value="${t}" ${(src.milkType || "मिक्स") === t ? "selected" : ""}>${t}</option>`).join("")}</select></div>
           </div>
-          <div class="space-y-2">
-            <label class="block text-xs font-bold">सप्लायर का नाम* (नए नाम अपने आप ड्रॉपडाउन में जुड़ जाएंगे)</label>
-            <select id="mp-sup-sel" class="input-field font-bold">
-              ${supNames.map(name => `<option value="${escHtml(name)}" ${name === initialSup ? "selected" : ""}>${escHtml(name)}</option>`).join("")}
-              <option value="__NEW__">➕ नया सप्लायर जोड़ें (लिस्ट में सेव होगा)</option>
-            </select>
-            <input type="text" id="mp-sup-new" placeholder="नए सप्लायर का नाम लिखें..." class="hidden input-field border-amber-400 bg-amber-50/40" />
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-xs font-bold mb-1">सप्लायर कोड (CODE)</label>
+              <input type="text" id="mp-code" value="${escHtml(initialCode)}" placeholder="जैसे: 033" class="input-field font-extrabold text-purple-900" />
+            </div>
+            <div class="col-span-2 space-y-1.5">
+              <label class="block text-xs font-bold mb-1">सप्लायर का नाम* (कोड से ऑटो-मैच)</label>
+              <select id="mp-sup-sel" class="input-field font-bold">
+                ${supNames.map(name => `<option value="${escHtml(name)}" ${name === initialSup ? "selected" : ""}>${escHtml(name)}</option>`).join("")}
+                <option value="__NEW__">➕ नया सप्लायर जोड़ें (मास्टर में सेव होगा)</option>
+              </select>
+              <input type="text" id="mp-sup-new" placeholder="नए सप्लायर का नाम लिखें..." class="hidden input-field border-amber-400 bg-amber-50/40" />
+            </div>
           </div>
           <div class="grid grid-cols-3 gap-2">
             <div><label class="block text-xs font-bold mb-1">मात्रा / WT (L)*</label><input type="number" step="any" min="0.01" id="mp-qty" value="${src.quantity ?? ""}" required class="input-field font-bold" /></div>
@@ -3005,6 +3351,7 @@
           <div class="flex justify-end gap-2 pt-2"><button type="button" id="mp-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">💾 सेव करें</button></div>
         </form>`);
 
+      const codeInp = document.getElementById("mp-code");
       const supSel = document.getElementById("mp-sup-sel");
       const supNew = document.getElementById("mp-sup-new");
       const recalc = () => {
@@ -3014,9 +3361,28 @@
       };
       recalc();
 
+      // Auto-select Supplier Name when user types Code
+      codeInp.addEventListener("input", () => {
+        const matched = findSupplierByCode(codeInp.value);
+        if (matched && [...supSel.options].some(o => o.value === matched.name)) {
+          supSel.value = matched.name;
+          supNew.classList.add("hidden");
+          supNew.required = false;
+        }
+      });
+
+      // Auto-fill Code when user picks Supplier Name
       supSel.addEventListener("change", () => {
-        if (supSel.value === "__NEW__") { supNew.classList.remove("hidden"); supNew.required = true; supNew.focus(); }
-        else { supNew.classList.add("hidden"); supNew.required = false; }
+        if (supSel.value === "__NEW__") {
+          supNew.classList.remove("hidden");
+          supNew.required = true;
+          supNew.focus();
+        } else {
+          supNew.classList.add("hidden");
+          supNew.required = false;
+          const m = findSupplierByName(supSel.value);
+          if (m && m.code) codeInp.value = m.code;
+        }
       });
 
       document.getElementById("mp-modal-parchi-inp")?.addEventListener("change", async (e) => {
@@ -3028,6 +3394,14 @@
           const { parsed } = await scanMilkSaleParchiFile(f, pct => { if (stEl) stEl.textContent = `⏳ पर्ची पढ़ी जा रही है (${pct}%)...`; });
           if (parsed.date) document.getElementById("mp-date").value = parsed.date;
           if (parsed.milkType) document.getElementById("mp-type").value = parsed.milkType;
+          if (parsed.code) {
+            codeInp.value = parsed.code;
+            const matched = findSupplierByCode(parsed.code);
+            if (matched && [...supSel.options].some(o => o.value === matched.name)) {
+              supSel.value = matched.name;
+              supNew.classList.add("hidden");
+            }
+          }
           if (parsed.quantity) document.getElementById("mp-qty").value = parsed.quantity;
           if (parsed.rate) document.getElementById("mp-rate").value = parsed.rate;
           if (parsed.fat) document.getElementById("mp-fat").value = parsed.fat;
@@ -3037,8 +3411,8 @@
           if (parsed.dairyName) noteParts.push(parsed.dairyName);
           if (noteParts.length) document.getElementById("mp-note").value = noteParts.join(" | ");
           recalc();
-          if (stEl) stEl.textContent = `✅ पढ़ लिया: Date ${parsed.date || "-"}, WT ${parsed.quantity || 0} L, RT/LT ₹${parsed.rate || 0}, FAT ${parsed.fat || "-"}, SNF ${parsed.snf || "-"}`;
-          showToast("✅ खरीद पर्ची से Date, WT, Rate, FAT व SNF भर दिया गया!");
+          if (stEl) stEl.textContent = `✅ कोड ${parsed.code || "-"} | Date ${parsed.date || "-"} | WT ${parsed.quantity || 0} L | RT/LT ₹${parsed.rate || 0} | FAT ${parsed.fat || "-"} | SNF ${parsed.snf || "-"}`;
+          showToast("✅ पर्ची से कोड, नाम, Date, WT, Rate, FAT व SNF भर दिया गया!");
         } catch (err) {
           if (stEl) stEl.textContent = "⚠️ पर्ची साफ नहीं पढ़ी गई, कृपया हाथ से जांचें।";
           showToast("पर्ची पढ़ने में समस्या: " + (err?.message || ""), "error");
@@ -3050,8 +3424,10 @@
       document.getElementById("mp-form").addEventListener("submit", async (e) => {
         e.preventDefault();
         const chosenSup = supSel.value === "__NEW__" ? supNew.value.trim() : supSel.value.trim();
+        const supCode = codeInp.value.trim();
         const payload = {
           date: document.getElementById("mp-date").value,
+          supplierCode: supCode,
           supplierName: chosenSup,
           milkType: document.getElementById("mp-type").value,
           quantity: AccountingEngine.round2(document.getElementById("mp-qty").value),
@@ -3067,9 +3443,11 @@
         const err = AccountingEngine.validateEntry({ date: payload.date, amount: payload.amount, requiredFields: [{ label: "सप्लायर का नाम", value: payload.supplierName }] });
         if (err) { showToast(err, "error"); return; }
 
-        const existsSup = (state.data.suppliers || []).some(s => (s.name || "").trim().toLowerCase() === chosenSup.toLowerCase());
+        const existsSup = (state.data.suppliers || []).find(s => (s.name || "").trim().toLowerCase() === chosenSup.toLowerCase());
         if (!existsSup && chosenSup) {
-          await saveDoc("suppliers", { name: chosenSup, phone: "", address: "", notes: "दूध खरीद से स्वतः जोड़ा गया" });
+          await saveDoc("suppliers", { code: supCode, name: chosenSup, mobile: "", address: "", previousBalance: 0, notes: "दूध खरीद से स्वतः जोड़ा गया" });
+        } else if (existsSup && supCode && !existsSup.code) {
+          await saveDoc("suppliers", { ...existsSup, code: supCode }, existsSup.id);
         }
         if (await saveDoc("milkPurchases", payload, existing?.id || null)) closeModal();
       });
@@ -3166,34 +3544,79 @@
 
     function renderSuppliersTab(container) {
       const mStr = state.selectedMonth, sups = state.data.suppliers, purch = state.data.milkPurchases;
+      const q = (state.supSearch || "").trim().toLowerCase();
       const ledger = sups.map(sp => {
-        const myP = purch.filter(p => (p.supplierName || "").toLowerCase() === (sp.name || "").toLowerCase());
+        const myP = purch.filter(p =>
+          (sp.code && p.supplierCode && normalizeSupCode(p.supplierCode) === normalizeSupCode(sp.code))
+          || (p.supplierName || "").toLowerCase() === (sp.name || "").toLowerCase()
+        );
         const mP = myP.filter(p => (p.date || "").startsWith(mStr));
         const totalL = AccountingEngine.round2(mP.reduce((s, x) => s + (Number(x.quantity) || 0), 0));
         const monthAmt = AccountingEngine.round2(mP.reduce((s, x) => s + (Number(x.amount) || 0), 0));
         const allAmt = AccountingEngine.round2((Number(sp.previousBalance) || 0) + myP.reduce((s, x) => s + (Number(x.amount) || 0), 0));
         const allPaid = AccountingEngine.round2(myP.reduce((s, x) => s + (Number(x.paid) || 0), 0));
         return { ...sp, totalL, monthAmt, allAmt, allPaid, remaining: AccountingEngine.round2(allAmt - allPaid), monthPurchases: mP };
-      });
+      }).filter(s => !q || `${s.code || ""} ${s.name || ""} ${s.mobile || s.phone || ""} ${s.address || ""}`.toLowerCase().includes(q));
+
       container.innerHTML = `
-        <div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
-          <div><div class="text-xs text-slate-500">दूध सप्लायर खाता (${ledger.length} • माह ${mStr})</div><div class="text-lg font-bold">कुल सप्लायर बाकी: <span class="text-red-600">${fmtRs(ledger.reduce((s, c) => s + Math.max(0, c.remaining), 0))}</span></div></div>
-          <button type="button" id="add-sup-btn" class="btn-primary">+ नया सप्लायर जोड़ें</button>
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div class="text-xs text-slate-500">📇 मिल्क सप्लायर मास्टर व खाता (${ledger.length} • माह ${mStr})</div>
+              <div class="text-lg font-bold">कुल सप्लायर बाकी: <span class="text-red-600">${fmtRs(ledger.reduce((s, c) => s + Math.max(0, c.remaining), 0))}</span></div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" id="sup-daily-msg-btn" class="btn-secondary text-xs border-emerald-400 text-emerald-900 bg-emerald-50 font-bold">📲 आज के सभी मैसेज (1-Click)</button>
+              <button type="button" id="add-sup-btn" class="btn-primary">+ नया सप्लायर मास्टर जोड़ें</button>
+            </div>
+          </div>
+          <input type="search" id="sup-search-inp" value="${escHtml(state.supSearch || "")}" placeholder="कोड (जैसे 033), नाम, मोबाइल या पते से खोजें..." class="input-field py-2 text-xs" />
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto"><table class="data-table"><thead><tr><th>सप्लायर / मोबाइल</th><th>माह दूध</th><th>माह खरीद</th><th>भुगतान</th><th>बाकी</th><th>क्रिया</th></tr></thead><tbody>${ledger.length ? ledger.map(s => `<tr><td><div class="font-bold">${escHtml(s.name)}</div><div class="text-[11px] text-slate-500">${escHtml(s.mobile || "-")}</div></td><td class="font-semibold text-amber-700">${fmtL(s.totalL)}</td><td class="font-bold">${fmtRs(s.monthAmt)}</td><td class="text-emerald-700 font-semibold">${fmtRs(s.allPaid)}</td><td class="font-bold ${s.remaining > 0 ? "text-red-600" : "text-emerald-700"}">${fmtRs(s.remaining)}</td><td class="whitespace-nowrap"><button type="button" data-wa-sup="${s.id}" class="text-xs font-bold text-green-700 mr-2">WhatsApp</button><button type="button" data-pdf-sup="${s.id}" class="text-xs font-bold text-teal-700 mr-2">PDF</button><button type="button" data-edit-sup="${s.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button><button type="button" data-del-sup="${s.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`).join("") : `<tr><td colspan="6" class="text-center py-8 text-slate-400">कोई सप्लायर नहीं है।</td></tr>`}</tbody></table></div>`;
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto"><table class="data-table"><thead><tr><th>कोड</th><th>सप्लायर / मोबाइल / पता</th><th>माह दूध</th><th>माह खरीद</th><th>भुगतान</th><th>बाकी</th><th>क्रिया</th></tr></thead><tbody>${ledger.length ? ledger.map(s => `<tr><td class="font-extrabold text-purple-900">${escHtml(s.code || "-")}</td><td><div class="font-bold">${escHtml(s.name)}</div><div class="text-[11px] text-slate-500">📞 ${escHtml(s.mobile || s.phone || "-")} ${s.address ? `• 📍 ${escHtml(s.address)}` : ""}</div></td><td class="font-semibold text-amber-700">${fmtL(s.totalL)}</td><td class="font-bold">${fmtRs(s.monthAmt)}</td><td class="text-emerald-700 font-semibold">${fmtRs(s.allPaid)}</td><td class="font-bold ${s.remaining > 0 ? "text-red-600" : "text-emerald-700"}">${fmtRs(s.remaining)}</td><td class="whitespace-nowrap"><button type="button" data-spk-sup="${s.id}" class="text-xs font-bold text-teal-800 mr-2" title="बोलकर सुनें">🔊</button><button type="button" data-wa-sup="${s.id}" class="text-xs font-bold text-green-700 mr-2">WhatsApp</button><button type="button" data-pdf-sup="${s.id}" class="text-xs font-bold text-teal-700 mr-2">PDF</button><button type="button" data-edit-sup="${s.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button><button type="button" data-del-sup="${s.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`).join("") : `<tr><td colspan="7" class="text-center py-8 text-slate-400">कोई सप्लायर नहीं है। ऊपर '+ नया सप्लायर मास्टर जोड़ें' दबाएं।</td></tr>`}</tbody></table></div>`;
+
       document.getElementById("add-sup-btn").addEventListener("click", () => openSupplierModal());
+      document.getElementById("sup-daily-msg-btn")?.addEventListener("click", () => openDailySupplierMsgModal(state.selectedDate));
+      document.getElementById("sup-search-inp")?.addEventListener("input", (e) => { state.supSearch = e.target.value; renderCurrentView(); });
+      container.querySelectorAll("[data-spk-sup]").forEach(b => b.addEventListener("click", () => {
+        const s = ledger.find(x => x.id === b.dataset.spkSup);
+        if (s) speakHindiText(`कोड ${s.code || "नहीं"}, सप्लायर ${s.name} जी का माह ${mStr} का कुल दूध ${s.totalL} लीटर, कुल खरीद ${s.monthAmt} रुपये, कुल भुगतान ${s.allPaid} रुपये और शेष बकाया ${s.remaining} रुपये है।`);
+      }));
       container.querySelectorAll("[data-edit-sup]").forEach(b => b.addEventListener("click", () => { const it = sups.find(x => x.id === b.dataset.editSup); if (it) openSupplierModal(it); }));
       container.querySelectorAll("[data-del-sup]").forEach(b => b.addEventListener("click", () => deleteDocById("suppliers", b.dataset.delSup, "सप्लायर")));
-      container.querySelectorAll("[data-wa-sup]").forEach(b => b.addEventListener("click", () => { const s = ledger.find(x => x.id === b.dataset.waSup); if (s) openWhatsAppMessage(s.mobile, `नमस्ते ${s.name} जी,\n*MahaIndustries दूध खरीद हिसाब (${mStr})*\n• माह कुल दूध: ${fmtL(s.totalL)}\n• खरीद राशि: ${fmtRs(s.monthAmt)}\n• कुल भुगतान: ${fmtRs(s.allPaid)}\n• शेष बकाया: ${fmtRs(s.remaining)}`); }));
-      container.querySelectorAll("[data-pdf-sup]").forEach(b => b.addEventListener("click", () => { const s = ledger.find(x => x.id === b.dataset.pdfSup); if (s) exportTableToPDF({ title: `सप्लायर स्टेटमेंट — ${s.name}`, dateRange: `माह: ${mStr}`, headers: ["तारीख", "प्रकार", "मात्रा (L)", "दर (₹)", "राशि (₹)", "भुगतान (₹)", "बाकी (₹)"], rows: s.monthPurchases.map(p => [p.date, p.milkType || "भैंस", p.quantity, p.rate, p.amount, p.paid || 0, AccountingEngine.calcRemaining(p.amount, p.paid)]), summaryLines: [`पिछला बाकी: ${fmtRs(s.previousBalance || 0)}`, `माह कुल दूध: ${fmtL(s.totalL)}`, `शेष बकाया: ${fmtRs(s.remaining)}`] }); }));
+      container.querySelectorAll("[data-wa-sup]").forEach(b => b.addEventListener("click", () => { const s = ledger.find(x => x.id === b.dataset.waSup); if (s) openWhatsAppMessage(s.mobile || s.phone || "", `नमस्ते ${s.name} जी (कोड: ${s.code || "-"}),\n*MahaIndustries दूध खरीद हिसाब (${mStr})*\n• माह कुल दूध: ${fmtL(s.totalL)}\n• खरीद राशि: ${fmtRs(s.monthAmt)}\n• कुल भुगतान: ${fmtRs(s.allPaid)}\n• शेष बकाया: ${fmtRs(s.remaining)}`); }));
+      container.querySelectorAll("[data-pdf-sup]").forEach(b => b.addEventListener("click", () => { const s = ledger.find(x => x.id === b.dataset.pdfSup); if (s) exportTableToPDF({ title: `सप्लायर स्टेटमेंट — ${s.name} (कोड: ${s.code || "-"})`, dateRange: `माह: ${mStr}`, headers: ["तारीख", "कोड", "प्रकार", "FAT", "SNF", "मात्रा (L)", "दर (₹)", "राशि (₹)", "भुगतान (₹)", "बाकी (₹)"], rows: s.monthPurchases.map(p => [p.date, p.supplierCode || s.code || "-", p.milkType || "मिक्स", p.fat || "-", p.snf || "-", p.quantity, p.rate, p.amount, p.paid || 0, AccountingEngine.calcRemaining(p.amount, p.paid)]), summaryLines: [`सप्लायर कोड: ${s.code || "-"} | मोबाइल: ${s.mobile || s.phone || "-"}`, `पिछला बाकी: ${fmtRs(s.previousBalance || 0)}`, `माह कुल दूध: ${fmtL(s.totalL)}`, `शेष बकाया: ${fmtRs(s.remaining)}`] }); }));
     }
 
     function openSupplierModal(existing = null) {
-      openModal(existing ? "सप्लायर संपादित करें" : "नया सप्लायर जोड़ें", `<form id="sp-form" class="space-y-3"><div><label class="block text-xs font-bold mb-1">सप्लायर का नाम*</label><input type="text" id="sp-name" value="${escHtml(existing?.name || "")}" required class="input-field" /></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-bold mb-1">मोबाइल</label><input type="tel" id="sp-mob" value="${escHtml(existing?.mobile || "")}" class="input-field" /></div><div><label class="block text-xs font-bold mb-1">पिछला बाकी (₹)</label><input type="number" step="any" id="sp-prev" value="${existing?.previousBalance ?? 0}" class="input-field" /></div></div><div class="flex justify-end gap-2 pt-2"><button type="button" id="sp-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">सेव करें</button></div></form>`);
+      openModal(existing ? "सप्लायर मास्टर संपादित करें" : "नया मिल्क सप्लायर मास्टर जोड़ें", `
+        <form id="sp-form" class="space-y-3">
+          <div class="grid grid-cols-3 gap-2">
+            <div><label class="block text-xs font-bold mb-1">सप्लायर कोड*</label><input type="text" id="sp-code" value="${escHtml(existing?.code || "")}" placeholder="जैसे: 033" required class="input-field font-extrabold text-purple-900" /></div>
+            <div class="col-span-2"><label class="block text-xs font-bold mb-1">सप्लायर का नाम*</label><input type="text" id="sp-name" value="${escHtml(existing?.name || "")}" placeholder="जैसे: राजकुमार दादा" required class="input-field font-bold" /></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold mb-1">मोबाइल नंबर (मैसेज के लिए)*</label><input type="tel" id="sp-mob" value="${escHtml(existing?.mobile || existing?.phone || "")}" placeholder="10 अंकों का नंबर" class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">पिछला बाकी (₹)</label><input type="number" step="any" id="sp-prev" value="${existing?.previousBalance ?? 0}" class="input-field" /></div>
+          </div>
+          <div><label class="block text-xs font-bold mb-1">पता (Address)</label><input type="text" id="sp-addr" value="${escHtml(existing?.address || "")}" placeholder="गाँव / मोहल्ला..." class="input-field" /></div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="sp-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">💾 सप्लायर सेव करें</button></div>
+        </form>`);
       document.getElementById("sp-cancel").addEventListener("click", closeModal);
-      document.getElementById("sp-form").addEventListener("submit", async (e) => { e.preventDefault(); const name = document.getElementById("sp-name").value.trim(); if (!name) return; if (await saveDoc("suppliers", { name, mobile: document.getElementById("sp-mob").value.trim(), previousBalance: AccountingEngine.round2(document.getElementById("sp-prev").value || 0) }, existing?.id || null)) closeModal(); });
+      document.getElementById("sp-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const code = document.getElementById("sp-code").value.trim();
+        const name = document.getElementById("sp-name").value.trim();
+        if (!name) return;
+        const payload = {
+          code,
+          name,
+          mobile: document.getElementById("sp-mob").value.trim(),
+          address: document.getElementById("sp-addr").value.trim(),
+          previousBalance: AccountingEngine.round2(document.getElementById("sp-prev").value || 0)
+        };
+        if (await saveDoc("suppliers", payload, existing?.id || null)) closeModal();
+      });
     }
-
     function renderDairyExpensesTab(container) {
       const rows = [...state.data.dairyExpenses].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
       const total = AccountingEngine.round2(rows.reduce((s, x) => s + (Number(x.amount) || 0), 0));
@@ -3349,9 +3772,9 @@
         rows = list.map(x => [x.date, x.customerName, x.fat || "-", x.snf || "-", x.quantity, x.rate, x.amount, x.paid || 0, AccountingEngine.calcRemaining(x.amount, x.paid)]);
         summaryLines = [`कुल बिक्री: ${fmtRs(list.reduce((s, x) => s + (Number(x.amount) || 0), 0))}`];
       } else if (type === "dairy_purchase") {
-        const list = d.milkPurchases.filter(x => inRange(x.date) && matchQ(`${x.supplierName}`));
-        headers = ["तारीख", "सप्लायर", "FAT", "SNF", "मात्रा (L)", "दर (₹)", "राशि (₹)", "भुगतान (₹)", "बाकी (₹)"];
-        rows = list.map(x => [x.date, x.supplierName, x.fat || "-", x.snf || "-", x.quantity, x.rate, x.amount, x.paid || 0, AccountingEngine.calcRemaining(x.amount, x.paid)]);
+        const list = d.milkPurchases.filter(x => inRange(x.date) && matchQ(`${x.supplierCode || ""} ${x.supplierName}`));
+        headers = ["तारीख", "कोड", "सप्लायर", "FAT", "SNF", "मात्रा (L)", "दर (₹)", "राशि (₹)", "भुगतान (₹)", "बाकी (₹)"];
+        rows = list.map(x => [x.date, x.supplierCode || "-", x.supplierName, x.fat || "-", x.snf || "-", x.quantity, x.rate, x.amount, x.paid || 0, AccountingEngine.calcRemaining(x.amount, x.paid)]);
         summaryLines = [`कुल खरीद: ${fmtRs(list.reduce((s, x) => s + (Number(x.amount) || 0), 0))}`];
       } else if (type === "dairy_expense") {
         const list = d.dairyExpenses.filter(x => inRange(x.date) && matchCat(x.category) && matchQ(`${x.category} ${x.item}`));
@@ -7761,6 +8184,7 @@
             overlay.classList.add("hidden");
           }
         }
+        document.body.classList.toggle("non-admin-user", !!(sess && sess.role !== "admin"));
         if (hdrBtn) {
           hdrBtn.classList.toggle("hidden", !sess);
           if (sess && hdrLbl) hdrLbl.textContent = `${sess.name || sess.username}`;
@@ -8157,7 +8581,7 @@
 
       container.innerHTML = `
         <!-- 0. MULTI-USER ADMIN & LOGIN LIMIT CONTROL -->
-        <div class="bg-white rounded-2xl border border-teal-200 p-4 flex flex-wrap items-center justify-between gap-3">
+        <div id="settings-multiuser-card" class="admin-only bg-white rounded-2xl border border-teal-200 p-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 class="font-bold text-base text-teal-950">👥 मल्टी-यूज़र व लॉगिन लिमिट कंट्रोल (Admin)</h3>
             <div class="text-xs text-slate-500">नए यूज़र व पासवर्ड बनाएं और तय करें कि एक पासवर्ड से एक समय में कितने यूज़र (जैसे 2) लॉगिन कर सकते हैं।</div>
@@ -8574,6 +8998,9 @@
       document.getElementById("header-back-btn")?.addEventListener("click", () => goBackScreen(false));
       document.getElementById("header-install-btn")?.addEventListener("click", triggerAppInstall);
       initHardwareBackSupport();
+      document.getElementById("mobile-sidebar-toggle")?.addEventListener("click", openMobileSidebar);
+      document.getElementById("mobile-sidebar-close-btn")?.addEventListener("click", closeMobileSidebar);
+      document.getElementById("mobile-sidebar-backdrop")?.addEventListener("click", closeMobileSidebar);
       applyDiaryHiddenUI();
       let _logoTaps = 0, _logoTapTimer = null;
       MultiUserAuth.updateUI();
