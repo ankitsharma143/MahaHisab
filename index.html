@@ -426,7 +426,7 @@
       "houseExpenses", "shopTransactions", "income", "accounts", "transfers",
       "loans", "loanPayments", "dairyProduction", "milkSales", "milkPurchases",
       "dairyExpenses", "dairyWaste", "customers", "suppliers", "animals",
-      "budgets", "recurringBills", "savingsGoals", "friendTransactions", "parchuniCustomers", "parchuniEntries", "parchuniSalesmen", "parchuniSalesmanEntries", "dairyCenters", "dairySupplies", "dairyCenterPurchases", "parchuniInventory", "parchuniBills", "animalHealth", "personalDiary", "appUsers", "settings"
+      "budgets", "recurringBills", "savingsGoals", "friendTransactions", "parchuniCustomers", "parchuniEntries", "parchuniSalesmen", "parchuniSalesmanEntries", "dairyCenters", "dairySupplies", "dairyCenterPurchases", "parchuniInventory", "parchuniBills", "animalHealth", "personalDiary", "appUsers", "dairyProducts", "dairyProdPurchases", "dairyProdSales", "settings"
     ];
 
     const REPORT_TYPES = [
@@ -1064,7 +1064,7 @@
         houseExpenses: [], shopTransactions: [], income: [], accounts: [], transfers: [],
         loans: [], loanPayments: [], dairyProduction: [], milkSales: [], milkPurchases: [],
         dairyExpenses: [], dairyWaste: [], customers: [], suppliers: [], animals: [],
-        budgets: [], recurringBills: [], savingsGoals: [], friendTransactions: [], parchuniCustomers: [], parchuniEntries: [], parchuniSalesmen: [], parchuniSalesmanEntries: [], dairyCenters: [], dairySupplies: [], dairyCenterPurchases: [], parchuniInventory: [], parchuniBills: [], animalHealth: [], personalDiary: [], appUsers: [], settings: []
+        budgets: [], recurringBills: [], savingsGoals: [], friendTransactions: [], parchuniCustomers: [], parchuniEntries: [], parchuniSalesmen: [], parchuniSalesmanEntries: [], dairyCenters: [], dairySupplies: [], dairyCenterPurchases: [], parchuniInventory: [], parchuniBills: [], animalHealth: [], personalDiary: [], appUsers: [], dairyProducts: [], dairyProdPurchases: [], dairyProdSales: [], settings: []
       }
     };
 
@@ -1942,6 +1942,7 @@
             { id: "recon", label: "⚖️ दैनिक मिलान" },
             { id: "customers", label: "👥 दूध ग्राहक खाता" },
             { id: "suppliers", label: "📇 सप्लायर मास्टर" },
+            { id: "feed_store", label: "🌾 खल-भूसी व घी (स्टॉक/बिल)" },
             { id: "expenses", label: "🌾 डेयरी खर्च" },
             { id: "animals", label: "🐃 पशु प्रबंधन" },
             { id: "animal_health", label: "🩺 पशु स्वास्थ्य व ब्यात" },
@@ -2758,7 +2759,8 @@
         { id: "purchase", label: "🚚 दूध खरीद" },
         { id: "recon", label: "⚖️ दैनिक मिलान" },
         { id: "customers", label: "👥 ग्राहक खाता" },
-        { id: "suppliers", label: "📦 सप्लायर खाता" },
+        { id: "suppliers", label: "📇 सप्लायर मास्टर" },
+        { id: "feed_store", label: "🌾 खल-भूसी व घी (स्टॉक/बिल)" },
         { id: "expenses", label: "🌾 डेयरी खर्च" },
         { id: "animals", label: "🐃 पशु प्रबंधन" },
         { id: "animal_health", label: "🩺 पशु स्वास्थ्य व ब्यात" },
@@ -2788,6 +2790,7 @@
       else if (state.activeDairyTab === "animals") renderAnimalsTab(sub);
       else if (state.activeDairyTab === "animal_health") renderAnimalHealthTab(sub);
       else if (state.activeDairyTab === "animal_profit") renderAnimalProfitTab(sub);
+      else if (state.activeDairyTab === "feed_store") renderDairyFeedStoreTab(sub);
       else if (state.activeDairyTab === "pl") renderDairyPLTab(sub);
       wireModuleExportButtons("dairy", state.activeDairyTab);
     }
@@ -3131,9 +3134,16 @@
         const avgFat = AccountingEngine.round2(g.entries.reduce((s, e) => s + Number(e.fat || 0), 0) / g.entries.length);
         const avgSnf = AccountingEngine.round2(g.entries.reduce((s, e) => s + Number(e.snf || 0), 0) / g.entries.length);
         const avgRate = totQty > 0 ? AccountingEngine.round2(totAmt / totQty) : Number(g.entries[0]?.rate || 0);
+        const dayFeedSales = (state.data.dairyProdSales || []).filter(ps => ps.date === dStr && (
+          (g.code && g.code !== "-" && ps.supplierCode && normalizeSupCode(ps.supplierCode) === normalizeSupCode(g.code))
+          || (ps.supplierName || "").trim().toLowerCase() === (g.name || "").trim().toLowerCase()
+        ));
+        const feedAmt = AccountingEngine.round2(dayFeedSales.reduce((s, ps) => s + Number(ps.totalAmount || 0), 0));
+        const feedLines = dayFeedSales.flatMap(ps => (ps.items || []).map(it => `  • ${it.name}: ${it.qty} ${it.unit || ""} × ₹${it.rate} = ${fmtRs(it.amount)}`)).join("\n");
+        const netDayAmt = AccountingEngine.round2(totAmt - feedAmt);
         const lines = g.entries.map(e => `  • ${e.milkType || "मिक्स"}: ${fmtL(e.quantity)} | FAT ${e.fat || "-"} | SNF ${e.snf || "-"} | ₹${e.rate} = ${fmtRs(e.amount)}`).join("\n");
-        const msg = `नमस्ते ${g.name} जी (कोड: ${g.code}) 🙏\n*MahaIndustries दैनिक दूध खरीद हिसाब (${dStr})*\n${lines}\n• कुल मात्रा: ${fmtL(totQty)}\n• औसत FAT: ${avgFat || "-"} | SNF: ${avgSnf || "-"}\n• दर: ₹${avgRate}/ली.\n• आज की कुल राशि: ${fmtRs(totAmt)}\nधन्यवाद!`;
-        return { ...g, totQty, totAmt, avgFat, avgSnf, avgRate, msg };
+        const msg = `नमस्ते ${g.name} जी (कोड: ${g.code}) 🙏\n*MahaIndustries दैनिक दूध व खल-भूसी हिसाब (${dStr})*\n${lines}\n• कुल दूध: ${fmtL(totQty)} | औसत FAT: ${avgFat || "-"} | SNF: ${avgSnf || "-"}\n• दूध राशि: ${fmtRs(totAmt)}${feedAmt > 0 ? `\n*खल/भूसी/घी खरीद:*\n${feedLines}\n• कुल सामान कटौती: -${fmtRs(feedAmt)}\n• *आज का शुद्ध देय (Net): ${fmtRs(netDayAmt)}*` : ""}\nधन्यवाद!`;
+        return { ...g, totQty, totAmt, feedAmt, netDayAmt, avgFat, avgSnf, avgRate, msg };
       });
 
       openModal(`📲 दैनिक सप्लायर मैसेज सेंटर (${dStr})`, `
@@ -3565,9 +3575,15 @@
         const mP = myP.filter(p => (p.date || "").startsWith(mStr));
         const totalL = AccountingEngine.round2(mP.reduce((s, x) => s + (Number(x.quantity) || 0), 0));
         const monthAmt = AccountingEngine.round2(mP.reduce((s, x) => s + (Number(x.amount) || 0), 0));
+        const myFeed = (state.data.dairyProdSales || []).filter(ps =>
+          (sp.code && ps.supplierCode && normalizeSupCode(ps.supplierCode) === normalizeSupCode(sp.code))
+          || (ps.supplierName || "").trim().toLowerCase() === (sp.name || "").trim().toLowerCase()
+        );
+        const feedDue = AccountingEngine.round2(myFeed.reduce((s, ps) => s + AccountingEngine.calcRemaining(ps.totalAmount, ps.paid || 0), 0));
         const allAmt = AccountingEngine.round2((Number(sp.previousBalance) || 0) + myP.reduce((s, x) => s + (Number(x.amount) || 0), 0));
         const allPaid = AccountingEngine.round2(myP.reduce((s, x) => s + (Number(x.paid) || 0), 0));
-        return { ...sp, totalL, monthAmt, allAmt, allPaid, remaining: AccountingEngine.round2(allAmt - allPaid), monthPurchases: mP };
+        const netRemaining = AccountingEngine.round2(allAmt - allPaid - feedDue);
+        return { ...sp, totalL, monthAmt, feedDue, allAmt, allPaid, remaining: netRemaining, monthPurchases: mP };
       }).filter(s => !q || `${s.code || ""} ${s.name || ""} ${s.mobile || s.phone || ""} ${s.address || ""}`.toLowerCase().includes(q));
 
       container.innerHTML = `
@@ -3712,6 +3728,600 @@
       openModal(existing ? "पशु संपादित करें" : "नया पशु जोड़ें", `<form id="an-form" class="space-y-3"><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-bold mb-1">Animal ID</label><input type="text" id="an-id" value="${escHtml(existing?.animalId || "A-" + (state.data.animals.length + 1))}" class="input-field" /></div><div><label class="block text-xs font-bold mb-1">पशु का नाम*</label><input type="text" id="an-name" value="${escHtml(existing?.name || "")}" required class="input-field" /></div></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-bold mb-1">प्रकार</label><select id="an-type" class="input-field">${["भैंस", "गाय", "अन्य"].map(t => `<option value="${t}" ${(existing?.type || "भैंस") === t ? "selected" : ""}>${t}</option>`).join("")}</select></div><div><label class="block text-xs font-bold mb-1">स्थिति</label><select id="an-status" class="input-field">${["दुधारू", "गाभिन", "सूखी", "बेची गई"].map(t => `<option value="${t}" ${(existing?.status || "दुधारू") === t ? "selected" : ""}>${t}</option>`).join("")}</select></div></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-bold mb-1">खरीद तारीख</label><input type="date" id="an-pdate" value="${existing?.purchaseDate || ""}" class="input-field" /></div><div><label class="block text-xs font-bold mb-1">खरीद राशि (₹)</label><input type="number" step="any" min="0" id="an-pamt" value="${existing?.purchaseAmount ?? 0}" class="input-field" /></div></div><div class="flex justify-end gap-2 pt-2"><button type="button" id="an-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">सेव करें</button></div></form>`);
       document.getElementById("an-cancel").addEventListener("click", closeModal);
       document.getElementById("an-form").addEventListener("submit", async (e) => { e.preventDefault(); const name = document.getElementById("an-name").value.trim(); if (!name) return; if (await saveDoc("animals", { animalId: document.getElementById("an-id").value.trim(), name, type: document.getElementById("an-type").value, status: document.getElementById("an-status").value, purchaseDate: document.getElementById("an-pdate").value, purchaseAmount: AccountingEngine.round2(document.getElementById("an-pamt").value || 0) }, existing?.id || null)) closeModal(); });
+    }
+
+    // =========================================================================
+    // 10F. DAIRY PRODUCTS ERP (KHAL / BHUSHI / CHOKAR / GHEE MASTER, INVOICES & STOCK)
+    // =========================================================================
+    function ensureDefaultDairyProducts() {
+      if (!Array.isArray(state.data.dairyProducts)) state.data.dairyProducts = [];
+      if (state.data.dairyProducts.length === 0) {
+        const defaults = [
+          { id: "dp_khal", name: "सरसों खल (Khal)", unit: "कट्टा", purchaseRate: 1450, saleRate: 1550, openingStock: 0, minStock: 5 },
+          { id: "dp_bhushi", name: "भूसी (Bhushi)", unit: "कट्टा", purchaseRate: 650, saleRate: 720, openingStock: 0, minStock: 5 },
+          { id: "dp_chokar", name: "चोकर (Chokar)", unit: "कट्टा", purchaseRate: 950, saleRate: 1050, openingStock: 0, minStock: 5 },
+          { id: "dp_ghee", name: "देसी घी (Desi Ghee)", unit: "किलो", purchaseRate: 580, saleRate: 650, openingStock: 0, minStock: 2 }
+        ];
+        state.data.dairyProducts = defaults;
+        persistLocalDB();
+      }
+    }
+
+    function calcDairyProductStock() {
+      ensureDefaultDairyProducts();
+      const prods = state.data.dairyProducts || [];
+      const purch = state.data.dairyProdPurchases || [];
+      const sales = state.data.dairyProdSales || [];
+      return prods.map(p => {
+        let boughtQty = 0, boughtAmt = 0, soldQty = 0, soldAmt = 0;
+        purch.forEach(inv => (inv.items || []).forEach(it => {
+          if (it.productId === p.id || (it.name || "").trim().toLowerCase() === (p.name || "").trim().toLowerCase()) {
+            boughtQty += Number(it.qty || 0);
+            boughtAmt += Number(it.amount || 0);
+          }
+        }));
+        sales.forEach(inv => (inv.items || []).forEach(it => {
+          if (it.productId === p.id || (it.name || "").trim().toLowerCase() === (p.name || "").trim().toLowerCase()) {
+            soldQty += Number(it.qty || 0);
+            soldAmt += Number(it.amount || 0);
+          }
+        }));
+        const currentStock = AccountingEngine.round2((Number(p.openingStock) || 0) + boughtQty - soldQty);
+        const stockValue = AccountingEngine.round2(Math.max(0, currentStock) * (Number(p.purchaseRate) || 0));
+        const estSaleValue = AccountingEngine.round2(Math.max(0, currentStock) * (Number(p.saleRate) || 0));
+        return {
+          ...p,
+          boughtQty: AccountingEngine.round2(boughtQty),
+          boughtAmt: AccountingEngine.round2(boughtAmt),
+          soldQty: AccountingEngine.round2(soldQty),
+          soldAmt: AccountingEngine.round2(soldAmt),
+          currentStock,
+          stockValue,
+          estSaleValue,
+          lowStock: currentStock <= (Number(p.minStock) || 0)
+        };
+      });
+    }
+
+    function buildCombinedSupplierFeedMsg(saleInv) {
+      const code = saleInv.supplierCode || "-";
+      const name = saleInv.supplierName || "ग्राहक";
+      const dStr = saleInv.date || todayStr();
+      const itemLines = (saleInv.items || []).map(it => `  • ${it.name}: ${it.qty} ${it.unit || ""} × ₹${it.rate} = ${fmtRs(it.amount)}`).join("\n");
+
+      // Check same-day milk purchase & overall net balance for this supplier code/name
+      const allMilk = (state.data.milkPurchases || []).filter(p =>
+        (code !== "-" && p.supplierCode && normalizeSupCode(p.supplierCode) === normalizeSupCode(code))
+        || (p.supplierName || "").trim().toLowerCase() === name.trim().toLowerCase()
+      );
+      const dayMilk = allMilk.filter(p => p.date === dStr);
+      const dayMilkQty = AccountingEngine.round2(dayMilk.reduce((s, p) => s + Number(p.quantity || 0), 0));
+      const dayMilkAmt = AccountingEngine.round2(dayMilk.reduce((s, p) => s + Number(p.amount || 0), 0));
+
+      const sup = (code !== "-" ? findSupplierByCode(code) : null) || findSupplierByName(name);
+      const allFeed = (state.data.dairyProdSales || []).filter(ps =>
+        (code !== "-" && ps.supplierCode && normalizeSupCode(ps.supplierCode) === normalizeSupCode(code))
+        || (ps.supplierName || "").trim().toLowerCase() === name.trim().toLowerCase()
+      );
+      const totalMilkAmt = AccountingEngine.round2((Number(sup?.previousBalance) || 0) + allMilk.reduce((s, p) => s + Number(p.amount || 0), 0));
+      const totalMilkPaid = AccountingEngine.round2(allMilk.reduce((s, p) => s + Number(p.paid || 0), 0));
+      const totalFeedDue = AccountingEngine.round2(allFeed.reduce((s, ps) => s + AccountingEngine.calcRemaining(ps.totalAmount, ps.paid || 0), 0));
+      const netMilkPayable = AccountingEngine.round2(totalMilkAmt - totalMilkPaid - totalFeedDue);
+
+      return `नमस्ते ${name} जी (कोड: ${code}) 🙏\n*MahaIndustries — खल/भूसी/घी बिक्री बिल (${saleInv.invoiceNo})*\nतारीख: ${dStr}\n*लिया गया सामान:*\n${itemLines}\n• कुल बिल: ${fmtRs(saleInv.totalAmount)} | नकद जमा: ${fmtRs(saleInv.paid || 0)} | दूध खाते में कटौती: ${fmtRs(saleInv.due || 0)}${dayMilkQty > 0 ? `\n• आज का दूध जमा: ${fmtL(dayMilkQty)} (${fmtRs(dayMilkAmt)})` : ""}\n• *कटौती के बाद आपका कुल शेष दूध हिसाब: ${fmtRs(netMilkPayable)}*\nधन्यवाद!`;
+    }
+
+    function printDairyProdInvoicePDF(inv, kind = "sale") {
+      const isSale = kind === "sale";
+      const title = isSale ? `बिक्री इनवॉइस (Sale Invoice) — ${inv.invoiceNo}` : `खरीद इनवॉइस (Purchase Invoice) — ${inv.invoiceNo}`;
+      const partyLabel = isSale
+        ? `सप्लायर/ग्राहक: ${inv.supplierName} (कोड: ${inv.supplierCode || "-"})`
+        : `डीलर/सप्लायर: ${inv.partyName}`;
+      const body = `
+        <div style="font-size:12px;margin-bottom:10px;padding:10px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;">
+          <div><b>${escHtml(partyLabel)}</b></div>
+          <div>तारीख: ${escHtml(inv.date)} | इनवॉइस नं.: ${escHtml(inv.invoiceNo)}</div>
+          ${inv.note ? `<div>नोट: ${escHtml(inv.note)}</div>` : ""}
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead><tr style="background:#0f766e;color:#fff;"><th style="padding:8px;text-align:left;">सामान (Item)</th><th style="padding:8px;text-align:right;">मात्रा</th><th style="padding:8px;text-align:right;">दर (₹)</th><th style="padding:8px;text-align:right;">राशि (₹)</th></tr></thead>
+          <tbody>${(inv.items || []).map(it => `<tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:8px;">${escHtml(it.name)}</td><td style="padding:8px;text-align:right;">${it.qty} ${escHtml(it.unit || "")}</td><td style="padding:8px;text-align:right;">₹${it.rate}</td><td style="padding:8px;text-align:right;font-weight:700;">${fmtRs(it.amount)}</td></tr>`).join("")}</tbody>
+        </table>
+        <div style="margin-top:12px;text-align:right;font-size:13px;line-height:1.8;">
+          <div>कुल राशि: <b>${fmtRs(inv.totalAmount)}</b></div>
+          <div>नकद/भुगतान: <b>${fmtRs(inv.paid || 0)}</b></div>
+          <div style="color:#b91c1c;">बाकी / दूध खाते में समायोजन: <b>${fmtRs(inv.due || 0)}</b></div>
+        </div>`;
+      downloadDiaryPDF(title, `तारीख: ${inv.date}`, body, `${inv.invoiceNo}_${inv.date}.pdf`);
+    }
+
+    function openDairyProductModal(existing = null) {
+      openModal(existing ? "प्रोडक्ट संपादित करें" : "नया खल / भूसी / चोकर / घी प्रोडक्ट जोड़ें", `
+        <form id="dp-prod-form" class="space-y-3 text-xs">
+          <div class="grid grid-cols-2 gap-2">
+            <div><label class="block font-bold mb-1">प्रोडक्ट का नाम*</label><input type="text" id="dpp-name" value="${escHtml(existing?.name || "")}" placeholder="जैसे: सरसों खल / चोकर / घी" required class="input-field" /></div>
+            <div><label class="block font-bold mb-1">इकाई (Unit)*</label><select id="dpp-unit" class="input-field">${["कट्टा", "किलो", "लीटर", "डिब्बा", "पैकेट", "नग"].map(u => `<option value="${u}" ${(existing?.unit || "कट्टा") === u ? "selected" : ""}>${u}</option>`).join("")}</select></div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div><label class="block font-bold mb-1">खरीद दर (Purchase Rate ₹)*</label><input type="number" step="any" min="0" id="dpp-prate" value="${existing?.purchaseRate ?? ""}" required class="input-field font-bold" /></div>
+            <div><label class="block font-bold mb-1">फिक्स बिक्री दर (Sale Rate ₹)*</label><input type="number" step="any" min="0" id="dpp-srate" value="${existing?.saleRate ?? ""}" required class="input-field font-bold text-emerald-800" /></div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div><label class="block font-bold mb-1">शुरुआती स्टॉक (Opening Stock)</label><input type="number" step="any" min="0" id="dpp-open" value="${existing?.openingStock ?? 0}" class="input-field" /></div>
+            <div><label class="block font-bold mb-1">कम स्टॉक अलर्ट सीमा</label><input type="number" step="any" min="0" id="dpp-min" value="${existing?.minStock ?? 5}" class="input-field" /></div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="dpp-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">💾 प्रोडक्ट सेव करें</button></div>
+        </form>`);
+      document.getElementById("dpp-cancel").addEventListener("click", closeModal);
+      document.getElementById("dp-prod-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const payload = {
+          name: document.getElementById("dpp-name").value.trim(),
+          unit: document.getElementById("dpp-unit").value,
+          purchaseRate: AccountingEngine.round2(document.getElementById("dpp-prate").value || 0),
+          saleRate: AccountingEngine.round2(document.getElementById("dpp-srate").value || 0),
+          openingStock: AccountingEngine.round2(document.getElementById("dpp-open").value || 0),
+          minStock: AccountingEngine.round2(document.getElementById("dpp-min").value || 0)
+        };
+        if (!payload.name) return;
+        if (await saveDoc("dairyProducts", payload, existing?.id || null)) closeModal();
+      });
+    }
+
+    function openDairyProdPurchaseInvoiceModal(existing = null) {
+      ensureDefaultDairyProducts();
+      const prods = state.data.dairyProducts || [];
+      const accs = getAccountOptions();
+      const invNo = existing?.invoiceNo || `DP-${1001 + (state.data.dairyProdPurchases || []).length}`;
+      let lines = existing?.items?.length ? existing.items.map(x => ({ ...x })) : [{ productId: prods[0]?.id || "", name: prods[0]?.name || "", unit: prods[0]?.unit || "कट्टा", qty: 1, rate: prods[0]?.purchaseRate || 0, amount: prods[0]?.purchaseRate || 0 }];
+
+      const renderLines = () => {
+        const box = document.getElementById("dpi-lines-box");
+        if (!box) return;
+        box.innerHTML = lines.map((l, idx) => `
+          <div class="grid grid-cols-12 gap-1.5 items-center bg-slate-50 p-2 rounded-xl border border-slate-200">
+            <select data-dpi-prod="${idx}" class="col-span-5 input-field py-1.5 text-xs font-bold">
+              ${prods.map(p => `<option value="${p.id}" ${p.id === l.productId ? "selected" : ""}>${escHtml(p.name)} (${escHtml(p.unit)})</option>`).join("")}
+            </select>
+            <input type="number" step="any" min="0.01" data-dpi-qty="${idx}" value="${l.qty}" placeholder="Qty" class="col-span-2 input-field py-1.5 text-xs text-center font-bold" />
+            <input type="number" step="any" min="0" data-dpi-rate="${idx}" value="${l.rate}" placeholder="Rate" class="col-span-2 input-field py-1.5 text-xs text-center font-bold" />
+            <div class="col-span-2 text-right font-extrabold text-amber-800 text-xs">${fmtRs(l.amount)}</div>
+            <button type="button" data-dpi-rm="${idx}" class="col-span-1 text-red-600 font-bold text-xs">✕</button>
+          </div>`).join("");
+
+        const tot = AccountingEngine.round2(lines.reduce((s, x) => s + Number(x.amount || 0), 0));
+        const paid = AccountingEngine.round2(document.getElementById("dpi-paid")?.value || 0);
+        document.getElementById("dpi-total").value = tot;
+        document.getElementById("dpi-due").value = AccountingEngine.calcRemaining(tot, paid);
+
+        box.querySelectorAll("[data-dpi-prod]").forEach(el => el.addEventListener("change", () => {
+          const i = Number(el.dataset.dpiProd);
+          const p = prods.find(x => x.id === el.value);
+          if (p) {
+            lines[i].productId = p.id; lines[i].name = p.name; lines[i].unit = p.unit;
+            lines[i].rate = p.purchaseRate || 0;
+            lines[i].amount = AccountingEngine.calcLineAmount(lines[i].qty, lines[i].rate, 0);
+            renderLines();
+          }
+        }));
+        box.querySelectorAll("[data-dpi-qty]").forEach(el => el.addEventListener("input", () => {
+          const i = Number(el.dataset.dpiQty);
+          lines[i].qty = Number(el.value || 0);
+          lines[i].amount = AccountingEngine.calcLineAmount(lines[i].qty, lines[i].rate, 0);
+          renderLines();
+        }));
+        box.querySelectorAll("[data-dpi-rate]").forEach(el => el.addEventListener("input", () => {
+          const i = Number(el.dataset.dpiRate);
+          lines[i].rate = Number(el.value || 0);
+          lines[i].amount = AccountingEngine.calcLineAmount(lines[i].qty, lines[i].rate, 0);
+          renderLines();
+        }));
+        box.querySelectorAll("[data-dpi-rm]").forEach(el => el.addEventListener("click", () => {
+          if (lines.length > 1) { lines.splice(Number(el.dataset.dpiRm), 1); renderLines(); }
+        }));
+      };
+
+      openModal(existing ? "खरीद इनवॉइस संपादित करें" : "📥 नया खल-भूसी खरीद इनवॉइस (Purchase Invoice)", `
+        <form id="dpi-form" class="space-y-3 text-xs">
+          <div class="grid grid-cols-3 gap-2">
+            <div><label class="block font-bold mb-1">इनवॉइस नं.</label><input type="text" id="dpi-no" value="${escHtml(invNo)}" required class="input-field font-bold bg-slate-50" /></div>
+            <div><label class="block font-bold mb-1">तारीख*</label><input type="date" id="dpi-date" value="${existing?.date || state.selectedDate}" required class="input-field" /></div>
+            <div><label class="block font-bold mb-1">माध्यम</label><select id="dpi-mode" class="input-field">${accs.map(a => `<option value="${a.id}" ${existing?.paymentMode === a.id ? "selected" : ""}>${escHtml(a.name)}</option>`).join("")}</select></div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div><label class="block font-bold mb-1">डीलर / मिल का नाम*</label><input type="text" id="dpi-party" value="${escHtml(existing?.partyName || "")}" placeholder="जैसे: महादेव ऑयल मिल" required class="input-field font-bold" /></div>
+            <div><label class="block font-bold mb-1">डीलर मोबाइल</label><input type="tel" id="dpi-phone" value="${escHtml(existing?.partyPhone || "")}" placeholder="10 अंकों का नंबर" class="input-field" /></div>
+          </div>
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between"><label class="font-bold">खरीदे गए सामान (Items)</label><button type="button" id="dpi-add-line" class="text-xs font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">+ और आइटम जोड़ें</button></div>
+            <div id="dpi-lines-box" class="space-y-1.5"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div><label class="block font-bold mb-1">कुल बिल (₹)</label><input type="number" id="dpi-total" readonly class="input-field bg-slate-100 font-extrabold text-amber-800" /></div>
+            <div><label class="block font-bold mb-1">भुगतान (₹)</label><input type="number" step="any" min="0" id="dpi-paid" value="${existing?.paid ?? 0}" class="input-field font-bold" /></div>
+            <div><label class="block font-bold mb-1">बाकी (₹)</label><input type="number" id="dpi-due" readonly class="input-field bg-slate-100 font-extrabold text-red-600" /></div>
+          </div>
+          <div><label class="block font-bold mb-1">नोट</label><input type="text" id="dpi-note" value="${escHtml(existing?.note || "")}" class="input-field" /></div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="dpi-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">💾 खरीद इनवॉइस सेव करें</button></div>
+        </form>`);
+
+      renderLines();
+      document.getElementById("dpi-add-line").addEventListener("click", () => {
+        const p = prods[0] || { id: "", name: "", unit: "कट्टा", purchaseRate: 0 };
+        lines.push({ productId: p.id, name: p.name, unit: p.unit, qty: 1, rate: p.purchaseRate || 0, amount: p.purchaseRate || 0 });
+        renderLines();
+      });
+      document.getElementById("dpi-paid").addEventListener("input", renderLines);
+      document.getElementById("dpi-cancel").addEventListener("click", closeModal);
+      document.getElementById("dpi-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const validLines = lines.filter(l => l.name && Number(l.qty) > 0);
+        if (!validLines.length) return showToast("कम से कम 1 सामान जोड़ें।", "error");
+        const totalAmount = AccountingEngine.round2(validLines.reduce((s, x) => s + Number(x.amount || 0), 0));
+        const paid = AccountingEngine.round2(document.getElementById("dpi-paid").value || 0);
+        const payload = {
+          invoiceNo: document.getElementById("dpi-no").value.trim(),
+          date: document.getElementById("dpi-date").value,
+          partyName: document.getElementById("dpi-party").value.trim(),
+          partyPhone: document.getElementById("dpi-phone").value.trim(),
+          items: validLines,
+          totalAmount,
+          paid,
+          due: AccountingEngine.calcRemaining(totalAmount, paid),
+          paymentMode: document.getElementById("dpi-mode").value,
+          note: document.getElementById("dpi-note").value.trim()
+        };
+        // Also update latest purchaseRate in product master if changed
+        for (const l of validLines) {
+          const pm = (state.data.dairyProducts || []).find(p => p.id === l.productId);
+          if (pm && l.rate > 0 && pm.purchaseRate !== l.rate) {
+            await saveDoc("dairyProducts", { ...pm, purchaseRate: l.rate }, pm.id);
+          }
+        }
+        if (await saveDoc("dairyProdPurchases", payload, existing?.id || null)) closeModal();
+      });
+    }
+
+    function openDairyProdSaleInvoiceModal(existing = null) {
+      ensureDefaultDairyProducts();
+      const prods = state.data.dairyProducts || [];
+      const accs = getAccountOptions();
+      const supNames = getMilkPurchaseSupplierNames();
+      const invNo = existing?.invoiceNo || `DS-${1001 + (state.data.dairyProdSales || []).length}`;
+      const initSup = existing?.supplierName || supNames[0] || "";
+      const initCode = existing?.supplierCode || findSupplierByName(initSup)?.code || "";
+      let lines = existing?.items?.length ? existing.items.map(x => ({ ...x })) : [{ productId: prods[0]?.id || "", name: prods[0]?.name || "", unit: prods[0]?.unit || "कट्टा", qty: 1, rate: prods[0]?.saleRate || 0, amount: prods[0]?.saleRate || 0 }];
+
+      const renderLines = () => {
+        const box = document.getElementById("dsi-lines-box");
+        if (!box) return;
+        box.innerHTML = lines.map((l, idx) => `
+          <div class="grid grid-cols-12 gap-1.5 items-center bg-slate-50 p-2 rounded-xl border border-slate-200">
+            <select data-dsi-prod="${idx}" class="col-span-5 input-field py-1.5 text-xs font-bold">
+              ${prods.map(p => `<option value="${p.id}" ${p.id === l.productId ? "selected" : ""}>${escHtml(p.name)} (₹${p.saleRate})</option>`).join("")}
+            </select>
+            <input type="number" step="any" min="0.01" data-dsi-qty="${idx}" value="${l.qty}" placeholder="Qty" class="col-span-2 input-field py-1.5 text-xs text-center font-bold" />
+            <input type="number" step="any" min="0" data-dsi-rate="${idx}" value="${l.rate}" placeholder="Rate" class="col-span-2 input-field py-1.5 text-xs text-center font-bold text-emerald-800" />
+            <div class="col-span-2 text-right font-extrabold text-emerald-700 text-xs">${fmtRs(l.amount)}</div>
+            <button type="button" data-dsi-rm="${idx}" class="col-span-1 text-red-600 font-bold text-xs">✕</button>
+          </div>`).join("");
+
+        const tot = AccountingEngine.round2(lines.reduce((s, x) => s + Number(x.amount || 0), 0));
+        const paid = AccountingEngine.round2(document.getElementById("dsi-paid")?.value || 0);
+        document.getElementById("dsi-total").value = tot;
+        document.getElementById("dsi-due").value = AccountingEngine.calcRemaining(tot, paid);
+
+        box.querySelectorAll("[data-dsi-prod]").forEach(el => el.addEventListener("change", () => {
+          const i = Number(el.dataset.dsiProd);
+          const p = prods.find(x => x.id === el.value);
+          if (p) {
+            lines[i].productId = p.id; lines[i].name = p.name; lines[i].unit = p.unit;
+            lines[i].rate = p.saleRate || 0;
+            lines[i].amount = AccountingEngine.calcLineAmount(lines[i].qty, lines[i].rate, 0);
+            renderLines();
+          }
+        }));
+        box.querySelectorAll("[data-dsi-qty]").forEach(el => el.addEventListener("input", () => {
+          const i = Number(el.dataset.dsiQty);
+          lines[i].qty = Number(el.value || 0);
+          lines[i].amount = AccountingEngine.calcLineAmount(lines[i].qty, lines[i].rate, 0);
+          renderLines();
+        }));
+        box.querySelectorAll("[data-dsi-rate]").forEach(el => el.addEventListener("input", () => {
+          const i = Number(el.dataset.dsiRate);
+          lines[i].rate = Number(el.value || 0);
+          lines[i].amount = AccountingEngine.calcLineAmount(lines[i].qty, lines[i].rate, 0);
+          renderLines();
+        }));
+        box.querySelectorAll("[data-dsi-rm]").forEach(el => el.addEventListener("click", () => {
+          if (lines.length > 1) { lines.splice(Number(el.dataset.dsiRm), 1); renderLines(); }
+        }));
+      };
+
+      openModal(existing ? "बिक्री इनवॉइस संपादित करें" : "📤 खल-भूसी / घी बिक्री इनवॉइस (Sale Invoice)", `
+        <form id="dsi-form" class="space-y-3 text-xs">
+          <div class="grid grid-cols-3 gap-2">
+            <div><label class="block font-bold mb-1">इनवॉइस नं.</label><input type="text" id="dsi-no" value="${escHtml(invNo)}" required class="input-field font-bold bg-slate-50" /></div>
+            <div><label class="block font-bold mb-1">तारीख*</label><input type="date" id="dsi-date" value="${existing?.date || state.selectedDate}" required class="input-field" /></div>
+            <div><label class="block font-bold mb-1">माध्यम</label><select id="dsi-mode" class="input-field">${accs.map(a => `<option value="${a.id}" ${existing?.paymentMode === a.id ? "selected" : ""}>${escHtml(a.name)}</option>`).join("")}</select></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div><label class="block font-bold mb-1">सप्लायर कोड (CODE)</label><input type="text" id="dsi-code" value="${escHtml(initCode)}" placeholder="जैसे: 033" class="input-field font-extrabold text-purple-900" /></div>
+            <div class="col-span-2">
+              <label class="block font-bold mb-1">दूध सप्लायर / ग्राहक का नाम* (कोड से ऑटो-मैच)</label>
+              <select id="dsi-sup-sel" class="input-field font-bold">
+                ${supNames.map(n => `<option value="${escHtml(n)}" ${n === initSup ? "selected" : ""}>${escHtml(n)}</option>`).join("")}
+                <option value="__NEW__">➕ नया नाम लिखें</option>
+              </select>
+              <input type="text" id="dsi-sup-new" placeholder="नया नाम लिखें..." class="hidden input-field mt-1 border-emerald-400" />
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between"><label class="font-bold">बेचा गया सामान (फिक्स सेल रेट ऑटो-फिल)</label><button type="button" id="dsi-add-line" class="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">+ और आइटम जोड़ें</button></div>
+            <div id="dsi-lines-box" class="space-y-1.5"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div><label class="block font-bold mb-1">कुल बिल (₹)</label><input type="number" id="dsi-total" readonly class="input-field bg-slate-100 font-extrabold text-emerald-700" /></div>
+            <div><label class="block font-bold mb-1">नकद मिला (₹)</label><input type="number" step="any" min="0" id="dsi-paid" value="${existing?.paid ?? 0}" class="input-field font-bold" /></div>
+            <div><label class="block font-bold mb-1">दूध खाते में कटौती (₹)</label><input type="number" id="dsi-due" readonly class="input-field bg-slate-100 font-extrabold text-red-600" /></div>
+          </div>
+          <label class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl p-2 cursor-pointer font-bold text-emerald-900">
+            <input type="checkbox" id="dsi-auto-wa" checked class="w-4 h-4 accent-emerald-700" />
+            <span>📲 सेव करते ही सप्लायर को पूरा हिसाब (दूध + खल/भूसी कटौती) एक ही मैसेज में भेजें</span>
+          </label>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="dsi-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary bg-emerald-700 hover:bg-emerald-800">💾 बिक्री बिल सेव करें</button></div>
+        </form>`);
+
+      renderLines();
+      const codeInp = document.getElementById("dsi-code");
+      const supSel = document.getElementById("dsi-sup-sel");
+      const supNew = document.getElementById("dsi-sup-new");
+
+      codeInp.addEventListener("input", () => {
+        const m = findSupplierByCode(codeInp.value);
+        if (m && [...supSel.options].some(o => o.value === m.name)) {
+          supSel.value = m.name;
+          supNew.classList.add("hidden");
+        }
+      });
+      supSel.addEventListener("change", () => {
+        if (supSel.value === "__NEW__") { supNew.classList.remove("hidden"); supNew.required = true; supNew.focus(); }
+        else {
+          supNew.classList.add("hidden"); supNew.required = false;
+          const m = findSupplierByName(supSel.value);
+          if (m && m.code) codeInp.value = m.code;
+        }
+      });
+      document.getElementById("dsi-add-line").addEventListener("click", () => {
+        const p = prods[0] || { id: "", name: "", unit: "कट्टा", saleRate: 0 };
+        lines.push({ productId: p.id, name: p.name, unit: p.unit, qty: 1, rate: p.saleRate || 0, amount: p.saleRate || 0 });
+        renderLines();
+      });
+      document.getElementById("dsi-paid").addEventListener("input", renderLines);
+      document.getElementById("dsi-cancel").addEventListener("click", closeModal);
+      document.getElementById("dsi-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const validLines = lines.filter(l => l.name && Number(l.qty) > 0);
+        if (!validLines.length) return showToast("कम से कम 1 सामान जोड़ें।", "error");
+        const supplierName = supSel.value === "__NEW__" ? supNew.value.trim() : supSel.value.trim();
+        const supplierCode = codeInp.value.trim();
+        const supObj = (supplierCode ? findSupplierByCode(supplierCode) : null) || findSupplierByName(supplierName);
+        const totalAmount = AccountingEngine.round2(validLines.reduce((s, x) => s + Number(x.amount || 0), 0));
+        const paid = AccountingEngine.round2(document.getElementById("dsi-paid").value || 0);
+        const payload = {
+          invoiceNo: document.getElementById("dsi-no").value.trim(),
+          date: document.getElementById("dsi-date").value,
+          supplierCode,
+          supplierName,
+          supplierPhone: supObj?.mobile || supObj?.phone || "",
+          items: validLines,
+          totalAmount,
+          paid,
+          due: AccountingEngine.calcRemaining(totalAmount, paid),
+          paymentMode: document.getElementById("dsi-mode").value
+        };
+        if (await saveDoc("dairyProdSales", payload, existing?.id || null)) {
+          const sendWa = document.getElementById("dsi-auto-wa")?.checked;
+          closeModal();
+          if (sendWa) {
+            openWhatsAppMessage(payload.supplierPhone, buildCombinedSupplierFeedMsg(payload));
+          }
+        }
+      });
+    }
+
+    function renderDairyFeedStoreTab(container) {
+      ensureDefaultDairyProducts();
+      const stockRows = calcDairyProductStock();
+      const sales = [...(state.data.dairyProdSales || [])].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      const purchases = [...(state.data.dairyProdPurchases || [])].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      const activeSub = state.feedStoreSub || "stock";
+
+      const totStockVal = AccountingEngine.round2(stockRows.reduce((s, x) => s + x.stockValue, 0));
+      const totSalesAmt = AccountingEngine.round2(sales.reduce((s, x) => s + Number(x.totalAmount || 0), 0));
+      const totPurchAmt = AccountingEngine.round2(purchases.reduce((s, x) => s + Number(x.totalAmount || 0), 0));
+
+      container.innerHTML = `
+        <div class="grid grid-cols-3 gap-2.5">
+          <div class="kpi-card"><div class="text-[11px] text-slate-500">📦 कुल स्टॉक मूल्य</div><div class="text-base font-extrabold text-teal-800">${fmtRs(totStockVal)}</div></div>
+          <div class="kpi-card"><div class="text-[11px] text-slate-500">📥 कुल खरीद (Purchase)</div><div class="text-base font-extrabold text-amber-700">${fmtRs(totPurchAmt)}</div></div>
+          <div class="kpi-card"><div class="text-[11px] text-slate-500">📤 कुल बिक्री (Sale)</div><div class="text-base font-extrabold text-emerald-700">${fmtRs(totSalesAmt)}</div></div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 bg-white rounded-2xl border border-slate-200 p-3">
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" data-fs-sub="stock" class="subtab-btn ${activeSub === "stock" ? "active" : ""}">📦 प्रोडक्ट मास्टर व स्टॉक</button>
+            <button type="button" data-fs-sub="sales" class="subtab-btn ${activeSub === "sales" ? "active" : ""}">📤 बिक्री इनवॉइस (${sales.length})</button>
+            <button type="button" data-fs-sub="purchases" class="subtab-btn ${activeSub === "purchases" ? "active" : ""}">📥 खरीद इनवॉइस (${purchases.length})</button>
+            <button type="button" data-fs-sub="reports" class="subtab-btn ${activeSub === "reports" ? "active" : ""}">📊 सेल/परचेज/स्टॉक रिपोर्ट</button>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" id="fs-new-sale-btn" class="btn-primary text-xs py-1.5 px-3 bg-emerald-700 hover:bg-emerald-800">+ बिक्री बिल (कोड से)</button>
+            <button type="button" id="fs-new-purch-btn" class="btn-secondary text-xs py-1.5 px-3 border-amber-400 text-amber-900 bg-amber-50">+ खरीद इनवॉइस</button>
+            <button type="button" id="fs-new-prod-btn" class="btn-secondary text-xs py-1.5 px-3 border-purple-300 text-purple-900">+ नया प्रोडक्ट</button>
+          </div>
+        </div>
+
+        <div id="fs-sub-body" class="space-y-3"></div>`;
+
+      container.querySelectorAll("[data-fs-sub]").forEach(b => b.addEventListener("click", () => {
+        state.feedStoreSub = b.dataset.fsSub;
+        renderCurrentView();
+      }));
+      document.getElementById("fs-new-sale-btn").addEventListener("click", () => openDairyProdSaleInvoiceModal());
+      document.getElementById("fs-new-purch-btn").addEventListener("click", () => openDairyProdPurchaseInvoiceModal());
+      document.getElementById("fs-new-prod-btn").addEventListener("click", () => openDairyProductModal());
+
+      const body = document.getElementById("fs-sub-body");
+      if (activeSub === "stock") {
+        body.innerHTML = `
+          <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+            <table class="data-table">
+              <thead><tr><th>प्रोडक्ट (Master)</th><th>खरीद दर</th><th>फिक्स सेल रेट</th><th>खरीदा</th><th>बेचा</th><th>वर्तमान स्टॉक</th><th>स्टॉक मूल्य</th><th>क्रिया</th></tr></thead>
+              <tbody>${stockRows.map(p => `
+                <tr>
+                  <td class="font-bold">${escHtml(p.name)} <span class="text-[11px] text-slate-400">(${escHtml(p.unit)})</span></td>
+                  <td class="text-xs">₹${p.purchaseRate}</td>
+                  <td class="text-xs font-extrabold text-emerald-700">₹${p.saleRate}</td>
+                  <td class="text-xs text-amber-700 font-bold">+${p.boughtQty}</td>
+                  <td class="text-xs text-blue-700 font-bold">-${p.soldQty}</td>
+                  <td class="font-extrabold ${p.lowStock ? "text-red-600" : "text-teal-800"}">${p.currentStock} ${escHtml(p.unit)} ${p.lowStock ? "⚠️" : ""}</td>
+                  <td class="font-bold">${fmtRs(p.stockValue)}</td>
+                  <td class="whitespace-nowrap">
+                    <button type="button" data-edit-dp="${p.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button>
+                    <button type="button" data-del-dp="${p.id}" class="text-xs font-bold text-red-600">Delete</button>
+                  </td>
+                </tr>`).join("")}</tbody>
+            </table>
+          </div>`;
+        body.querySelectorAll("[data-edit-dp]").forEach(b => b.addEventListener("click", () => {
+          const it = state.data.dairyProducts.find(x => x.id === b.dataset.editDp);
+          if (it) openDairyProductModal(it);
+        }));
+        body.querySelectorAll("[data-del-dp]").forEach(b => b.addEventListener("click", () => deleteDocById("dairyProducts", b.dataset.delDp, "प्रोडक्ट")));
+      } else if (activeSub === "sales") {
+        body.innerHTML = `
+          <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+            <table class="data-table">
+              <thead><tr><th>बिल नं. / तारीख</th><th>कोड / सप्लायर</th><th>सामान विवरण</th><th>कुल बिल</th><th>नकद</th><th>दूध खाते में</th><th>क्रिया</th></tr></thead>
+              <tbody>${sales.length ? sales.map(s => `
+                <tr>
+                  <td><div class="font-bold text-xs">${escHtml(s.invoiceNo)}</div><div class="text-[11px] text-slate-500">${escHtml(s.date)}</div></td>
+                  <td><span class="px-1.5 py-0.5 rounded bg-purple-100 text-purple-900 font-extrabold text-[11px] mr-1">#${escHtml(s.supplierCode || "-")}</span><span class="font-bold">${escHtml(s.supplierName)}</span></td>
+                  <td class="text-xs">${(s.items || []).map(it => `${escHtml(it.name)} (${it.qty}×₹${it.rate})`).join(", ")}</td>
+                  <td class="font-extrabold text-emerald-700">${fmtRs(s.totalAmount)}</td>
+                  <td class="text-teal-700 font-semibold">${fmtRs(s.paid || 0)}</td>
+                  <td class="font-bold text-red-600">${fmtRs(s.due || 0)}</td>
+                  <td class="whitespace-nowrap">
+                    <button type="button" data-wa-dsi="${s.id}" class="text-xs font-bold text-emerald-700 mr-2" title="संयुक्त हिसाब WhatsApp भेजें">📲</button>
+                    <button type="button" data-pdf-dsi="${s.id}" class="text-xs font-bold text-purple-700 mr-2">PDF</button>
+                    <button type="button" data-edit-dsi="${s.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button>
+                    <button type="button" data-del-dsi="${s.id}" class="text-xs font-bold text-red-600">Del</button>
+                  </td>
+                </tr>`).join("") : `<tr><td colspan="7" class="text-center py-8 text-slate-400">अभी कोई खल-भूसी बिक्री बिल नहीं बना है।</td></tr>`}</tbody>
+            </table>
+          </div>`;
+        body.querySelectorAll("[data-wa-dsi]").forEach(b => b.addEventListener("click", () => {
+          const s = sales.find(x => x.id === b.dataset.waDsi);
+          if (s) openWhatsAppMessage(s.supplierPhone || findSupplierByCode(s.supplierCode)?.mobile || "", buildCombinedSupplierFeedMsg(s));
+        }));
+        body.querySelectorAll("[data-pdf-dsi]").forEach(b => b.addEventListener("click", () => {
+          const s = sales.find(x => x.id === b.dataset.pdfDsi);
+          if (s) printDairyProdInvoicePDF(s, "sale");
+        }));
+        body.querySelectorAll("[data-edit-dsi]").forEach(b => b.addEventListener("click", () => {
+          const s = sales.find(x => x.id === b.dataset.editDsi);
+          if (s) openDairyProdSaleInvoiceModal(s);
+        }));
+        body.querySelectorAll("[data-del-dsi]").forEach(b => b.addEventListener("click", () => deleteDocById("dairyProdSales", b.dataset.delDsi, "बिक्री इनवॉइस")));
+      } else if (activeSub === "purchases") {
+        body.innerHTML = `
+          <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+            <table class="data-table">
+              <thead><tr><th>बिल नं. / तारीख</th><th>डीलर / मिल</th><th>खरीदा सामान</th><th>कुल बिल</th><th>भुगतान</th><th>बाकी</th><th>क्रिया</th></tr></thead>
+              <tbody>${purchases.length ? purchases.map(p => `
+                <tr>
+                  <td><div class="font-bold text-xs">${escHtml(p.invoiceNo)}</div><div class="text-[11px] text-slate-500">${escHtml(p.date)}</div></td>
+                  <td class="font-bold">${escHtml(p.partyName)}</td>
+                  <td class="text-xs">${(p.items || []).map(it => `${escHtml(it.name)} (${it.qty}×₹${it.rate})`).join(", ")}</td>
+                  <td class="font-extrabold text-amber-700">${fmtRs(p.totalAmount)}</td>
+                  <td class="text-emerald-700 font-semibold">${fmtRs(p.paid || 0)}</td>
+                  <td class="font-bold text-red-600">${fmtRs(p.due || 0)}</td>
+                  <td class="whitespace-nowrap">
+                    <button type="button" data-pdf-dpi="${p.id}" class="text-xs font-bold text-purple-700 mr-2">PDF</button>
+                    <button type="button" data-edit-dpi="${p.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button>
+                    <button type="button" data-del-dpi="${p.id}" class="text-xs font-bold text-red-600">Del</button>
+                  </td>
+                </tr>`).join("") : `<tr><td colspan="7" class="text-center py-8 text-slate-400">अभी कोई खरीद इनवॉइस नहीं है।</td></tr>`}</tbody>
+            </table>
+          </div>`;
+        body.querySelectorAll("[data-pdf-dpi]").forEach(b => b.addEventListener("click", () => {
+          const p = purchases.find(x => x.id === b.dataset.pdfDpi);
+          if (p) printDairyProdInvoicePDF(p, "purchase");
+        }));
+        body.querySelectorAll("[data-edit-dpi]").forEach(b => b.addEventListener("click", () => {
+          const p = purchases.find(x => x.id === b.dataset.editDpi);
+          if (p) openDairyProdPurchaseInvoiceModal(p);
+        }));
+        body.querySelectorAll("[data-del-dpi]").forEach(b => b.addEventListener("click", () => deleteDocById("dairyProdPurchases", b.dataset.delDpi, "खरीद इनवॉइस")));
+      } else {
+        // Reports Sub-Tab: Sale Report, Purchase Report, Item-Wise Stock Report (PDF + Excel)
+        body.innerHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            <div class="kpi-card space-y-2">
+              <div class="font-bold text-sm text-emerald-900">📤 खल-भूसी बिक्री रिपोर्ट (Sale Report)</div>
+              <div class="text-slate-500">कुल बिल: <b>${sales.length}</b> • कुल बिक्री: <b>${fmtRs(totSalesAmt)}</b></div>
+              <div class="flex gap-2">
+                <button type="button" id="fs-rep-sale-pdf" class="btn-primary flex-1 text-xs py-1.5">📄 PDF</button>
+                <button type="button" id="fs-rep-sale-xlsx" class="btn-secondary flex-1 text-xs py-1.5 border-emerald-400 text-emerald-900">📊 Excel</button>
+              </div>
+            </div>
+            <div class="kpi-card space-y-2">
+              <div class="font-bold text-sm text-amber-900">📥 खल-भूसी खरीद रिपोर्ट (Purchase Report)</div>
+              <div class="text-slate-500">कुल बिल: <b>${purchases.length}</b> • कुल खरीद: <b>${fmtRs(totPurchAmt)}</b></div>
+              <div class="flex gap-2">
+                <button type="button" id="fs-rep-purch-pdf" class="btn-primary flex-1 text-xs py-1.5 bg-amber-600 hover:bg-amber-700">📄 PDF</button>
+                <button type="button" id="fs-rep-purch-xlsx" class="btn-secondary flex-1 text-xs py-1.5 border-amber-400 text-amber-900">📊 Excel</button>
+              </div>
+            </div>
+            <div class="kpi-card space-y-2">
+              <div class="font-bold text-sm text-teal-900">📦 आइटम-वाइज स्टॉक रिपोर्ट (Stock Report)</div>
+              <div class="text-slate-500">कुल आइटम: <b>${stockRows.length}</b> • स्टॉक मूल्य: <b>${fmtRs(totStockVal)}</b></div>
+              <div class="flex gap-2">
+                <button type="button" id="fs-rep-stock-pdf" class="btn-primary flex-1 text-xs py-1.5 bg-teal-700 hover:bg-teal-800">📄 PDF</button>
+                <button type="button" id="fs-rep-stock-xlsx" class="btn-secondary flex-1 text-xs py-1.5 border-teal-400 text-teal-900">📊 Excel</button>
+              </div>
+            </div>
+          </div>`;
+
+        const saleRep = {
+          title: "खल-भूसी व घी बिक्री रिपोर्ट (Dairy Product Sale Report)",
+          dateRange: todayStr(),
+          headers: ["तारीख", "बिल नं.", "कोड", "सप्लायर/ग्राहक", "सामान", "कुल बिल (₹)", "नकद (₹)", "दूध खाते में (₹)"],
+          rows: sales.map(s => [s.date, s.invoiceNo, s.supplierCode || "-", s.supplierName, (s.items || []).map(i => `${i.name}(${i.qty}×${i.rate})`).join(", "), s.totalAmount, s.paid || 0, s.due || 0]),
+          summaryLines: [`कुल बिक्री बिल: ${sales.length}`, `कुल बिक्री राशि: ${fmtRs(totSalesAmt)}`]
+        };
+        const purchRep = {
+          title: "खल-भूसी व घी खरीद रिपोर्ट (Dairy Product Purchase Report)",
+          dateRange: todayStr(),
+          headers: ["तारीख", "बिल नं.", "डीलर/मिल", "सामान", "कुल बिल (₹)", "भुगतान (₹)", "बाकी (₹)"],
+          rows: purchases.map(p => [p.date, p.invoiceNo, p.partyName, (p.items || []).map(i => `${i.name}(${i.qty}×${i.rate})`).join(", "), p.totalAmount, p.paid || 0, p.due || 0]),
+          summaryLines: [`कुल खरीद बिल: ${purchases.length}`, `कुल खरीद राशि: ${fmtRs(totPurchAmt)}`]
+        };
+        const stockRep = {
+          title: "आइटम-वाइज स्टॉक रिपोर्ट (Dairy Feed & Ghee Stock)",
+          dateRange: todayStr(),
+          headers: ["प्रोडक्ट", "इकाई", "खरीद दर (₹)", "फिक्स सेल रेट (₹)", "खरीदा", "बेचा", "वर्तमान स्टॉक", "स्टॉक मूल्य (₹)"],
+          rows: stockRows.map(p => [p.name, p.unit, p.purchaseRate, p.saleRate, p.boughtQty, p.soldQty, p.currentStock, p.stockValue]),
+          summaryLines: [`कुल आइटम: ${stockRows.length}`, `कुल स्टॉक मूल्य: ${fmtRs(totStockVal)}`]
+        };
+        document.getElementById("fs-rep-sale-pdf").addEventListener("click", () => exportTableToPDF(saleRep));
+        document.getElementById("fs-rep-sale-xlsx").addEventListener("click", () => exportSingleReportExcel(saleRep));
+        document.getElementById("fs-rep-purch-pdf").addEventListener("click", () => exportTableToPDF(purchRep));
+        document.getElementById("fs-rep-purch-xlsx").addEventListener("click", () => exportSingleReportExcel(purchRep));
+        document.getElementById("fs-rep-stock-pdf").addEventListener("click", () => exportTableToPDF(stockRep));
+        document.getElementById("fs-rep-stock-xlsx").addEventListener("click", () => exportSingleReportExcel(stockRep));
+      }
     }
 
     function renderDairyPLTab(container) {
