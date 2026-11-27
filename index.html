@@ -189,6 +189,7 @@
             <button type="button" id="header-diary-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-purple-300 text-purple-800 bg-purple-50" title="निजी डायरी (बोलकर लिखें व सुनें)">📓 <span class="hidden lg:inline">डायरी</span></button>
             <button type="button" id="header-sms-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-indigo-300 text-indigo-800 bg-indigo-50" title="SMS / UPI मैसेज से ऑटो-एंट्री">📲 <span class="hidden lg:inline">SMS</span></button>
             <button type="button" id="header-staff-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-amber-300 text-amber-900 bg-amber-50" title="Owner / Staff लॉक मोड">👑 <span class="hidden lg:inline">Owner</span></button>
+            <button type="button" id="header-user-btn" class="hidden shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-teal-300 text-teal-900 bg-teal-50" title="यूज़र अकाउंट / लॉगआउट">👤 <span id="header-user-label">User</span></button>
             <button type="button" id="header-calc-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px]" title="स्मार्ट कैलकुलेटर">🧮</button>
             <button type="button" id="header-voice-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-amber-300 text-amber-800 bg-amber-50" title="बोलकर एंट्री करें">🎙️ <span class="hidden sm:inline">बोलकर लिखें</span></button>
             <button type="button" id="quick-search-open-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px]" title="पूरे ऐप में खोजें">🔍 <span class="hidden sm:inline">खोजें</span></button>
@@ -214,7 +215,24 @@
   </div>
 
   <!-- Generic Form / View Modal -->
-  <div id="app-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <!-- Multi-User Login Gate Overlay -->
+  <div id="multiuser-login-overlay" class="hidden fixed inset-0 z-[95] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-teal-200">
+      <div class="text-center space-y-1">
+        <div class="text-4xl">👥</div>
+        <h2 class="text-lg font-extrabold text-teal-950">MahaIndustries — यूज़र लॉगिन</h2>
+        <p class="text-xs text-slate-500">एडमिन द्वारा दिया गया यूज़रनेम और पासवर्ड डालें</p>
+      </div>
+      <form id="mu-login-form" class="space-y-3 text-xs">
+        <div><label class="block font-bold mb-1">यूज़रनेम (Username)</label><input type="text" id="mu-login-user" required placeholder="जैसे: admin या staff1" class="input-field py-2.5 text-sm font-semibold" /></div>
+        <div><label class="block font-bold mb-1">पासवर्ड (Password)</label><input type="password" id="mu-login-pass" required placeholder="••••••" class="input-field py-2.5 text-sm font-semibold" /></div>
+        <div id="mu-login-err" class="hidden text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-xl p-2.5"></div>
+        <button type="submit" class="btn-primary w-full py-2.5 text-sm">🔓 लॉगिन करें</button>
+      </form>
+    </div>
+  </div>
+
+<div id="app-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
     <div class="modal-box">
       <div class="sticky top-0 bg-white border-b border-slate-200 px-5 py-3.5 flex items-center justify-between z-10">
         <h3 id="modal-title" class="font-bold text-base text-slate-900">एंट्री</h3>
@@ -309,7 +327,7 @@
       "houseExpenses", "shopTransactions", "income", "accounts", "transfers",
       "loans", "loanPayments", "dairyProduction", "milkSales", "milkPurchases",
       "dairyExpenses", "dairyWaste", "customers", "suppliers", "animals",
-      "budgets", "recurringBills", "savingsGoals", "friendTransactions", "parchuniCustomers", "parchuniEntries", "parchuniSalesmen", "parchuniSalesmanEntries", "dairyCenters", "dairySupplies", "dairyCenterPurchases", "parchuniInventory", "parchuniBills", "animalHealth", "personalDiary", "settings"
+      "budgets", "recurringBills", "savingsGoals", "friendTransactions", "parchuniCustomers", "parchuniEntries", "parchuniSalesmen", "parchuniSalesmanEntries", "dairyCenters", "dairySupplies", "dairyCenterPurchases", "parchuniInventory", "parchuniBills", "animalHealth", "personalDiary", "appUsers", "settings"
     ];
 
     const REPORT_TYPES = [
@@ -945,7 +963,7 @@
         houseExpenses: [], shopTransactions: [], income: [], accounts: [], transfers: [],
         loans: [], loanPayments: [], dairyProduction: [], milkSales: [], milkPurchases: [],
         dairyExpenses: [], dairyWaste: [], customers: [], suppliers: [], animals: [],
-        budgets: [], recurringBills: [], savingsGoals: [], friendTransactions: [], parchuniCustomers: [], parchuniEntries: [], parchuniSalesmen: [], parchuniSalesmanEntries: [], dairyCenters: [], dairySupplies: [], dairyCenterPurchases: [], parchuniInventory: [], parchuniBills: [], animalHealth: [], personalDiary: [], settings: []
+        budgets: [], recurringBills: [], savingsGoals: [], friendTransactions: [], parchuniCustomers: [], parchuniEntries: [], parchuniSalesmen: [], parchuniSalesmanEntries: [], dairyCenters: [], dairySupplies: [], dairyCenterPurchases: [], parchuniInventory: [], parchuniBills: [], animalHealth: [], personalDiary: [], appUsers: [], settings: []
       }
     };
 
@@ -2652,7 +2670,7 @@
             <button type="button" id="add-sale-btn" class="btn-primary">+ दूध बिक्री जोड़ें</button>
           </div>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto"><table class="data-table"><thead><tr><th>तारीख</th><th>ग्राहक</th><th>प्रकार</th><th>मात्रा × दर</th><th>राशि</th><th>मिला</th><th>बाकी</th><th>मोड</th><th>क्रिया</th></tr></thead><tbody>${rows.length ? rows.map(r => { const due = AccountingEngine.calcRemaining(r.amount, r.paid); return `<tr><td>${escHtml(r.date)}</td><td class="font-bold">${escHtml(r.customerName)}</td><td class="text-xs">${escHtml(r.milkType || "भैंस")}</td><td class="text-xs">${fmtL(r.quantity)} × ₹${r.rate}</td><td class="font-bold text-emerald-700">${fmtRs(r.amount)}</td><td class="text-teal-700 font-semibold">${fmtRs(r.paid)}</td><td class="${due > 0 ? "text-red-600 font-bold" : "text-slate-400"}">${fmtRs(due)}</td><td class="text-xs">${escHtml(accountNameById(r.paymentMode))}</td><td class="whitespace-nowrap"><button type="button" data-edit-ms="${r.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button><button type="button" data-del-ms="${r.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`; }).join("") : `<tr><td colspan="9" class="text-center py-8 text-slate-400">कोई दूध बिक्री दर्ज नहीं है।</td></tr>`}</tbody></table></div>`;
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto"><table class="data-table"><thead><tr><th>तारीख</th><th>ग्राहक</th><th>प्रकार</th><th>FAT</th><th>SNF</th><th>मात्रा × दर</th><th>राशि</th><th>मिला</th><th>बाकी</th><th>मोड</th><th>क्रिया</th></tr></thead><tbody>${rows.length ? rows.map(r => { const due = AccountingEngine.calcRemaining(r.amount, r.paid); return `<tr><td>${escHtml(r.date)}</td><td class="font-bold">${escHtml(r.customerName)}</td><td class="text-xs">${escHtml(r.milkType || "भैंस")}</td><td class="text-xs font-bold text-purple-800">${r.fat ? escHtml(String(r.fat)) : "-"}</td><td class="text-xs font-bold text-indigo-800">${r.snf ? escHtml(String(r.snf)) : "-"}</td><td class="text-xs">${fmtL(r.quantity)} × ₹${r.rate}</td><td class="font-bold text-emerald-700">${fmtRs(r.amount)}</td><td class="text-teal-700 font-semibold">${fmtRs(r.paid)}</td><td class="${due > 0 ? "text-red-600 font-bold" : "text-slate-400"}">${fmtRs(due)}</td><td class="text-xs">${escHtml(accountNameById(r.paymentMode))}</td><td class="whitespace-nowrap"><button type="button" data-edit-ms="${r.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button><button type="button" data-del-ms="${r.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`; }).join("") : `<tr><td colspan="11" class="text-center py-8 text-slate-400">कोई दूध बिक्री दर्ज नहीं है।</td></tr>`}</tbody></table></div>`;
       document.getElementById("add-sale-btn").addEventListener("click", () => openMilkSaleModal());
       document.getElementById("ms-quick-parchi-inp")?.addEventListener("change", async (e) => {
         const f = e.target.files?.[0];
@@ -2671,6 +2689,8 @@
             milkType: parsed.milkType || "मिक्स",
             quantity: parsed.quantity || "",
             rate: parsed.rate || "",
+            fat: parsed.fat || "",
+            snf: parsed.snf || "",
             amount: parsed.amount || 0,
             note: noteParts.join(" | "),
             slipPhoto: photoUrl
@@ -2727,7 +2747,11 @@
             <div><label class="block text-xs font-bold mb-1">बाकी (₹)</label><input type="number" step="any" id="ms-due" value="${src.amount ? AccountingEngine.calcRemaining(src.amount, src.paid || 0) : 0}" readonly class="input-field bg-slate-100 font-bold text-red-600" /></div>
             <div><label class="block text-xs font-bold mb-1">माध्यम</label><select id="ms-mode" class="input-field">${accs.map(a => `<option value="${a.id}" ${src.paymentMode === a.id ? "selected" : ""}>${escHtml(a.name)}</option>`).join("")}</select></div>
           </div>
-          <div><label class="block text-xs font-bold mb-1">नोट (FAT / SNF / केंद्र)</label><input type="text" id="ms-note" value="${escHtml(src.note || "")}" class="input-field" /></div>
+          <div class="grid grid-cols-2 gap-2">
+            <div><label class="block text-xs font-bold mb-1">FAT (%)</label><input type="number" step="any" min="0" id="ms-fat" value="${src.fat ?? ""}" placeholder="जैसे: 4.0" class="input-field font-bold text-purple-900" /></div>
+            <div><label class="block text-xs font-bold mb-1">SNF (%)</label><input type="number" step="any" min="0" id="ms-snf" value="${src.snf ?? ""}" placeholder="जैसे: 7.9" class="input-field font-bold text-indigo-900" /></div>
+          </div>
+          <div><label class="block text-xs font-bold mb-1">नोट (केंद्र / शिफ्ट)</label><input type="text" id="ms-note" value="${escHtml(src.note || "")}" class="input-field" /></div>
           <div class="flex justify-end gap-2 pt-2"><button type="button" id="ms-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">💾 सेव करें</button></div>
         </form>`);
 
@@ -2772,6 +2796,8 @@
           if (parsed.milkType) document.getElementById("ms-type").value = parsed.milkType;
           if (parsed.quantity) document.getElementById("ms-qty").value = parsed.quantity;
           if (parsed.rate) document.getElementById("ms-rate").value = parsed.rate;
+          if (parsed.fat) document.getElementById("ms-fat").value = parsed.fat;
+          if (parsed.snf) document.getElementById("ms-snf").value = parsed.snf;
           const noteParts = [];
           if (parsed.fat) noteParts.push(`FAT:${parsed.fat}`);
           if (parsed.snf) noteParts.push(`SNF:${parsed.snf}`);
@@ -2798,6 +2824,8 @@
           milkType: document.getElementById("ms-type").value,
           quantity: AccountingEngine.round2(document.getElementById("ms-qty").value),
           rate: AccountingEngine.round2(document.getElementById("ms-rate").value),
+          fat: AccountingEngine.round2(document.getElementById("ms-fat").value || 0),
+          snf: AccountingEngine.round2(document.getElementById("ms-snf").value || 0),
           paid: AccountingEngine.round2(document.getElementById("ms-paid").value || 0),
           paymentMode: document.getElementById("ms-mode").value,
           note: document.getElementById("ms-note").value.trim()
@@ -2815,6 +2843,14 @@
         if (await saveDoc("milkSales", payload, existing?.id || null)) closeModal();
       });
     }
+    function getMilkPurchaseSupplierNames() {
+      const set = new Set();
+      (state.data.suppliers || []).forEach(s => { if (s.name && s.name.trim()) set.add(s.name.trim()); });
+      (state.data.milkPurchases || []).forEach(p => { if (p.supplierName && p.supplierName.trim()) set.add(p.supplierName.trim()); });
+      if (!set.size) set.add("Rajkumar Dada");
+      return [...set];
+    }
+
     function renderMilkPurchaseTab(container) {
       const rows = [...state.data.milkPurchases].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
       const totalL = AccountingEngine.round2(rows.reduce((s, x) => s + (Number(x.quantity) || 0), 0));
@@ -2822,50 +2858,164 @@
       container.innerHTML = `
         <div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
           <div><div class="text-xs text-slate-500">कुल बाहर से दूध खरीद (${rows.length} एंट्री)</div><div class="text-lg font-bold text-amber-700">${fmtL(totalL)} • ${fmtRs(totalAmt)}</div></div>
-          <button type="button" id="add-mp-btn" class="btn-primary">+ दूध खरीद जोड़ें</button>
+          <div class="flex flex-wrap gap-2">
+            <label class="btn-secondary text-xs border-amber-400 text-amber-900 bg-amber-50 cursor-pointer inline-flex items-center gap-1.5 font-bold">
+              📸 पर्ची स्कैन (Auto-Fill)
+              <input type="file" id="mp-quick-parchi-inp" accept="image/*" capture="environment" class="hidden" />
+            </label>
+            <button type="button" id="add-mp-btn" class="btn-primary">+ दूध खरीद जोड़ें</button>
+          </div>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto"><table class="data-table"><thead><tr><th>तारीख</th><th>सप्लायर</th><th>प्रकार</th><th>मात्रा × दर</th><th>कुल राशि</th><th>भुगतान</th><th>बाकी</th><th>क्रिया</th></tr></thead><tbody>${rows.length ? rows.map(r => { const due = AccountingEngine.calcRemaining(r.amount, r.paid); return `<tr><td>${escHtml(r.date)}</td><td class="font-bold">${escHtml(r.supplierName)}</td><td class="text-xs">${escHtml(r.milkType || "भैंस")}</td><td class="text-xs">${fmtL(r.quantity)} × ₹${r.rate}</td><td class="font-bold text-amber-700">${fmtRs(r.amount)}</td><td class="text-emerald-700 font-semibold">${fmtRs(r.paid)}</td><td class="${due > 0 ? "text-red-600 font-bold" : "text-slate-400"}">${fmtRs(due)}</td><td class="whitespace-nowrap"><button type="button" data-edit-mp="${r.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button><button type="button" data-del-mp="${r.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`; }).join("") : `<tr><td colspan="8" class="text-center py-8 text-slate-400">कोई दूध खरीद एंट्री नहीं है।</td></tr>`}</tbody></table></div>`;
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto"><table class="data-table"><thead><tr><th>तारीख</th><th>सप्लायर</th><th>प्रकार</th><th>FAT</th><th>SNF</th><th>मात्रा × दर</th><th>कुल राशि</th><th>भुगतान</th><th>बाकी</th><th>क्रिया</th></tr></thead><tbody>${rows.length ? rows.map(r => { const due = AccountingEngine.calcRemaining(r.amount, r.paid); return `<tr><td>${escHtml(r.date)}</td><td class="font-bold">${escHtml(r.supplierName)}</td><td class="text-xs">${escHtml(r.milkType || "भैंस")}</td><td class="text-xs font-bold text-purple-800">${r.fat ? escHtml(String(r.fat)) : "-"}</td><td class="text-xs font-bold text-indigo-800">${r.snf ? escHtml(String(r.snf)) : "-"}</td><td class="text-xs">${fmtL(r.quantity)} × ₹${r.rate}</td><td class="font-bold text-amber-700">${fmtRs(r.amount)}</td><td class="text-emerald-700 font-semibold">${fmtRs(r.paid)}</td><td class="${due > 0 ? "text-red-600 font-bold" : "text-slate-400"}">${fmtRs(due)}</td><td class="whitespace-nowrap"><button type="button" data-edit-mp="${r.id}" class="text-xs font-bold text-blue-700 mr-2">Edit</button><button type="button" data-del-mp="${r.id}" class="text-xs font-bold text-red-600">Delete</button></td></tr>`; }).join("") : `<tr><td colspan="10" class="text-center py-8 text-slate-400">कोई दूध खरीद एंट्री नहीं है।</td></tr>`}</tbody></table></div>`;
       document.getElementById("add-mp-btn").addEventListener("click", () => openMilkPurchaseModal());
+      document.getElementById("mp-quick-parchi-inp")?.addEventListener("change", async (e) => {
+        const f = e.target.files?.[0];
+        if (!f) return;
+        showToast("📸 दूध खरीद पर्ची से Date, WT, RT/LT, FAT व SNF पढ़ा जा रहा है...");
+        try {
+          const { parsed } = await scanMilkSaleParchiFile(f);
+          const noteParts = [];
+          if (parsed.shift) noteParts.push(parsed.shift);
+          if (parsed.dairyName) noteParts.push(parsed.dairyName);
+          openMilkPurchaseModal(null, {
+            date: parsed.date || state.selectedDate,
+            milkType: parsed.milkType || "मिक्स",
+            quantity: parsed.quantity || "",
+            rate: parsed.rate || "",
+            fat: parsed.fat || "",
+            snf: parsed.snf || "",
+            amount: parsed.amount || 0,
+            note: noteParts.join(" | ")
+          });
+          showToast("✅ खरीद पर्ची का पूरा डेटा (FAT/SNF सहित) भर दिया गया!");
+        } catch (err) {
+          showToast("पर्ची पढ़ने में समस्या: " + (err?.message || "त्रुटि"), "error");
+          openMilkPurchaseModal();
+        }
+      });
       container.querySelectorAll("[data-edit-mp]").forEach(b => b.addEventListener("click", () => { const it = state.data.milkPurchases.find(x => x.id === b.dataset.editMp); if (it) openMilkPurchaseModal(it); }));
       container.querySelectorAll("[data-del-mp]").forEach(b => b.addEventListener("click", () => deleteDocById("milkPurchases", b.dataset.delMp, "दूध खरीद")));
     }
 
-    function openMilkPurchaseModal(existing = null) {
-      const sups = state.data.suppliers, accs = getAccountOptions();
-      openModal(existing ? "दूध खरीद संपादित करें" : "दूध खरीद जोड़ें", `
+    function openMilkPurchaseModal(existing = null, prefill = null) {
+      const src = existing || prefill || {};
+      const accs = getAccountOptions();
+      const supNames = getMilkPurchaseSupplierNames();
+      const initialSup = (src.supplierName && src.supplierName.trim()) ? src.supplierName.trim() : supNames[0];
+      if (initialSup && !supNames.includes(initialSup)) supNames.push(initialSup);
+
+      openModal(existing ? "दूध खरीद संपादित करें" : "दूध खरीद जोड़ें (पर्ची ऑटो-फिल सहित)", `
         <form id="mp-form" class="space-y-3">
+          ${!existing ? `
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div>
+                <div class="font-bold text-amber-950">📸 पर्ची से ऑटो-फिल (Date, WT, RT/LT, FAT, SNF)</div>
+                <div id="mp-ocr-status" class="text-[11px] text-amber-800">${prefill ? "✅ पर्ची का डेटा भर दिया गया है — नीचे जांचें।" : "दूध की पर्ची की फोटो चुनें, तारीख, वजन, रेट, FAT व SNF अपने आप भर जाएगा।"}</div>
+              </div>
+              <label class="btn-primary text-xs py-1.5 px-3 cursor-pointer shrink-0 bg-amber-600 hover:bg-amber-700">
+                📷 पर्ची चुनें
+                <input type="file" id="mp-modal-parchi-inp" accept="image/*" class="hidden" />
+              </label>
+            </div>` : ""}
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="block text-xs font-bold mb-1">तारीख*</label><input type="date" id="mp-date" value="${existing?.date || state.selectedDate}" required class="input-field" /></div>
-            <div><label class="block text-xs font-bold mb-1">दूध प्रकार</label><select id="mp-type" class="input-field">${["भैंस", "गाय", "मिक्स"].map(t => `<option value="${t}" ${(existing?.milkType || "भैंस") === t ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+            <div><label class="block text-xs font-bold mb-1">तारीख (DATE)*</label><input type="date" id="mp-date" value="${src.date || state.selectedDate}" required class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">दूध प्रकार</label><select id="mp-type" class="input-field">${["भैंस", "गाय", "मिक्स"].map(t => `<option value="${t}" ${(src.milkType || "मिक्स") === t ? "selected" : ""}>${t}</option>`).join("")}</select></div>
           </div>
-          <div><label class="block text-xs font-bold mb-1">सप्लायर का नाम*</label><input type="text" list="sup-dl" id="mp-sup" value="${escHtml(existing?.supplierName || "")}" required class="input-field" /><datalist id="sup-dl">${sups.map(s => `<option value="${escHtml(s.name)}"></option>`).join("")}</datalist></div>
+          <div class="space-y-2">
+            <label class="block text-xs font-bold">सप्लायर का नाम* (नए नाम अपने आप ड्रॉपडाउन में जुड़ जाएंगे)</label>
+            <select id="mp-sup-sel" class="input-field font-bold">
+              ${supNames.map(name => `<option value="${escHtml(name)}" ${name === initialSup ? "selected" : ""}>${escHtml(name)}</option>`).join("")}
+              <option value="__NEW__">➕ नया सप्लायर जोड़ें (लिस्ट में सेव होगा)</option>
+            </select>
+            <input type="text" id="mp-sup-new" placeholder="नए सप्लायर का नाम लिखें..." class="hidden input-field border-amber-400 bg-amber-50/40" />
+          </div>
           <div class="grid grid-cols-3 gap-2">
-            <div><label class="block text-xs font-bold mb-1">मात्रा (L)*</label><input type="number" step="any" min="0.01" id="mp-qty" value="${existing?.quantity ?? ""}" required class="input-field" /></div>
-            <div><label class="block text-xs font-bold mb-1">दर (₹/L)*</label><input type="number" step="any" min="0.01" id="mp-rate" value="${existing?.rate ?? ""}" required class="input-field" /></div>
-            <div><label class="block text-xs font-bold mb-1">कुल राशि (₹)</label><input type="number" id="mp-amt" value="${existing?.amount ?? 0}" readonly class="input-field bg-slate-100 font-bold text-amber-700" /></div>
+            <div><label class="block text-xs font-bold mb-1">मात्रा / WT (L)*</label><input type="number" step="any" min="0.01" id="mp-qty" value="${src.quantity ?? ""}" required class="input-field font-bold" /></div>
+            <div><label class="block text-xs font-bold mb-1">दर / RT/LT (₹)*</label><input type="number" step="any" min="0.01" id="mp-rate" value="${src.rate ?? ""}" required class="input-field font-bold" /></div>
+            <div><label class="block text-xs font-bold mb-1">कुल राशि (₹)</label><input type="number" step="any" id="mp-amt" value="${src.amount ?? 0}" readonly class="input-field bg-slate-100 font-bold text-amber-700" /></div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div><label class="block text-xs font-bold mb-1">FAT (%)</label><input type="number" step="any" min="0" id="mp-fat" value="${src.fat ?? ""}" placeholder="जैसे: 4.0" class="input-field font-bold text-purple-900" /></div>
+            <div><label class="block text-xs font-bold mb-1">SNF (%)</label><input type="number" step="any" min="0" id="mp-snf" value="${src.snf ?? ""}" placeholder="जैसे: 7.9" class="input-field font-bold text-indigo-900" /></div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div><label class="block text-xs font-bold mb-1">भुगतान (₹)</label><input type="number" step="any" min="0" id="mp-paid" value="${existing?.paid ?? 0}" class="input-field" /></div>
-            <div><label class="block text-xs font-bold mb-1">बाकी (₹)</label><input type="number" id="mp-due" value="${existing ? AccountingEngine.calcRemaining(existing.amount, existing.paid) : 0}" readonly class="input-field bg-slate-100 font-bold text-red-600" /></div>
-            <div><label class="block text-xs font-bold mb-1">माध्यम</label><select id="mp-mode" class="input-field">${accs.map(a => `<option value="${a.id}" ${existing?.paymentMode === a.id ? "selected" : ""}>${escHtml(a.name)}</option>`).join("")}</select></div>
+            <div><label class="block text-xs font-bold mb-1">भुगतान (₹)</label><input type="number" step="any" min="0" id="mp-paid" value="${src.paid ?? 0}" class="input-field" /></div>
+            <div><label class="block text-xs font-bold mb-1">बाकी (₹)</label><input type="number" step="any" id="mp-due" value="${src.amount ? AccountingEngine.calcRemaining(src.amount, src.paid || 0) : 0}" readonly class="input-field bg-slate-100 font-bold text-red-600" /></div>
+            <div><label class="block text-xs font-bold mb-1">माध्यम</label><select id="mp-mode" class="input-field">${accs.map(a => `<option value="${a.id}" ${src.paymentMode === a.id ? "selected" : ""}>${escHtml(a.name)}</option>`).join("")}</select></div>
           </div>
-          <div><label class="block text-xs font-bold mb-1">नोट</label><input type="text" id="mp-note" value="${escHtml(existing?.note || "")}" class="input-field" /></div>
-          <div class="flex justify-end gap-2 pt-2"><button type="button" id="mp-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">सेव करें</button></div>
+          <div><label class="block text-xs font-bold mb-1">नोट (केंद्र / शिफ्ट)</label><input type="text" id="mp-note" value="${escHtml(src.note || "")}" class="input-field" /></div>
+          <div class="flex justify-end gap-2 pt-2"><button type="button" id="mp-cancel" class="btn-secondary">रद्द करें</button><button type="submit" class="btn-primary">💾 सेव करें</button></div>
         </form>`);
-      const recalc = () => { const amt = AccountingEngine.calcLineAmount(document.getElementById("mp-qty").value, document.getElementById("mp-rate").value, 0); document.getElementById("mp-amt").value = amt; document.getElementById("mp-due").value = AccountingEngine.calcRemaining(amt, document.getElementById("mp-paid").value); };
+
+      const supSel = document.getElementById("mp-sup-sel");
+      const supNew = document.getElementById("mp-sup-new");
+      const recalc = () => {
+        const amt = AccountingEngine.calcLineAmount(document.getElementById("mp-qty").value, document.getElementById("mp-rate").value, 0);
+        document.getElementById("mp-amt").value = amt;
+        document.getElementById("mp-due").value = AccountingEngine.calcRemaining(amt, document.getElementById("mp-paid").value);
+      };
+      recalc();
+
+      supSel.addEventListener("change", () => {
+        if (supSel.value === "__NEW__") { supNew.classList.remove("hidden"); supNew.required = true; supNew.focus(); }
+        else { supNew.classList.add("hidden"); supNew.required = false; }
+      });
+
+      document.getElementById("mp-modal-parchi-inp")?.addEventListener("change", async (e) => {
+        const f = e.target.files?.[0];
+        if (!f) return;
+        const stEl = document.getElementById("mp-ocr-status");
+        if (stEl) stEl.textContent = "⏳ पर्ची पढ़ी जा रही है (0%)...";
+        try {
+          const { parsed } = await scanMilkSaleParchiFile(f, pct => { if (stEl) stEl.textContent = `⏳ पर्ची पढ़ी जा रही है (${pct}%)...`; });
+          if (parsed.date) document.getElementById("mp-date").value = parsed.date;
+          if (parsed.milkType) document.getElementById("mp-type").value = parsed.milkType;
+          if (parsed.quantity) document.getElementById("mp-qty").value = parsed.quantity;
+          if (parsed.rate) document.getElementById("mp-rate").value = parsed.rate;
+          if (parsed.fat) document.getElementById("mp-fat").value = parsed.fat;
+          if (parsed.snf) document.getElementById("mp-snf").value = parsed.snf;
+          const noteParts = [];
+          if (parsed.shift) noteParts.push(parsed.shift);
+          if (parsed.dairyName) noteParts.push(parsed.dairyName);
+          if (noteParts.length) document.getElementById("mp-note").value = noteParts.join(" | ");
+          recalc();
+          if (stEl) stEl.textContent = `✅ पढ़ लिया: Date ${parsed.date || "-"}, WT ${parsed.quantity || 0} L, RT/LT ₹${parsed.rate || 0}, FAT ${parsed.fat || "-"}, SNF ${parsed.snf || "-"}`;
+          showToast("✅ खरीद पर्ची से Date, WT, Rate, FAT व SNF भर दिया गया!");
+        } catch (err) {
+          if (stEl) stEl.textContent = "⚠️ पर्ची साफ नहीं पढ़ी गई, कृपया हाथ से जांचें।";
+          showToast("पर्ची पढ़ने में समस्या: " + (err?.message || ""), "error");
+        }
+      });
+
       ["mp-qty", "mp-rate", "mp-paid"].forEach(id => document.getElementById(id).addEventListener("input", recalc));
       document.getElementById("mp-cancel").addEventListener("click", closeModal);
       document.getElementById("mp-form").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const payload = { date: document.getElementById("mp-date").value, supplierName: document.getElementById("mp-sup").value.trim(), milkType: document.getElementById("mp-type").value, quantity: AccountingEngine.round2(document.getElementById("mp-qty").value), rate: AccountingEngine.round2(document.getElementById("mp-rate").value), paid: AccountingEngine.round2(document.getElementById("mp-paid").value || 0), paymentMode: document.getElementById("mp-mode").value, note: document.getElementById("mp-note").value.trim() };
+        const chosenSup = supSel.value === "__NEW__" ? supNew.value.trim() : supSel.value.trim();
+        const payload = {
+          date: document.getElementById("mp-date").value,
+          supplierName: chosenSup,
+          milkType: document.getElementById("mp-type").value,
+          quantity: AccountingEngine.round2(document.getElementById("mp-qty").value),
+          rate: AccountingEngine.round2(document.getElementById("mp-rate").value),
+          fat: AccountingEngine.round2(document.getElementById("mp-fat").value || 0),
+          snf: AccountingEngine.round2(document.getElementById("mp-snf").value || 0),
+          paid: AccountingEngine.round2(document.getElementById("mp-paid").value || 0),
+          paymentMode: document.getElementById("mp-mode").value,
+          note: document.getElementById("mp-note").value.trim()
+        };
         payload.amount = AccountingEngine.calcLineAmount(payload.quantity, payload.rate, 0);
         payload.due = AccountingEngine.calcRemaining(payload.amount, payload.paid);
         const err = AccountingEngine.validateEntry({ date: payload.date, amount: payload.amount, requiredFields: [{ label: "सप्लायर का नाम", value: payload.supplierName }] });
         if (err) { showToast(err, "error"); return; }
+
+        const existsSup = (state.data.suppliers || []).some(s => (s.name || "").trim().toLowerCase() === chosenSup.toLowerCase());
+        if (!existsSup && chosenSup) {
+          await saveDoc("suppliers", { name: chosenSup, phone: "", address: "", notes: "दूध खरीद से स्वतः जोड़ा गया" });
+        }
         if (await saveDoc("milkPurchases", payload, existing?.id || null)) closeModal();
       });
     }
-
     function renderMilkReconTab(container) {
       const dt = state.selectedDate;
       const produced = state.data.dairyProduction.filter(x => x.date === dt).reduce((s, x) => s + (Number(x.totalMilk) || 0), 0);
@@ -3137,13 +3287,13 @@
         summaryLines = [`कुल उत्पादन: ${fmtL(list.reduce((s, x) => s + (Number(x.totalMilk) || 0), 0))}`];
       } else if (type === "dairy_sales") {
         const list = d.milkSales.filter(x => inRange(x.date) && matchQ(`${x.customerName}`));
-        headers = ["तारीख", "ग्राहक", "मात्रा (L)", "दर (₹)", "राशि (₹)", "प्राप्त (₹)", "बाकी (₹)"];
-        rows = list.map(x => [x.date, x.customerName, x.quantity, x.rate, x.amount, x.paid || 0, AccountingEngine.calcRemaining(x.amount, x.paid)]);
+        headers = ["तारीख", "ग्राहक", "FAT", "SNF", "मात्रा (L)", "दर (₹)", "राशि (₹)", "प्राप्त (₹)", "बाकी (₹)"];
+        rows = list.map(x => [x.date, x.customerName, x.fat || "-", x.snf || "-", x.quantity, x.rate, x.amount, x.paid || 0, AccountingEngine.calcRemaining(x.amount, x.paid)]);
         summaryLines = [`कुल बिक्री: ${fmtRs(list.reduce((s, x) => s + (Number(x.amount) || 0), 0))}`];
       } else if (type === "dairy_purchase") {
         const list = d.milkPurchases.filter(x => inRange(x.date) && matchQ(`${x.supplierName}`));
-        headers = ["तारीख", "सप्लायर", "मात्रा (L)", "दर (₹)", "राशि (₹)", "भुगतान (₹)", "बाकी (₹)"];
-        rows = list.map(x => [x.date, x.supplierName, x.quantity, x.rate, x.amount, x.paid || 0, AccountingEngine.calcRemaining(x.amount, x.paid)]);
+        headers = ["तारीख", "सप्लायर", "FAT", "SNF", "मात्रा (L)", "दर (₹)", "राशि (₹)", "भुगतान (₹)", "बाकी (₹)"];
+        rows = list.map(x => [x.date, x.supplierName, x.fat || "-", x.snf || "-", x.quantity, x.rate, x.amount, x.paid || 0, AccountingEngine.calcRemaining(x.amount, x.paid)]);
         summaryLines = [`कुल खरीद: ${fmtRs(list.reduce((s, x) => s + (Number(x.amount) || 0), 0))}`];
       } else if (type === "dairy_expense") {
         const list = d.dairyExpenses.filter(x => inRange(x.date) && matchCat(x.category) && matchQ(`${x.category} ${x.item}`));
@@ -7399,6 +7549,205 @@
     }
 
     // =========================================================================
+    // 11H. MULTI-USER ADMIN & CONCURRENT LOGIN LIMIT ENGINE
+    // =========================================================================
+    const MultiUserAuth = {
+      getDeviceId() {
+        let id = localStorage.getItem("maha_device_uid_v1");
+        if (!id) {
+          id = "dev_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36);
+          localStorage.setItem("maha_device_uid_v1", id);
+        }
+        return id;
+      },
+      isEnabled() {
+        return localStorage.getItem("maha_multiuser_on_v1") === "1";
+      },
+      getCurrentSession() {
+        try { return JSON.parse(localStorage.getItem("maha_active_user_v1") || "null"); } catch (e) { return null; }
+      },
+      evaluateLogin(users, username, password, deviceId, deviceName = "Device") {
+        const uNorm = String(username || "").trim().toLowerCase();
+        const pNorm = String(password || "");
+        const user = (users || []).find(u => (u.username || "").trim().toLowerCase() === uNorm && u.password === pNorm);
+        if (!user) return { ok: false, error: "गलत यूज़रनेम या पासवर्ड!" };
+        const maxLogins = Math.max(1, Number(user.maxLogins) || 2);
+        const sessions = Array.isArray(user.activeSessions) ? [...user.activeSessions] : [];
+        const existingIdx = sessions.findIndex(s => s.deviceId === deviceId);
+        const now = new Date().toISOString();
+        if (existingIdx >= 0) {
+          sessions[existingIdx] = { ...sessions[existingIdx], deviceName, lastSeen: now };
+        } else {
+          if (sessions.length >= maxLogins) {
+            return {
+              ok: false,
+              error: `🚫 लॉगिन सीमा पूरी (${sessions.length}/${maxLogins})! इस पासवर्ड से एक समय में अधिकतम ${maxLogins} यूज़र ही लॉगिन कर सकते हैं। एडमिन से पुराने डिवाइस लॉगआउट करवाएं।`
+            };
+          }
+          sessions.push({ deviceId, deviceName, loginAt: now, lastSeen: now });
+        }
+        return { ok: true, user: { ...user, maxLogins, activeSessions: sessions } };
+      },
+      async login(username, password) {
+        const deviceId = this.getDeviceId();
+        const res = this.evaluateLogin(state.data.appUsers || [], username, password, deviceId, getDeviceName());
+        if (!res.ok) return res;
+        await saveDoc("appUsers", res.user, res.user.id);
+        const sess = { id: res.user.id, username: res.user.username, name: res.user.name, role: res.user.role, maxLogins: res.user.maxLogins, deviceId };
+        localStorage.setItem("maha_active_user_v1", JSON.stringify(sess));
+        if (res.user.role === "staff") {
+          localStorage.setItem("maha_staff_mode_v1", "1");
+        } else {
+          localStorage.setItem("maha_staff_mode_v1", "0");
+        }
+        applyStaffModeUI();
+        this.updateUI();
+        return { ok: true, user: res.user };
+      },
+      async logout() {
+        const sess = this.getCurrentSession();
+        const deviceId = this.getDeviceId();
+        if (sess && Array.isArray(state.data.appUsers)) {
+          const u = state.data.appUsers.find(x => x.id === sess.id);
+          if (u) {
+            const nextSessions = (u.activeSessions || []).filter(s => s.deviceId !== deviceId);
+            await saveDoc("appUsers", { ...u, activeSessions: nextSessions }, u.id);
+          }
+        }
+        localStorage.removeItem("maha_active_user_v1");
+        this.updateUI();
+        showToast("आप सफलतापूर्वक लॉगआउट हो गए।");
+      },
+      updateUI() {
+        const enabled = this.isEnabled();
+        const sess = this.getCurrentSession();
+        const overlay = document.getElementById("multiuser-login-overlay");
+        const hdrBtn = document.getElementById("header-user-btn");
+        const hdrLbl = document.getElementById("header-user-label");
+        if (overlay) {
+          const mustLock = enabled && !sess && (state.data.appUsers || []).length > 0;
+          overlay.classList.toggle("hidden", !mustLock);
+        }
+        if (hdrBtn) {
+          hdrBtn.classList.toggle("hidden", !enabled || !sess);
+          if (sess && hdrLbl) hdrLbl.textContent = `${sess.name || sess.username} (${sess.role === "admin" ? "Admin" : "User"})`;
+        }
+      }
+    };
+
+    function openMultiUserAdminModal() {
+      const users = state.data.appUsers || [];
+      const enabled = MultiUserAuth.isEnabled();
+      openModal("👥 मल्टी-यूज़र व लॉगिन लिमिट कंट्रोल (Admin)", `
+        <div class="space-y-4 text-xs">
+          <div class="flex flex-wrap items-center justify-between gap-2 bg-teal-50 border border-teal-200 rounded-xl p-3">
+            <div>
+              <div class="font-bold text-teal-950">🔐 मल्टी-यूज़र लॉगिन स्क्रीन</div>
+              <div class="text-[11px] text-slate-600">चालू करने पर ऐप खोलते ही यूज़रनेम व पासवर्ड मांगा जाएगा और डिवाइस सीमा लागू होगी।</div>
+            </div>
+            <button type="button" id="mu-toggle-gate-btn" class="btn-primary text-xs py-1.5 px-3 ${enabled ? "bg-rose-600 hover:bg-rose-700" : "bg-teal-700 hover:bg-teal-800"}">${enabled ? "🟢 चालू है (बंद करें)" : "⚪ बंद है (चालू करें)"}</button>
+          </div>
+
+          <form id="mu-create-user-form" class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2.5">
+            <div class="font-bold text-slate-800">➕ नया यूज़र व पासवर्ड लिमिट बनाएं</div>
+            <div class="grid grid-cols-2 gap-2">
+              <input type="text" id="mu-new-name" placeholder="पूरा नाम (जैसे: रमेश)" required class="input-field py-1.5 text-xs" />
+              <input type="text" id="mu-new-uname" placeholder="यूज़रनेम (जैसे: ramesh)" required class="input-field py-1.5 text-xs" />
+              <input type="text" id="mu-new-pass" placeholder="पासवर्ड सेट करें" required class="input-field py-1.5 text-xs font-bold" />
+              <select id="mu-new-role" class="input-field py-1.5 text-xs">
+                <option value="staff">👨‍💼 यूज़र / स्टाफ</option>
+                <option value="admin">👑 एडमिन (Full Access)</option>
+              </select>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <label class="font-bold text-slate-700">एक साथ अधिकतम लॉगिन सीमा (डिफ़ॉल्ट 2):</label>
+              <input type="number" id="mu-new-max" min="1" max="20" value="2" required class="input-field py-1.5 text-xs w-20 font-bold text-center" />
+              <button type="submit" class="btn-primary text-xs py-1.5 px-4 ml-auto">💾 यूज़र बनाएं</button>
+            </div>
+          </form>
+
+          <div class="space-y-2">
+            <div class="font-bold text-slate-800">मौजूदा यूज़र्स (${users.length})</div>
+            ${users.length ? users.map(u => {
+              const activeCnt = (u.activeSessions || []).length;
+              const maxL = Number(u.maxLogins) || 2;
+              return `
+                <div class="bg-white border border-slate-200 rounded-xl p-2.5 space-y-1.5">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <span class="font-bold text-slate-900">${escHtml(u.name || u.username)}</span>
+                      <span class="text-[11px] text-slate-500">(@${escHtml(u.username)})</span>
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${u.role === "admin" ? "bg-purple-100 text-purple-800" : "bg-amber-100 text-amber-900"}">${u.role === "admin" ? "👑 Admin" : "👨‍💼 User"}</span>
+                    </div>
+                    <span class="text-[11px] font-extrabold px-2 py-0.5 rounded-full ${activeCnt >= maxL ? "bg-rose-100 text-rose-800" : "bg-emerald-100 text-emerald-800"}">लॉगिन: ${activeCnt} / ${maxL}</span>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100 text-[11px]">
+                    <span>पासवर्ड: <b>${escHtml(u.password)}</b></span>
+                    <button type="button" data-mu-limit="${u.id}" class="ml-auto px-2 py-0.5 rounded bg-blue-50 text-blue-800 font-bold">⚙️ लिमिट बदलें</button>
+                    <button type="button" data-mu-clear="${u.id}" class="px-2 py-0.5 rounded bg-amber-50 text-amber-900 font-bold">🔌 सभी लॉगआउट</button>
+                    <button type="button" data-mu-del="${u.id}" class="px-2 py-0.5 rounded text-red-600 font-bold">🗑️ हटाएं</button>
+                  </div>
+                </div>`;
+            }).join("") : `<div class="text-center text-slate-400 py-4">अभी कोई यूज़र नहीं बना है। ऊपर पहले एक <b>Admin</b> यूज़र बनाएं, फिर अन्य यूज़र जोड़ें।</div>`}
+          </div>
+        </div>`);
+
+      document.getElementById("mu-toggle-gate-btn")?.addEventListener("click", () => {
+        if (!enabled && !(state.data.appUsers || []).some(u => u.role === "admin")) {
+          return showToast("मल्टी-यूज़र लॉगिन चालू करने से पहले कम से कम 1 Admin यूज़र बनाएं।", "error");
+        }
+        localStorage.setItem("maha_multiuser_on_v1", enabled ? "0" : "1");
+        MultiUserAuth.updateUI();
+        closeModal(true);
+        openMultiUserAdminModal();
+        showToast(enabled ? "मल्टी-यूज़र लॉगिन बंद किया गया।" : "मल्टी-यूज़र लॉगिन चालू हो गया!");
+      });
+
+      document.getElementById("mu-create-user-form")?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("mu-new-name").value.trim();
+        const username = document.getElementById("mu-new-uname").value.trim();
+        const password = document.getElementById("mu-new-pass").value.trim();
+        const role = document.getElementById("mu-new-role").value;
+        const maxLogins = Math.max(1, Number(document.getElementById("mu-new-max").value || 2));
+        if (!username || password.length < 3) return showToast("सही यूज़रनेम और कम से कम 3 अक्षर का पासवर्ड डालें।", "error");
+        if ((state.data.appUsers || []).some(u => (u.username || "").toLowerCase() === username.toLowerCase())) {
+          return showToast("यह यूज़रनेम पहले से मौजूद है।", "error");
+        }
+        await saveDoc("appUsers", { name: name || username, username, password, role, maxLogins, activeSessions: [] });
+        closeModal(true);
+        openMultiUserAdminModal();
+      });
+
+      document.querySelectorAll("[data-mu-limit]").forEach(b => b.addEventListener("click", async () => {
+        const u = (state.data.appUsers || []).find(x => x.id === b.dataset.muLimit);
+        if (!u) return;
+        const nextMax = ((Number(u.maxLogins) || 2) % 5) + 1;
+        await saveDoc("appUsers", { ...u, maxLogins: nextMax }, u.id);
+        showToast(`${u.username} की लॉगिन सीमा बदलकर ${nextMax} कर दी गई।`);
+        closeModal(true);
+        openMultiUserAdminModal();
+      }));
+
+      document.querySelectorAll("[data-mu-clear]").forEach(b => b.addEventListener("click", async () => {
+        const u = (state.data.appUsers || []).find(x => x.id === b.dataset.muClear);
+        if (!u) return;
+        await saveDoc("appUsers", { ...u, activeSessions: [] }, u.id);
+        showToast(`${u.username} के सभी सक्रिय डिवाइस लॉगआउट हो गए!`);
+        closeModal(true);
+        openMultiUserAdminModal();
+      }));
+
+      document.querySelectorAll("[data-mu-del]").forEach(b => b.addEventListener("click", async () => {
+        const u = (state.data.appUsers || []).find(x => x.id === b.dataset.muDel);
+        if (u && await deleteDocById("appUsers", u.id, `यूज़र ${u.username}`)) {
+          closeModal(true);
+          openMultiUserAdminModal();
+        }
+      }));
+    }
+
+    // =========================================================================
     // 12. GLOBAL SEARCH MODAL
     // =========================================================================
     function openGlobalSearchModal() {
@@ -7428,6 +7777,15 @@
       const cloudOn = isCloudSyncEnabled();
 
       container.innerHTML = `
+        <!-- 0. MULTI-USER ADMIN & LOGIN LIMIT CONTROL -->
+        <div class="bg-white rounded-2xl border border-teal-200 p-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="font-bold text-base text-teal-950">👥 मल्टी-यूज़र व लॉगिन लिमिट कंट्रोल (Admin)</h3>
+            <div class="text-xs text-slate-500">नए यूज़र व पासवर्ड बनाएं और तय करें कि एक पासवर्ड से एक समय में कितने यूज़र (जैसे 2) लॉगिन कर सकते हैं।</div>
+          </div>
+          <button type="button" id="open-multiuser-admin-btn" class="btn-primary text-xs">👥 यूज़र व लिमिट मैनेज करें (${(state.data.appUsers || []).length})</button>
+        </div>
+
         <!-- 1. DAILY 8:00 AM & 7:00 PM NOTIFICATIONS -->
         <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
@@ -7565,6 +7923,7 @@
         </div>`;
 
       // Wire Notifications
+      document.getElementById("open-multiuser-admin-btn")?.addEventListener("click", openMultiUserAdminModal);
       document.getElementById("save-notif-btn").addEventListener("click", async () => {
         const obj = { enabled: document.getElementById("notif-enabled-chk").checked, morningTime: document.getElementById("notif-morn-time").value || "08:00", eveningTime: document.getElementById("notif-eve-time").value || "19:00" };
         saveNotifSettings(obj);
@@ -7838,6 +8197,29 @@
       initHardwareBackSupport();
       applyDiaryHiddenUI();
       let _logoTaps = 0, _logoTapTimer = null;
+      MultiUserAuth.updateUI();
+      document.getElementById("mu-login-form")?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const u = document.getElementById("mu-login-user").value;
+        const p = document.getElementById("mu-login-pass").value;
+        const errEl = document.getElementById("mu-login-err");
+        const res = await MultiUserAuth.login(u, p);
+        if (!res.ok) {
+          errEl.textContent = res.error;
+          errEl.classList.remove("hidden");
+        } else {
+          errEl.classList.add("hidden");
+          document.getElementById("mu-login-pass").value = "";
+          renderCurrentView();
+          showToast(`स्वागत है, ${res.user.name || res.user.username}!`);
+        }
+      });
+      document.getElementById("header-user-btn")?.addEventListener("click", async () => {
+        const sess = MultiUserAuth.getCurrentSession();
+        if (!sess) return;
+        const ok = await showConfirm("लॉगआउट पुष्टि", `क्या आप "${sess.name || sess.username}" अकाउंट से लॉगआउट करना चाहते हैं? (लॉगआउट करने पर दूसरे डिवाइस के लिए स्लॉट खाली हो जाएगा)`);
+        if (ok) await MultiUserAuth.logout();
+      });
       document.getElementById("app-header-logo-wrap")?.addEventListener("click", () => {
         _logoTaps++;
         clearTimeout(_logoTapTimer);
