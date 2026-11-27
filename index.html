@@ -200,6 +200,7 @@
       </header>
 
       <div id="staff-mode-banner" class="hidden bg-amber-500 text-white px-4 py-2 text-xs font-bold flex flex-wrap items-center justify-between gap-2 shadow-sm"><span>👨‍💼 स्टाफ मोड चालू है — प्राइवेट प्रॉफिट, नकद बैलेंस, निजी डायरी और डेटा Delete लॉक हैं।</span><button type="button" id="staff-unlock-btn" class="px-3 py-1 rounded-lg bg-white text-amber-900 font-bold text-xs shadow-sm">👑 Owner अनलॉक</button></div>
+      <div id="user-validity-banner" class="hidden bg-rose-600 text-white px-4 py-2 text-xs font-bold flex flex-wrap items-center justify-between gap-2 shadow-sm"><span id="user-validity-msg"></span><a id="user-validity-wa-btn" href="#" target="_blank" class="px-3 py-1 rounded-lg bg-white text-rose-900 font-bold text-xs shadow-sm">📲 एडमिन को अनुरोध भेजें</a></div>
       <main id="main-content" class="flex-1 p-3 sm:p-5 max-w-7xl w-full mx-auto space-y-4"></main>
     </div>
 
@@ -215,20 +216,77 @@
   </div>
 
   <!-- Generic Form / View Modal -->
-    <!-- Multi-User Login Gate Overlay -->
-  <div id="multiuser-login-overlay" class="hidden fixed inset-0 z-[95] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl border border-teal-200">
-      <div class="text-center space-y-1">
-        <div class="text-4xl">👥</div>
-        <h2 class="text-lg font-extrabold text-teal-950">MahaIndustries — यूज़र लॉगिन</h2>
-        <p class="text-xs text-slate-500">एडमिन द्वारा दिया गया यूज़रनेम और पासवर्ड डालें</p>
+    <!-- Mandatory Password Login, First-Time Admin Setup & Admin Phone OTP Overlay -->
+  <div id="multiuser-login-overlay" class="fixed inset-0 z-[95] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-teal-200 my-auto">
+      <!-- PANEL A: FIRST-TIME ADMIN SETUP (Mandatory before first use) -->
+      <div id="mu-panel-setup" class="hidden space-y-3">
+        <div class="text-center space-y-1">
+          <div class="text-4xl">👑</div>
+          <h2 class="text-lg font-extrabold text-teal-950">पहली बार एडमिन पासवर्ड सेट करें</h2>
+          <p class="text-xs text-slate-500">बिना पासवर्ड के यह ऐप नहीं खुलेगा। नीचे अपना एडमिन पासवर्ड और OTP के लिए मोबाइल नंबर सेट करें।</p>
+        </div>
+        <form id="mu-first-admin-form" class="space-y-2.5 text-xs">
+          <div class="grid grid-cols-2 gap-2">
+            <div><label class="block font-bold mb-1">एडमिन नाम*</label><input type="text" id="mu-setup-name" value="Ankit Sharma" required class="input-field py-2 text-xs font-semibold" /></div>
+            <div><label class="block font-bold mb-1">यूज़रनेम*</label><input type="text" id="mu-setup-uname" value="admin" required class="input-field py-2 text-xs font-semibold" /></div>
+          </div>
+          <div><label class="block font-bold mb-1">एडमिन मोबाइल नंबर (पासवर्ड OTP के लिए)*</label><input type="tel" id="mu-setup-phone" value="7500343487" required class="input-field py-2 text-xs font-bold" /></div>
+          <div class="grid grid-cols-2 gap-2">
+            <div><label class="block font-bold mb-1">पासवर्ड बनाएं*</label><input type="password" id="mu-setup-pass" required placeholder="कम से कम 4 अक्षर" class="input-field py-2 text-xs font-bold" /></div>
+            <div><label class="block font-bold mb-1">अधिकतम लॉगिन सीमा</label><input type="number" id="mu-setup-max" min="1" max="20" value="2" required class="input-field py-2 text-xs font-bold text-center" /></div>
+          </div>
+          <div id="mu-setup-err" class="hidden text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-xl p-2"></div>
+          <button type="submit" class="btn-primary w-full py-2.5 text-sm">🔐 एडमिन पासवर्ड सेव कर ऐप खोलें</button>
+        </form>
       </div>
-      <form id="mu-login-form" class="space-y-3 text-xs">
-        <div><label class="block font-bold mb-1">यूज़रनेम (Username)</label><input type="text" id="mu-login-user" required placeholder="जैसे: admin या staff1" class="input-field py-2.5 text-sm font-semibold" /></div>
-        <div><label class="block font-bold mb-1">पासवर्ड (Password)</label><input type="password" id="mu-login-pass" required placeholder="••••••" class="input-field py-2.5 text-sm font-semibold" /></div>
-        <div id="mu-login-err" class="hidden text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-xl p-2.5"></div>
-        <button type="submit" class="btn-primary w-full py-2.5 text-sm">🔓 लॉगिन करें</button>
-      </form>
+
+      <!-- PANEL B: MANDATORY LOGIN SCREEN -->
+      <div id="mu-panel-login" class="space-y-3">
+        <div class="text-center space-y-1">
+          <div class="text-4xl">🔐</div>
+          <h2 class="text-lg font-extrabold text-teal-950">MahaIndustries — पासवर्ड लॉगिन</h2>
+          <p class="text-xs text-slate-500">ऐप खोलने के लिए अपना यूज़रनेम और पासवर्ड डालें</p>
+        </div>
+        <form id="mu-login-form" class="space-y-3 text-xs">
+          <div><label class="block font-bold mb-1">यूज़रनेम (Username)</label><input type="text" id="mu-login-user" required placeholder="जैसे: admin या staff1" class="input-field py-2.5 text-sm font-semibold" /></div>
+          <div><label class="block font-bold mb-1">पासवर्ड (Password)</label><input type="password" id="mu-login-pass" required placeholder="••••••" class="input-field py-2.5 text-sm font-semibold" /></div>
+          <div id="mu-login-err" class="hidden text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-xl p-2.5"></div>
+          <button type="submit" class="btn-primary w-full py-2.5 text-sm">🔓 लॉगिन करें</button>
+        </form>
+        <div class="text-center pt-2 border-t border-slate-100">
+          <button type="button" id="mu-open-otp-btn" class="text-xs font-bold text-amber-700 underline">🔑 पासवर्ड भूल गए / बदलें (Admin Phone OTP)</button>
+        </div>
+      </div>
+
+      <!-- PANEL C: ADMIN PHONE OTP FORGOT / CHANGE PASSWORD -->
+      <div id="mu-panel-otp" class="hidden space-y-3 text-xs">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-extrabold text-amber-900">🔑 एडमिन फोन OTP से पासवर्ड बदलें</h2>
+          <button type="button" id="mu-back-to-login-btn" class="text-xs font-bold text-slate-500 underline">← वापस लॉगिन</button>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-amber-950">
+          पासवर्ड रीसेट करने के लिए पहले <b>एडमिन के रजिस्टर्ड नंबर (<span id="mu-otp-admin-phone-lbl">7500343487</span>)</b> पर OTP भेजें, फिर मिला हुआ 6-अंकों का OTP डालकर नया पासवर्ड सेट करें।
+        </div>
+        <div>
+          <label class="block font-bold mb-1">1. किस यूज़र का पासवर्ड बदलना है (Username)*</label>
+          <input type="text" id="mu-otp-uname" placeholder="जैसे: admin या staff1" class="input-field py-2 text-xs font-semibold" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="mu-send-wa-otp-btn" class="btn-primary bg-emerald-600 hover:bg-emerald-700 text-xs py-2">📲 WhatsApp से Admin OTP</button>
+          <button type="button" id="mu-send-sms-otp-btn" class="btn-secondary border-blue-300 text-blue-900 text-xs py-2">💬 SMS से Admin OTP</button>
+        </div>
+        <div id="mu-otp-sent-box" class="hidden bg-teal-50 border border-teal-200 rounded-xl p-2.5 text-teal-950 space-y-1">
+          <div class="font-bold">✅ रिक्वेस्ट कोड तैयार: <code id="mu-otp-req-code" class="text-sm font-extrabold text-purple-900"></code></div>
+          <div class="text-[11px]">एडमिन के नंबर पर संदेश भेजा जा रहा है। एडमिन से मिला <b>6-अंकों का OTP</b> नीचे डालें:</div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div><label class="block font-bold mb-1">2. 6-अंकों का Admin OTP*</label><input type="text" inputmode="numeric" maxlength="6" id="mu-otp-code-inp" placeholder="6-digit OTP" class="input-field py-2 text-sm font-extrabold tracking-widest text-center" /></div>
+          <div><label class="block font-bold mb-1">3. नया पासवर्ड*</label><input type="password" id="mu-otp-new-pass" placeholder="नया पासवर्ड" class="input-field py-2 text-xs font-bold" /></div>
+        </div>
+        <div id="mu-otp-err" class="hidden text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-xl p-2"></div>
+        <button type="button" id="mu-verify-otp-save-btn" class="btn-primary w-full bg-purple-700 hover:bg-purple-800 py-2.5 text-xs">✅ OTP सत्यापित करें व नया पासवर्ड सेव करें</button>
+      </div>
     </div>
   </div>
 
@@ -7552,6 +7610,7 @@
     // 11H. MULTI-USER ADMIN & CONCURRENT LOGIN LIMIT ENGINE
     // =========================================================================
     const MultiUserAuth = {
+      pendingOtpReq: null,
       getDeviceId() {
         let id = localStorage.getItem("maha_device_uid_v1");
         if (!id) {
@@ -7560,17 +7619,84 @@
         }
         return id;
       },
-      isEnabled() {
-        return localStorage.getItem("maha_multiuser_on_v1") === "1";
+      getAdminPhone() {
+        return localStorage.getItem("maha_admin_otp_phone_v1") || "7500343487";
+      },
+      setAdminPhone(phone) {
+        const clean = String(phone || "").replace(/\D/g, "").slice(-10) || "7500343487";
+        localStorage.setItem("maha_admin_otp_phone_v1", clean);
+        return clean;
       },
       getCurrentSession() {
-        try { return JSON.parse(localStorage.getItem("maha_active_user_v1") || "null"); } catch (e) { return null; }
+        try { return JSON.parse(sessionStorage.getItem("maha_active_session_v2") || "null"); } catch (e) { return null; }
       },
-      evaluateLogin(users, username, password, deviceId, deviceName = "Device") {
+      // Deterministic 6-digit Admin OTP tied to (RequestCode + Username + AdminPhone)
+      computeAdminOtp(reqCode, username, adminPhone) {
+        const str = `MAHA_OTP_V2::${String(reqCode || "").trim()}::${String(username || "").trim().toLowerCase()}::${String(adminPhone || "").replace(/\D/g, "").slice(-10)}`;
+        let h = 2166136261;
+        for (let i = 0; i < str.length; i++) {
+          h ^= str.charCodeAt(i);
+          h = Math.imul(h, 16777619) >>> 0;
+        }
+        return String(100000 + (h % 900000));
+      },
+      createOtpRequest(username) {
+        const reqCode = String(100000 + Math.floor(Math.random() * 900000));
+        const adminPhone = this.getAdminPhone();
+        const expectedOtp = this.computeAdminOtp(reqCode, username, adminPhone);
+        this.pendingOtpReq = {
+          reqCode,
+          username: String(username || "").trim().toLowerCase(),
+          expectedOtp,
+          adminPhone,
+          expiresAt: Date.now() + 10 * 60 * 1000
+        };
+        return this.pendingOtpReq;
+      },
+      verifyOtpAndReset(users, enteredOtp, newPassword) {
+        const req = this.pendingOtpReq;
+        if (!req) return { ok: false, error: "पहले 'WhatsApp/SMS से Admin OTP' बटन दबाकर OTP मंगवाएं।" };
+        if (Date.now() > req.expiresAt) return { ok: false, error: "OTP की समय-सीमा (10 मिनट) समाप्त हो गई। नया OTP मंगवाएं।" };
+        if (String(enteredOtp || "").trim() !== req.expectedOtp) {
+          return { ok: false, error: "गलत 6-अंकों का OTP! कृपया एडमिन के फोन पर आया सही OTP डालें।" };
+        }
+        if (String(newPassword || "").trim().length < 4) {
+          return { ok: false, error: "नया पासवर्ड कम से कम 4 अक्षर/अंक का होना चाहिए।" };
+        }
+        const user = (users || []).find(u => (u.username || "").trim().toLowerCase() === req.username);
+        if (!user) return { ok: false, error: "यह यूज़रनेम मौजूद नहीं है।" };
+        return { ok: true, user: { ...user, password: String(newPassword).trim() } };
+      },
+      addDaysToDateStr(baseDateStr, days) {
+        const d = baseDateStr ? new Date(baseDateStr + "T00:00:00") : new Date();
+        if (isNaN(d.getTime())) return todayStr();
+        d.setDate(d.getDate() + Number(days || 0));
+        return d.toISOString().slice(0, 10);
+      },
+      checkUserValidity(user, nowDateStr = null) {
+        if (!user || user.role === "admin" || !user.validUntil || user.validUntil === "LIFETIME") {
+          return { expired: false, lifetime: true, daysLeft: Infinity, validUntil: "LIFETIME" };
+        }
+        const today = nowDateStr || todayStr();
+        const tMs = new Date(today + "T00:00:00").getTime();
+        const eMs = new Date(String(user.validUntil).slice(0, 10) + "T00:00:00").getTime();
+        const daysLeft = Math.ceil((eMs - tMs) / 86400000);
+        return { expired: daysLeft < 0, lifetime: false, daysLeft, validUntil: String(user.validUntil).slice(0, 10) };
+      },
+      evaluateLogin(users, username, password, deviceId, deviceName = "Device", nowDateStr = null) {
         const uNorm = String(username || "").trim().toLowerCase();
         const pNorm = String(password || "");
         const user = (users || []).find(u => (u.username || "").trim().toLowerCase() === uNorm && u.password === pNorm);
         if (!user) return { ok: false, error: "गलत यूज़रनेम या पासवर्ड!" };
+        const valInfo = this.checkUserValidity(user, nowDateStr);
+        if (valInfo.expired) {
+          const ph = this.getAdminPhone ? this.getAdminPhone() : "7500343487";
+          return {
+            ok: false,
+            expired: true,
+            error: `⛔ आपकी ऐप वैधता (${valInfo.validUntil}) समाप्त हो चुकी है! कृपया एडमिन (${ph}) से अपनी समय-सीमा बढ़वाएं।`
+          };
+        }
         const maxLogins = Math.max(1, Number(user.maxLogins) || 2);
         const sessions = Array.isArray(user.activeSessions) ? [...user.activeSessions] : [];
         const existingIdx = sessions.findIndex(s => s.deviceId === deviceId);
@@ -7594,12 +7720,8 @@
         if (!res.ok) return res;
         await saveDoc("appUsers", res.user, res.user.id);
         const sess = { id: res.user.id, username: res.user.username, name: res.user.name, role: res.user.role, maxLogins: res.user.maxLogins, deviceId };
-        localStorage.setItem("maha_active_user_v1", JSON.stringify(sess));
-        if (res.user.role === "staff") {
-          localStorage.setItem("maha_staff_mode_v1", "1");
-        } else {
-          localStorage.setItem("maha_staff_mode_v1", "0");
-        }
+        sessionStorage.setItem("maha_active_session_v2", JSON.stringify(sess));
+        localStorage.setItem("maha_staff_mode_v1", res.user.role === "staff" ? "1" : "0");
         applyStaffModeUI();
         this.updateUI();
         return { ok: true, user: res.user };
@@ -7614,42 +7736,202 @@
             await saveDoc("appUsers", { ...u, activeSessions: nextSessions }, u.id);
           }
         }
-        localStorage.removeItem("maha_active_user_v1");
+        sessionStorage.removeItem("maha_active_session_v2");
         this.updateUI();
-        showToast("आप सफलतापूर्वक लॉगआउट हो गए।");
+        showToast("🔒 आप लॉगआउट हो गए — ऐप लॉक हो गया है।");
+      },
+      showPanel(panelName) {
+        ["setup", "login", "otp"].forEach(p => {
+          document.getElementById(`mu-panel-${p}`)?.classList.toggle("hidden", p !== panelName);
+        });
+        const phoneLbl = document.getElementById("mu-otp-admin-phone-lbl");
+        if (phoneLbl) phoneLbl.textContent = this.getAdminPhone();
       },
       updateUI() {
-        const enabled = this.isEnabled();
+        const users = state.data.appUsers || [];
         const sess = this.getCurrentSession();
         const overlay = document.getElementById("multiuser-login-overlay");
         const hdrBtn = document.getElementById("header-user-btn");
         const hdrLbl = document.getElementById("header-user-label");
         if (overlay) {
-          const mustLock = enabled && !sess && (state.data.appUsers || []).length > 0;
-          overlay.classList.toggle("hidden", !mustLock);
+          if (!sess) {
+            overlay.classList.remove("hidden");
+            this.showPanel(users.length === 0 ? "setup" : "login");
+          } else {
+            overlay.classList.add("hidden");
+          }
         }
         if (hdrBtn) {
-          hdrBtn.classList.toggle("hidden", !enabled || !sess);
-          if (sess && hdrLbl) hdrLbl.textContent = `${sess.name || sess.username} (${sess.role === "admin" ? "Admin" : "User"})`;
+          hdrBtn.classList.toggle("hidden", !sess);
+          if (sess && hdrLbl) hdrLbl.textContent = `${sess.name || sess.username}`;
+        }
+        // Check active user's validity & show advance warning banner/notification if <= 5 days left
+        const vBan = document.getElementById("user-validity-banner");
+        if (vBan) {
+          if (sess && sess.role !== "admin") {
+            const liveU = (state.data.appUsers || []).find(x => x.id === sess.id) || sess;
+            const vInfo = this.checkUserValidity(liveU);
+            if (vInfo.expired) {
+              vBan.classList.add("hidden");
+              this.logout();
+              return;
+            } else if (!vInfo.lifetime && vInfo.daysLeft <= 5) {
+              const msg = `⚠️ आपकी ऐप वैधता केवल ${vInfo.daysLeft} दिन बाकी है (समाप्ति: ${vInfo.validUntil})। एडमिन से इसे बढ़वाएं।`;
+              document.getElementById("user-validity-msg").textContent = msg;
+              const waTxt = encodeURIComponent(`नमस्ते Admin 🙏 मेरा यूज़रनेम @${liveU.username} है। मेरी ऐप वैधता ${vInfo.validUntil} को समाप्त हो रही है, कृपया इसे बढ़ा दें।`);
+              document.getElementById("user-validity-wa-btn").href = `https://wa.me/91${this.getAdminPhone()}?text=${waTxt}`;
+              vBan.classList.remove("hidden");
+              if (typeof Notification !== "undefined" && Notification.permission === "granted" && !sessionStorage.getItem("maha_val_notif_shown")) {
+                sessionStorage.setItem("maha_val_notif_shown", "1");
+                try { new Notification("MahaIndustries — वैधता समाप्त होने वाली है", { body: msg }); } catch (e) {}
+              }
+            } else {
+              vBan.classList.add("hidden");
+            }
+          } else {
+            vBan.classList.add("hidden");
+          }
+        }
+        if (sess && typeof AutoBackupEngine !== "undefined") {
+          AutoBackupEngine.checkAndRunWeeklyAutoBackup(sess);
+        }
+      }
+    };
+
+    // =========================================================================
+    // 11I. 7-DAY AUTOMATIC DATA BACKUP ENGINE (USER PHONE + SYSTEM + ADMIN)
+    // =========================================================================
+    const AutoBackupEngine = {
+      INTERVAL_DAYS: 7,
+      getLastBackupTs() {
+        return Number(localStorage.getItem("maha_last_auto_backup_ts_v1") || 0);
+      },
+      isBackupDue(lastTs, nowTs = Date.now()) {
+        if (!lastTs) return false; // First launch sets baseline; manual or 7 days later triggers auto-backup
+        return (nowTs - lastTs) >= (this.INTERVAL_DAYS * 86400000);
+      },
+      daysUntilNext(lastTs, nowTs = Date.now()) {
+        if (!lastTs) return this.INTERVAL_DAYS;
+        const rem = (this.INTERVAL_DAYS * 86400000) - (nowTs - lastTs);
+        return Math.max(0, Math.ceil(rem / 86400000));
+      },
+      buildFullSnapshot(sess, isAdminMaster = false) {
+        return {
+          format: isAdminMaster ? "MAHA_ADMIN_ALL_USERS_MASTER_BACKUP_V1" : "MAHA_USER_AUTO_BACKUP_V1",
+          app: "MahaIndustries Household Expenses",
+          createdAt: new Date().toISOString(),
+          date: todayStr(),
+          user: sess ? { username: sess.username, name: sess.name, role: sess.role } : { username: "local", role: "admin" },
+          adminPhone: MultiUserAuth.getAdminPhone(),
+          data: state.data
+        };
+      },
+      downloadSnapshotFile(snap, prefix = "MahaHisab_AutoBackup") {
+        const uname = (snap.user?.username || "data").replace(/[^a-zA-Z0-9_-]/g, "");
+        const fname = `${prefix}_${uname}_${todayStr()}.json`;
+        const blob = new Blob([JSON.stringify(snap, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fname;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 1500);
+        return fname;
+      },
+      async saveBackupToLocalArchive(snap) {
+        try {
+          const hist = JSON.parse(localStorage.getItem("maha_auto_backup_history_v1") || "[]");
+          hist.unshift({ date: snap.date, createdAt: snap.createdAt, user: snap.user?.username || "admin", sizeKB: Math.max(1, Math.round(JSON.stringify(snap).length / 1024)) });
+          localStorage.setItem("maha_auto_backup_history_v1", JSON.stringify(hist.slice(0, 10)));
+        } catch (e) {}
+        if (typeof DiaryVaultIDB !== "undefined") {
+          try { await DiaryVaultIDB.set("latest_app_backup", snap); } catch (e) {}
+        }
+        // If Cloud Sync is enabled, also push snapshot to Firebase RTDB so Admin gets every user's backup!
+        if (isCloudSyncEnabled() && cloudUser && navigator.onLine) {
+          const uKey = (snap.user?.username || "user").replace(/[.#$\[\]\/]/g, "_");
+          privateRtdbRest(`backups/${uKey}/latest`, "PUT", snap).catch(() => {});
+        }
+      },
+      async runBackupNow(sess, isAdminMaster = false, autoMode = false) {
+        const snap = this.buildFullSnapshot(sess, isAdminMaster);
+        await this.saveBackupToLocalArchive(snap);
+        const fname = this.downloadSnapshotFile(snap, isAdminMaster ? "MahaHisab_Admin_AllUsers_Backup" : "MahaHisab_7Day_AutoBackup");
+        localStorage.setItem("maha_last_auto_backup_ts_v1", String(Date.now()));
+        showToast(autoMode ? `🔄 7-दिन का ऑटो-बैकअप फोन में सेव हो गया (${fname})!` : `✅ पूरा बैकअप डाउनलोड हो गया (${fname})!`);
+        if (autoMode && typeof Notification !== "undefined" && Notification.permission === "granted") {
+          try { new Notification("MahaIndustries — 7-दिन ऑटो-बैकअप पूरा", { body: `आपका डेटा सुरक्षित सेव हो गया: ${fname}` }); } catch (e) {}
+        }
+        return snap;
+      },
+      async checkAndRunWeeklyAutoBackup(sess) {
+        if (sessionStorage.getItem("maha_autobackup_checked_v1")) return;
+        sessionStorage.setItem("maha_autobackup_checked_v1", "1");
+        const lastTs = this.getLastBackupTs();
+        if (!lastTs) {
+          localStorage.setItem("maha_last_auto_backup_ts_v1", String(Date.now()));
+          return;
+        }
+        if (this.isBackupDue(lastTs)) {
+          await this.runBackupNow(sess, sess?.role === "admin", true);
         }
       }
     };
 
     function openMultiUserAdminModal() {
       const users = state.data.appUsers || [];
-      const enabled = MultiUserAuth.isEnabled();
-      openModal("👥 मल्टी-यूज़र व लॉगिन लिमिट कंट्रोल (Admin)", `
+      const adminPhone = MultiUserAuth.getAdminPhone();
+      const sess = MultiUserAuth.getCurrentSession();
+      if (sess && sess.role !== "admin") {
+        return showToast("सिर्फ Admin ही यूज़र, वैधता और मास्टर बैकअप मैनेज कर सकते हैं।", "error");
+      }
+      const lastBkTs = AutoBackupEngine.getLastBackupTs();
+      const lastBkStr = lastBkTs ? new Date(lastBkTs).toLocaleDateString("hi-IN") : "आज सेट किया गया";
+      const nextDays = AutoBackupEngine.daysUntilNext(lastBkTs);
+
+      openModal("👥 एडमिन कंट्रोल — यूज़र, वैधता, OTP व 7-दिन बैकअप", `
         <div class="space-y-4 text-xs">
-          <div class="flex flex-wrap items-center justify-between gap-2 bg-teal-50 border border-teal-200 rounded-xl p-3">
-            <div>
-              <div class="font-bold text-teal-950">🔐 मल्टी-यूज़र लॉगिन स्क्रीन</div>
-              <div class="text-[11px] text-slate-600">चालू करने पर ऐप खोलते ही यूज़रनेम व पासवर्ड मांगा जाएगा और डिवाइस सीमा लागू होगी।</div>
+          <!-- Admin Master All-Users Backup & 7-Day Auto-Backup Status -->
+          <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div class="font-bold text-emerald-950">🔄 7-दिन ऑटो-बैकअप व सभी यूज़र्स का एडमिन बैकअप</div>
+                <div class="text-[11px] text-emerald-800">आखिरी बैकअप: <b>${escHtml(lastBkStr)}</b> • अगला ऑटो-बैकअप: <b>${nextDays} दिन में</b> (सभी यूज़र्स के फोन/सिस्टम में अपने आप)</div>
+              </div>
             </div>
-            <button type="button" id="mu-toggle-gate-btn" class="btn-primary text-xs py-1.5 px-3 ${enabled ? "bg-rose-600 hover:bg-rose-700" : "bg-teal-700 hover:bg-teal-800"}">${enabled ? "🟢 चालू है (बंद करें)" : "⚪ बंद है (चालू करें)"}</button>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" id="mu-admin-master-bk-btn" class="btn-primary text-xs py-1.5 px-3 bg-emerald-700 hover:bg-emerald-800">💾 सभी यूज़र्स का पूरा बैकअप लें</button>
+              <button type="button" id="mu-admin-wa-bk-btn" class="btn-secondary text-xs py-1.5 px-3 border-emerald-400 text-emerald-900">📲 एडमिन WhatsApp पर सूचित करें</button>
+              <label class="btn-secondary text-xs py-1.5 px-3 border-blue-300 text-blue-900 cursor-pointer inline-flex items-center">📂 बैकअप रिस्टोर <input type="file" id="mu-admin-restore-inp" accept=".json" class="hidden" /></label>
+            </div>
           </div>
 
+          <!-- Admin OTP Mobile Number -->
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
+            <div class="font-bold text-amber-950">📱 एडमिन OTP मोबाइल नंबर (पासवर्ड Forget/Change के लिए)</div>
+            <div class="flex gap-2">
+              <input type="tel" id="mu-admin-phone-inp" value="${escHtml(adminPhone)}" placeholder="10 अंकों का नंबर" class="input-field py-1.5 text-xs font-bold" />
+              <button type="button" id="mu-save-phone-btn" class="btn-primary text-xs py-1.5 px-3 shrink-0 bg-amber-600 hover:bg-amber-700">💾 सेव</button>
+            </div>
+          </div>
+
+          <!-- Admin OTP Generator (Approver for Staff/User Password Reset) -->
+          <div class="bg-purple-50 border border-purple-200 rounded-xl p-3 space-y-2">
+            <div class="font-bold text-purple-950">🔑 एडमिन OTP जनरेटर (यूज़र का पासवर्ड रीसेट अप्रूव करें)</div>
+            <div class="grid grid-cols-2 gap-2">
+              <input type="text" id="mu-gen-uname" placeholder="यूज़रनेम (जैसे: staff1)" class="input-field py-1.5 text-xs" />
+              <input type="text" inputmode="numeric" maxlength="6" id="mu-gen-req" placeholder="6-digit Request Code" class="input-field py-1.5 text-xs font-bold" />
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" id="mu-gen-otp-btn" class="btn-primary text-xs py-1.5 px-3 bg-purple-700 hover:bg-purple-800">🔑 OTP बनाएं</button>
+              <span id="mu-gen-otp-out" class="font-extrabold text-sm text-purple-950"></span>
+            </div>
+          </div>
+
+          <!-- Create New User with Login Limit & Validity Days -->
           <form id="mu-create-user-form" class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2.5">
-            <div class="font-bold text-slate-800">➕ नया यूज़र व पासवर्ड लिमिट बनाएं</div>
+            <div class="font-bold text-slate-800">➕ नया यूज़र, लॉगिन लिमिट व वैधता (दिन / साल / Lifetime) बनाएं</div>
             <div class="grid grid-cols-2 gap-2">
               <input type="text" id="mu-new-name" placeholder="पूरा नाम (जैसे: रमेश)" required class="input-field py-1.5 text-xs" />
               <input type="text" id="mu-new-uname" placeholder="यूज़रनेम (जैसे: ramesh)" required class="input-field py-1.5 text-xs" />
@@ -7658,49 +7940,113 @@
                 <option value="staff">👨‍💼 यूज़र / स्टाफ</option>
                 <option value="admin">👑 एडमिन (Full Access)</option>
               </select>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-600 mb-0.5">अधिकतम लॉगिन सीमा</label>
+                <input type="number" id="mu-new-max" min="1" max="20" value="2" required class="input-field py-1.5 text-xs font-bold" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-600 mb-0.5">वैधता (कितने दिन चलेगा)</label>
+                <select id="mu-new-validity" class="input-field py-1.5 text-xs font-bold">
+                  <option value="30">30 दिन (1 महीना)</option>
+                  <option value="7">7 दिन (ट्रायल)</option>
+                  <option value="90">90 दिन (3 महीने)</option>
+                  <option value="365">365 दिन (1 साल)</option>
+                  <option value="730">730 दिन (2 साल)</option>
+                  <option value="LIFETIME">♾️ Lifetime (आजीवन)</option>
+                  <option value="CUSTOM">📅 कस्टम दिन लिखें</option>
+                </select>
+              </div>
             </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <label class="font-bold text-slate-700">एक साथ अधिकतम लॉगिन सीमा (डिफ़ॉल्ट 2):</label>
-              <input type="number" id="mu-new-max" min="1" max="20" value="2" required class="input-field py-1.5 text-xs w-20 font-bold text-center" />
-              <button type="submit" class="btn-primary text-xs py-1.5 px-4 ml-auto">💾 यूज़र बनाएं</button>
+            <div id="mu-custom-days-wrap" class="hidden">
+              <input type="number" id="mu-new-custom-days" min="1" max="36500" placeholder="कितने दिन की वैधता देनी है? (जैसे: 45 या 180)" class="input-field py-1.5 text-xs font-bold border-teal-400" />
             </div>
+            <button type="submit" class="btn-primary w-full text-xs py-2">💾 यूज़र बनाएं</button>
           </form>
 
+          <!-- Users List with Validity Controls -->
           <div class="space-y-2">
             <div class="font-bold text-slate-800">मौजूदा यूज़र्स (${users.length})</div>
-            ${users.length ? users.map(u => {
+            ${users.map(u => {
               const activeCnt = (u.activeSessions || []).length;
               const maxL = Number(u.maxLogins) || 2;
+              const vInfo = MultiUserAuth.checkUserValidity(u);
+              const vBadge = vInfo.lifetime
+                ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">♾️ Lifetime</span>`
+                : vInfo.expired
+                  ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-800">⛔ एक्सपायर (${vInfo.validUntil})</span>`
+                  : `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${vInfo.daysLeft <= 5 ? "bg-amber-100 text-amber-900" : "bg-teal-100 text-teal-900"}">⏳ ${vInfo.daysLeft} दिन बाकी (${vInfo.validUntil})</span>`;
               return `
-                <div class="bg-white border border-slate-200 rounded-xl p-2.5 space-y-1.5">
-                  <div class="flex flex-wrap items-center justify-between gap-2">
-                    <div>
+                <div class="bg-white border border-slate-200 rounded-xl p-2.5 space-y-2">
+                  <div class="flex flex-wrap items-center justify-between gap-1.5">
+                    <div class="flex flex-wrap items-center gap-1">
                       <span class="font-bold text-slate-900">${escHtml(u.name || u.username)}</span>
                       <span class="text-[11px] text-slate-500">(@${escHtml(u.username)})</span>
                       <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${u.role === "admin" ? "bg-purple-100 text-purple-800" : "bg-amber-100 text-amber-900"}">${u.role === "admin" ? "👑 Admin" : "👨‍💼 User"}</span>
+                      ${vBadge}
                     </div>
-                    <span class="text-[11px] font-extrabold px-2 py-0.5 rounded-full ${activeCnt >= maxL ? "bg-rose-100 text-rose-800" : "bg-emerald-100 text-emerald-800"}">लॉगिन: ${activeCnt} / ${maxL}</span>
+                    <span class="text-[11px] font-extrabold px-2 py-0.5 rounded-full ${activeCnt >= maxL ? "bg-rose-100 text-rose-800" : "bg-emerald-100 text-emerald-800"}">लॉगिन: ${activeCnt}/${maxL}</span>
                   </div>
+                  ${u.role !== "admin" ? `
+                    <div class="flex flex-wrap items-center gap-1 text-[10px] bg-slate-50 p-1.5 rounded-lg">
+                      <span class="font-bold text-slate-600 mr-1">वैधता बढ़ाएं:</span>
+                      <button type="button" data-mu-ext="${u.id}::30" class="px-2 py-0.5 rounded bg-teal-100 text-teal-900 font-bold">+30 दिन</button>
+                      <button type="button" data-mu-ext="${u.id}::365" class="px-2 py-0.5 rounded bg-blue-100 text-blue-900 font-bold">+1 साल</button>
+                      <button type="button" data-mu-ext="${u.id}::730" class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-900 font-bold">+2 साल</button>
+                      <button type="button" data-mu-ext="${u.id}::LIFETIME" class="px-2 py-0.5 rounded bg-purple-700 text-white font-bold">♾️ Lifetime</button>
+                    </div>` : ""}
                   <div class="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100 text-[11px]">
                     <span>पासवर्ड: <b>${escHtml(u.password)}</b></span>
-                    <button type="button" data-mu-limit="${u.id}" class="ml-auto px-2 py-0.5 rounded bg-blue-50 text-blue-800 font-bold">⚙️ लिमिट बदलें</button>
-                    <button type="button" data-mu-clear="${u.id}" class="px-2 py-0.5 rounded bg-amber-50 text-amber-900 font-bold">🔌 सभी लॉगआउट</button>
-                    <button type="button" data-mu-del="${u.id}" class="px-2 py-0.5 rounded text-red-600 font-bold">🗑️ हटाएं</button>
+                    <button type="button" data-mu-limit="${u.id}" class="ml-auto px-2 py-0.5 rounded bg-blue-50 text-blue-800 font-bold">⚙️ लिमिट</button>
+                    <button type="button" data-mu-clear="${u.id}" class="px-2 py-0.5 rounded bg-amber-50 text-amber-900 font-bold">🔌 लॉगआउट</button>
+                    <button type="button" data-mu-del="${u.id}" class="px-2 py-0.5 rounded text-red-600 font-bold">🗑️</button>
                   </div>
                 </div>`;
-            }).join("") : `<div class="text-center text-slate-400 py-4">अभी कोई यूज़र नहीं बना है। ऊपर पहले एक <b>Admin</b> यूज़र बनाएं, फिर अन्य यूज़र जोड़ें।</div>`}
+            }).join("")}
           </div>
         </div>`);
 
-      document.getElementById("mu-toggle-gate-btn")?.addEventListener("click", () => {
-        if (!enabled && !(state.data.appUsers || []).some(u => u.role === "admin")) {
-          return showToast("मल्टी-यूज़र लॉगिन चालू करने से पहले कम से कम 1 Admin यूज़र बनाएं।", "error");
+      document.getElementById("mu-admin-master-bk-btn")?.addEventListener("click", async () => {
+        await AutoBackupEngine.runBackupNow(sess, true, false);
+      });
+      document.getElementById("mu-admin-wa-bk-btn")?.addEventListener("click", () => {
+        const msg = encodeURIComponent(`MahaIndustries Admin Backup Report (${todayStr()})\nकुल यूज़र्स: ${users.length}\nघर खर्च एंट्री: ${(state.data.houseExpenses || []).length}\nपरचूनी एंट्री: ${(state.data.parchuniEntries || []).length}\nदूध बिक्री: ${(state.data.milkSales || []).length}\nबैकअप फ़ाइल फोन में सेव कर ली गई है।`);
+        window.open(`https://wa.me/91${MultiUserAuth.getAdminPhone()}?text=${msg}`, "_blank");
+      });
+      document.getElementById("mu-admin-restore-inp")?.addEventListener("change", async (e) => {
+        const f = e.target.files?.[0];
+        if (!f) return;
+        try {
+          const parsed = JSON.parse(await f.text());
+          const dataObj = parsed.data || parsed;
+          if (!dataObj || typeof dataObj !== "object") throw new Error("अमान्य बैकअप फ़ाइल");
+          COLLECTIONS.forEach(c => {
+            if (Array.isArray(dataObj[c])) state.data[c] = dataObj[c];
+          });
+          persistLocalDB();
+          closeModal(true);
+          renderCurrentView();
+          showToast("✅ पूरा डेटा बैकअप सफलतापूर्वक रिस्टोर हो गया!");
+        } catch (err) {
+          showToast("बैकअप रिस्टोर त्रुटि: " + (err?.message || ""), "error");
         }
-        localStorage.setItem("maha_multiuser_on_v1", enabled ? "0" : "1");
-        MultiUserAuth.updateUI();
-        closeModal(true);
-        openMultiUserAdminModal();
-        showToast(enabled ? "मल्टी-यूज़र लॉगिन बंद किया गया।" : "मल्टी-यूज़र लॉगिन चालू हो गया!");
+      });
+
+      document.getElementById("mu-new-validity")?.addEventListener("change", (e) => {
+        document.getElementById("mu-custom-days-wrap")?.classList.toggle("hidden", e.target.value !== "CUSTOM");
+      });
+
+      document.getElementById("mu-save-phone-btn")?.addEventListener("click", () => {
+        const ph = MultiUserAuth.setAdminPhone(document.getElementById("mu-admin-phone-inp").value);
+        showToast(`✅ एडमिन OTP नंबर ${ph} सेव हो गया!`);
+      });
+
+      document.getElementById("mu-gen-otp-btn")?.addEventListener("click", () => {
+        const un = document.getElementById("mu-gen-uname").value.trim();
+        const rc = document.getElementById("mu-gen-req").value.trim();
+        if (!un || rc.length < 4) return showToast("यूज़रनेम और 6-अंकों का Request Code डालें।", "error");
+        const otp = MultiUserAuth.computeAdminOtp(rc, un, MultiUserAuth.getAdminPhone());
+        document.getElementById("mu-gen-otp-out").textContent = `OTP: ${otp}`;
+        copyText(otp, `OTP ${otp} कॉपी हो गया! यूज़र को भेज दें।`);
       });
 
       document.getElementById("mu-create-user-form")?.addEventListener("submit", async (e) => {
@@ -7710,14 +8056,43 @@
         const password = document.getElementById("mu-new-pass").value.trim();
         const role = document.getElementById("mu-new-role").value;
         const maxLogins = Math.max(1, Number(document.getElementById("mu-new-max").value || 2));
-        if (!username || password.length < 3) return showToast("सही यूज़रनेम और कम से कम 3 अक्षर का पासवर्ड डालें।", "error");
+        const valSel = document.getElementById("mu-new-validity").value;
+        let validUntil = "LIFETIME";
+        if (role !== "admin") {
+          if (valSel === "LIFETIME") validUntil = "LIFETIME";
+          else if (valSel === "CUSTOM") {
+            const cDays = Math.max(1, Number(document.getElementById("mu-new-custom-days").value || 30));
+            validUntil = MultiUserAuth.addDaysToDateStr(todayStr(), cDays);
+          } else {
+            validUntil = MultiUserAuth.addDaysToDateStr(todayStr(), Number(valSel));
+          }
+        }
+        if (!username || password.length < 4) return showToast("सही यूज़रनेम और कम से कम 4 अक्षर का पासवर्ड डालें।", "error");
         if ((state.data.appUsers || []).some(u => (u.username || "").toLowerCase() === username.toLowerCase())) {
           return showToast("यह यूज़रनेम पहले से मौजूद है।", "error");
         }
-        await saveDoc("appUsers", { name: name || username, username, password, role, maxLogins, activeSessions: [] });
+        await saveDoc("appUsers", { name: name || username, username, password, role, maxLogins, validUntil, activeSessions: [] });
         closeModal(true);
         openMultiUserAdminModal();
       });
+
+      // 1-Tap Validity Extension (+30d, +1yr, +2yr, LIFETIME)
+      document.querySelectorAll("[data-mu-ext]").forEach(b => b.addEventListener("click", async () => {
+        const [uid, val] = b.dataset.muExt.split("::");
+        const u = (state.data.appUsers || []).find(x => x.id === uid);
+        if (!u) return;
+        let nextValid = "LIFETIME";
+        if (val !== "LIFETIME") {
+          const days = Number(val);
+          const vInfo = MultiUserAuth.checkUserValidity(u);
+          const base = (!vInfo.lifetime && !vInfo.expired && vInfo.validUntil) ? vInfo.validUntil : todayStr();
+          nextValid = MultiUserAuth.addDaysToDateStr(base, days);
+        }
+        await saveDoc("appUsers", { ...u, validUntil: nextValid }, u.id);
+        showToast(nextValid === "LIFETIME" ? `✅ ${u.username} को ♾️ Lifetime वैधता मिल गई!` : `✅ ${u.username} की वैधता ${nextValid} तक बढ़ा दी गई!`);
+        closeModal(true);
+        openMultiUserAdminModal();
+      }));
 
       document.querySelectorAll("[data-mu-limit]").forEach(b => b.addEventListener("click", async () => {
         const u = (state.data.appUsers || []).find(x => x.id === b.dataset.muLimit);
@@ -7740,7 +8115,11 @@
 
       document.querySelectorAll("[data-mu-del]").forEach(b => b.addEventListener("click", async () => {
         const u = (state.data.appUsers || []).find(x => x.id === b.dataset.muDel);
-        if (u && await deleteDocById("appUsers", u.id, `यूज़र ${u.username}`)) {
+        if (!u) return;
+        if (u.role === "admin" && (state.data.appUsers || []).filter(x => x.role === "admin").length <= 1) {
+          return showToast("आखिरी Admin अकाउंट को डिलीट नहीं किया जा सकता।", "error");
+        }
+        if (await deleteDocById("appUsers", u.id, `यूज़र ${u.username}`)) {
           closeModal(true);
           openMultiUserAdminModal();
         }
@@ -8198,6 +8577,89 @@
       applyDiaryHiddenUI();
       let _logoTaps = 0, _logoTapTimer = null;
       MultiUserAuth.updateUI();
+      // First-time mandatory Admin setup
+      document.getElementById("mu-first-admin-form")?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("mu-setup-name").value.trim() || "Admin";
+        const username = document.getElementById("mu-setup-uname").value.trim() || "admin";
+        const phone = MultiUserAuth.setAdminPhone(document.getElementById("mu-setup-phone").value);
+        const password = document.getElementById("mu-setup-pass").value.trim();
+        const maxLogins = Math.max(1, Number(document.getElementById("mu-setup-max").value || 2));
+        const errEl = document.getElementById("mu-setup-err");
+        if (password.length < 4) {
+          errEl.textContent = "कम से कम 4 अक्षर या अंक का पासवर्ड डालें।";
+          errEl.classList.remove("hidden");
+          return;
+        }
+        errEl.classList.add("hidden");
+        await saveDoc("appUsers", { name, username, password, role: "admin", maxLogins, activeSessions: [] });
+        await MultiUserAuth.login(username, password);
+        renderCurrentView();
+        showToast(`👑 एडमिन अकाउंट तैयार! OTP नंबर: ${phone}`);
+      });
+
+      // Open Forgot / Change Password via Admin Phone OTP panel
+      document.getElementById("mu-open-otp-btn")?.addEventListener("click", () => {
+        const preU = document.getElementById("mu-login-user")?.value?.trim() || "";
+        if (preU) document.getElementById("mu-otp-uname").value = preU;
+        MultiUserAuth.showPanel("otp");
+      });
+      document.getElementById("mu-back-to-login-btn")?.addEventListener("click", () => MultiUserAuth.showPanel("login"));
+
+      const dispatchAdminOtp = (channel) => {
+        const uname = document.getElementById("mu-otp-uname").value.trim();
+        const errEl = document.getElementById("mu-otp-err");
+        const target = (state.data.appUsers || []).find(u => (u.username || "").trim().toLowerCase() === uname.toLowerCase());
+        if (!target) {
+          errEl.textContent = "यह यूज़रनेम नहीं मिला। सही यूज़रनेम डालें।";
+          errEl.classList.remove("hidden");
+          return;
+        }
+        errEl.classList.add("hidden");
+        const req = MultiUserAuth.createOtpRequest(uname);
+        document.getElementById("mu-otp-req-code").textContent = req.reqCode;
+        document.getElementById("mu-otp-sent-box").classList.remove("hidden");
+        const isAdminSelf = target.role === "admin";
+        const msg = isAdminSelf
+          ? `MahaIndustries Admin Password Reset OTP
+यूज़र: ${uname}
+आपका 6-अंकों का सत्यापन OTP: ${req.expectedOtp}
+(10 मिनट तक मान्य)`
+          : `MahaIndustries Password Reset Request
+यूज़र: ${uname}
+Request Code: ${req.reqCode}
+कृपया अपने ऐप के Admin OTP जनरेटर में यह कोड डालकर 6-अंकों का OTP भेजें।`;
+        const ph = req.adminPhone;
+        if (channel === "wa") {
+          window.open(`https://wa.me/91${ph}?text=${encodeURIComponent(msg)}`, "_blank");
+        } else {
+          window.location.href = `sms:+91${ph}?body=${encodeURIComponent(msg)}`;
+        }
+        showToast(`📲 एडमिन के नंबर (${ph}) पर OTP संदेश खोला गया!`);
+      };
+      document.getElementById("mu-send-wa-otp-btn")?.addEventListener("click", () => dispatchAdminOtp("wa"));
+      document.getElementById("mu-send-sms-otp-btn")?.addEventListener("click", () => dispatchAdminOtp("sms"));
+
+      document.getElementById("mu-verify-otp-save-btn")?.addEventListener("click", async () => {
+        const otp = document.getElementById("mu-otp-code-inp").value;
+        const np = document.getElementById("mu-otp-new-pass").value;
+        const errEl = document.getElementById("mu-otp-err");
+        const res = MultiUserAuth.verifyOtpAndReset(state.data.appUsers || [], otp, np);
+        if (!res.ok) {
+          errEl.textContent = res.error;
+          errEl.classList.remove("hidden");
+          return;
+        }
+        errEl.classList.add("hidden");
+        await saveDoc("appUsers", res.user, res.user.id);
+        MultiUserAuth.pendingOtpReq = null;
+        document.getElementById("mu-otp-code-inp").value = "";
+        document.getElementById("mu-otp-new-pass").value = "";
+        document.getElementById("mu-login-user").value = res.user.username;
+        MultiUserAuth.showPanel("login");
+        showToast("✅ OTP सत्यापित! नया पासवर्ड सेव हो गया, अब लॉगिन करें।");
+      });
+
       document.getElementById("mu-login-form")?.addEventListener("submit", async (e) => {
         e.preventDefault();
         const u = document.getElementById("mu-login-user").value;
@@ -8214,11 +8676,27 @@
           showToast(`स्वागत है, ${res.user.name || res.user.username}!`);
         }
       });
-      document.getElementById("header-user-btn")?.addEventListener("click", async () => {
+      document.getElementById("header-user-btn")?.addEventListener("click", () => {
         const sess = MultiUserAuth.getCurrentSession();
         if (!sess) return;
-        const ok = await showConfirm("लॉगआउट पुष्टि", `क्या आप "${sess.name || sess.username}" अकाउंट से लॉगआउट करना चाहते हैं? (लॉगआउट करने पर दूसरे डिवाइस के लिए स्लॉट खाली हो जाएगा)`);
-        if (ok) await MultiUserAuth.logout();
+        openModal(`👤 ${sess.name || sess.username} (${sess.role === "admin" ? "Admin" : "User"})`, `
+          <div class="space-y-3 text-xs">
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+              <div>यूज़रनेम: <b>@${escHtml(sess.username)}</b></div>
+              <div>अधिकतम लॉगिन सीमा: <b>${sess.maxLogins || 2} डिवाइस</b></div>
+            </div>
+            <button type="button" id="hdr-change-pass-otp-btn" class="btn-secondary w-full border-amber-300 text-amber-900">🔑 पासवर्ड बदलें (Admin Phone OTP से)</button>
+            ${sess.role === "admin" ? `<button type="button" id="hdr-open-mu-admin-btn" class="btn-secondary w-full border-teal-300 text-teal-900">👥 यूज़र व लॉगिन लिमिट मैनेज करें</button>` : ""}
+            <button type="button" id="hdr-do-logout-btn" class="btn-primary w-full bg-rose-600 hover:bg-rose-700">🔒 लॉगआउट व ऐप लॉक करें</button>
+          </div>`);
+        document.getElementById("hdr-change-pass-otp-btn")?.addEventListener("click", async () => {
+          closeModal(true);
+          await MultiUserAuth.logout();
+          document.getElementById("mu-otp-uname").value = sess.username;
+          MultiUserAuth.showPanel("otp");
+        });
+        document.getElementById("hdr-open-mu-admin-btn")?.addEventListener("click", () => { closeModal(true); openMultiUserAdminModal(); });
+        document.getElementById("hdr-do-logout-btn")?.addEventListener("click", async () => { closeModal(true); await MultiUserAuth.logout(); });
       });
       document.getElementById("app-header-logo-wrap")?.addEventListener("click", () => {
         _logoTaps++;
