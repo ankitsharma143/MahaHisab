@@ -9289,7 +9289,16 @@
             </div>
           </div>
 
-          <!-- Admin OTP Generator (Approver for Staff/User Password Reset) -->
+          <!-- LIVE ADMIN OTP INBOX (Only Admin can see incoming 6-digit OTPs!) -->
+          <div class="bg-rose-50 border border-rose-200 rounded-xl p-3 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <div class="font-bold text-rose-950">🔔 लाइव OTP अनुरोध (सिर्फ Admin के लिए)</div>
+              <button type="button" id="mu-refresh-otp-inbox" class="px-2 py-0.5 rounded bg-white border border-rose-300 text-rose-800 text-[11px] font-bold">🔄 रिफ्रेश</button>
+            </div>
+            <div id="mu-live-otp-inbox" class="text-[11px] text-slate-600">लोड हो रहा है...</div>
+          </div>
+
+          <!-- Admin OTP Generator (Offline Approver Backup) -->
           <div class="bg-purple-50 border border-purple-200 rounded-xl p-3 space-y-2">
             <div class="font-bold text-purple-950">🔑 एडमिन OTP जनरेटर (यूज़र का पासवर्ड रीसेट अप्रूव करें)</div>
             <div class="grid grid-cols-2 gap-2">
@@ -9414,7 +9423,38 @@
         showToast(`✅ एडमिन OTP नंबर ${ph} सेव हो गया!`);
       });
 
-      document.getElementById("mu-gen-otp-btn")?.addEventListener("click", () => {
+      const loadAdminOtpInbox = async () => {
+        const box = document.getElementById("mu-live-otp-inbox");
+        if (!box) return;
+        if (!navigator.onLine) { box.innerHTML = `<span class="text-slate-500">ऑफ़लाइन हैं — नीचे वाले ऑफ़लाइन OTP जनरेटर का उपयोग करें।</span>`; return; }
+        try {
+          const res = await fetch(`${CloudUserDirectory.baseUrl()}/_otp_requests.json`, { cache: "no-store" });
+          const data = res.ok ? await res.json() : null;
+          const now = Date.now();
+          const list = data && typeof data === "object"
+            ? Object.values(data).filter(r => r && r.otp && (!r.expiresAt || now <= r.expiresAt)).sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""))
+            : [];
+          if (!list.length) {
+            box.innerHTML = `<span class="text-slate-500">अभी कोई नया पासवर्ड OTP अनुरोध नहीं है।</span>`;
+            return;
+          }
+          box.innerHTML = `<div class="space-y-1.5">${list.map(r => `
+            <div class="flex flex-wrap items-center justify-between gap-2 bg-white border border-rose-200 rounded-lg p-2">
+              <div>यूज़र: <b>@${escHtml(r.username)}</b> • Req: <b>#${escHtml(r.reqCode)}</b></div>
+              <div class="flex items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-950 font-extrabold text-xs tracking-widest">OTP: ${escHtml(r.otp)}</span>
+                <button type="button" data-copy-live-otp="${escHtml(r.otp)}" class="px-2 py-0.5 rounded bg-teal-700 text-white font-bold text-[10px]">📋 कॉपी</button>
+              </div>
+            </div>`).join("")}</div>`;
+          box.querySelectorAll("[data-copy-live-otp]").forEach(b => b.addEventListener("click", () => copyText(b.dataset.copyLiveOtp, `OTP ${b.dataset.copyLiveOtp} कॉपी हो गया!`)));
+        } catch (e) {
+          box.innerHTML = `<span class="text-amber-800">ऑनलाइन OTP इनबॉक्स लोड नहीं हुआ — नीचे ऑफ़लाइन जनरेटर उपयोग करें।</span>`;
+        }
+      };
+      loadAdminOtpInbox();
+      document.getElementById("mu-refresh-otp-inbox")?.addEventListener("click", loadAdminOtpInbox);
+
+            document.getElementById("mu-gen-otp-btn")?.addEventListener("click", () => {
         const un = document.getElementById("mu-gen-uname").value.trim();
         const rc = document.getElementById("mu-gen-req").value.trim();
         if (!un || rc.length < 4) return showToast("यूज़रनेम और 6-अंकों का Request Code डालें।", "error");
@@ -10075,28 +10115,39 @@
         const req = MultiUserAuth.createOtpRequest(uname);
         document.getElementById("mu-otp-req-code").textContent = req.reqCode;
         document.getElementById("mu-otp-sent-box").classList.remove("hidden");
-        const isAdminSelf = target.role === "admin";
-        const msg = isAdminSelf
-          ? `MahaIndustries Admin Password Reset OTP
-यूज़र: ${uname}
-आपका 6-अंकों का सत्यापन OTP: ${req.expectedOtp}
-(10 मिनट तक मान्य)`
-          : `MahaIndustries Password Reset Request
-यूज़र: ${uname}
-Request Code: ${req.reqCode}
-कृपया अपने ऐप के Admin OTP जनरेटर में यह कोड डालकर 6-अंकों का OTP भेजें।`;
+
+        // Push OTP ONLY to Admin's Firebase OTP Inbox — NEVER show OTP on requester's screen or WhatsApp draft!
+        if (navigator.onLine) {
+          try {
+            await fetch(`${CloudUserDirectory.baseUrl()}/_otp_requests/${req.reqCode}.json`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                reqCode: req.reqCode,
+                username: target.username,
+                otp: req.expectedOtp,
+                expiresAt: req.expiresAt,
+                createdAt: new Date().toISOString()
+              })
+            });
+          } catch (e) {}
+        }
+
         const ph = req.adminPhone;
-        const waUrl = `https://wa.me/91${ph}?text=${encodeURIComponent(msg)}`;
-        const smsUrl = `sms:+91${ph}?body=${encodeURIComponent(msg)}`;
+        // Message ONLY asks Admin for the OTP using the Request Code (ZERO OTP leaked!)
+        const askMsg = `नमस्ते सर (Admin) 🙏\nMahaHisab पासवर्ड रीसेट अनुरोध:\n• यूज़रनेम: ${target.username}\n• Request Code: ${req.reqCode}\nकृपया अपने Admin ऐप में देखकर 6-अंकों का OTP बता दीजिए।`;
+        const waUrl = `https://wa.me/91${ph}?text=${encodeURIComponent(askMsg)}`;
+        const smsUrl = `sms:+91${ph}?body=${encodeURIComponent(askMsg)}`;
+        const callUrl = `tel:+91${ph}`;
         let linkBox = document.getElementById("mu-otp-direct-links");
         if (!linkBox) {
           linkBox = document.createElement("div");
           linkBox.id = "mu-otp-direct-links";
-          linkBox.className = "flex gap-2 pt-1";
+          linkBox.className = "flex flex-wrap gap-1.5 pt-1";
           document.getElementById("mu-otp-sent-box")?.appendChild(linkBox);
         }
-        linkBox.innerHTML = `<a href="${waUrl}" class="flex-1 text-center py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-[11px]">📲 WhatsApp खोलें</a><a href="${smsUrl}" class="flex-1 text-center py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px]">💬 SMS खोलें</a>`;
-        showToast(`📲 एडमिन के नंबर (${ph}) पर OTP संदेश खोला जा रहा है...`);
+        linkBox.innerHTML = `<a href="${callUrl}" class="flex-1 text-center py-1.5 rounded-lg bg-purple-700 text-white font-bold text-[11px]">📞 एडमिन को कॉल (${ph})</a><a href="${waUrl}" class="flex-1 text-center py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-[11px]">📲 WhatsApp से पूछें</a><a href="${smsUrl}" class="flex-1 text-center py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px]">💬 SMS</a>`;
+        showToast(`🔐 OTP केवल Admin (${ph}) के पैनल में भेजा गया है — कॉल या WhatsApp करके OTP पूछें।`);
         window.location.href = (channel === "wa") ? waUrl : smsUrl;
       };
       document.getElementById("mu-send-wa-otp-btn")?.addEventListener("click", () => dispatchAdminOtp("wa"));
