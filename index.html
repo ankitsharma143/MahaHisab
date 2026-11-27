@@ -176,8 +176,19 @@
   <div id="app-shell" class="min-h-screen flex flex-col md:flex-row">
 
     <!-- Desktop Sidebar -->
-    <div id="mobile-sidebar-backdrop" class="hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-[1px] md:hidden"></div>
-    <aside id="app-left-sidebar" class="flex flex-col w-72 md:w-64 bg-white border-r border-slate-200 fixed inset-y-0 left-0 z-50 md:z-30 -translate-x-full md:translate-x-0 shadow-2xl md:shadow-none">
+    <!-- Always-Visible Slim Left Vertical Scrollable Category Rail on Mobile Phone -->
+    <nav id="mobile-left-rail" class="md:hidden fixed inset-y-0 left-0 z-30 w-[52px] bg-white border-r border-slate-200 flex flex-col items-center py-2 gap-1.5 overflow-y-auto overscroll-contain shadow-sm">
+      <button type="button" id="rail-expand-btn" class="w-10 h-10 shrink-0 rounded-xl bg-teal-700 text-white font-extrabold text-base flex items-center justify-center shadow" title="पूरा मेनू खोलें">☰</button>
+      <button type="button" data-rail-tab="home" data-main-tab="home" class="w-10 h-10 shrink-0 rounded-xl flex flex-col items-center justify-center text-base hover:bg-teal-50" title="डैशबोर्ड"><span>📊</span><span class="text-[8px] font-bold leading-none mt-0.5">होम</span></button>
+      <button type="button" data-rail-tab="house" data-main-tab="house" class="w-10 h-10 shrink-0 rounded-xl flex flex-col items-center justify-center text-base hover:bg-emerald-50" title="घर का हिसाब"><span>🏡</span><span class="text-[8px] font-bold leading-none mt-0.5">घर</span></button>
+      <button type="button" data-rail-tab="parchuni" data-main-tab="parchuni" class="w-10 h-10 shrink-0 rounded-xl flex flex-col items-center justify-center text-base hover:bg-blue-50" title="परचूनी दुकान"><span>🏪</span><span class="text-[8px] font-bold leading-none mt-0.5">दुकान</span></button>
+      <button type="button" data-rail-tab="dairy" data-main-tab="dairy" class="w-10 h-10 shrink-0 rounded-xl flex flex-col items-center justify-center text-base hover:bg-amber-50" title="डेयरी हिसाब"><span>🥛</span><span class="text-[8px] font-bold leading-none mt-0.5">डेयरी</span></button>
+      <button type="button" data-rail-tab="diary" data-main-tab="diary" class="w-10 h-10 shrink-0 rounded-xl flex flex-col items-center justify-center text-base hover:bg-purple-50" title="निजी डायरी"><span>📓</span><span class="text-[8px] font-bold leading-none mt-0.5">डायरी</span></button>
+      <button type="button" data-rail-tab="reports" data-main-tab="reports" class="w-10 h-10 shrink-0 rounded-xl flex flex-col items-center justify-center text-base hover:bg-indigo-50" title="रिपोर्ट"><span>📑</span><span class="text-[8px] font-bold leading-none mt-0.5">रिपोर्ट</span></button>
+      <button type="button" data-rail-tab="settings" data-main-tab="settings" class="w-10 h-10 shrink-0 rounded-xl flex flex-col items-center justify-center text-base hover:bg-slate-100" title="सेटिंग्स"><span>⚙️</span><span class="text-[8px] font-bold leading-none mt-0.5">सेटिंग</span></button>
+    </nav>
+    <div id="mobile-sidebar-backdrop" class="hidden fixed inset-0 z-[75] bg-slate-900/55 backdrop-blur-[1px] md:hidden"></div>
+    <aside id="app-left-sidebar" class="flex flex-col w-72 md:w-64 bg-white border-r border-slate-200 fixed inset-y-0 left-0 z-[80] md:z-30 -translate-x-full md:translate-x-0 shadow-2xl md:shadow-none">
       <div class="p-3.5 border-b border-slate-200 bg-teal-700 text-white space-y-2">
         <div class="bg-white rounded-xl px-2.5 py-1.5 shadow flex items-center justify-center">
           <img src="data:image/png;base64,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" alt="MahaIndustries Logo" class="h-10 w-auto max-w-full object-contain" />
@@ -203,7 +214,7 @@
     </aside>
 
     <!-- Main Content Column -->
-    <div class="flex-1 md:ml-64 flex flex-col min-h-screen pb-20 md:pb-6">
+    <div class="flex-1 ml-[52px] md:ml-64 flex flex-col min-h-screen pb-20 md:pb-6 min-w-0">
       <header class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200 px-2.5 sm:px-4 py-2 flex items-center gap-2">
         <!-- Mobile Left Category Drawer Toggle -->
         <button type="button" id="mobile-sidebar-toggle" class="md:hidden shrink-0 btn-secondary text-sm font-extrabold px-2.5 py-1.5 min-h-[36px] border-teal-400 text-teal-900 bg-teal-50" title="सभी श्रेणियाँ खोलें">☰</button>
@@ -256,76 +267,66 @@
   </div>
 
   <!-- Generic Form / View Modal -->
-    <!-- Mandatory Password Login, First-Time Admin Setup & Admin Phone OTP Overlay -->
+    <!-- Strict Password Login & 2-Step Admin Phone OTP Verification Overlay -->
   <div id="multiuser-login-overlay" class="fixed inset-0 z-[95] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-teal-200 my-auto">
-      <!-- PANEL A: FIRST-TIME ADMIN SETUP (Mandatory before first use) -->
-      <div id="mu-panel-setup" class="hidden space-y-3">
-        <div class="text-center space-y-1">
-          <div class="text-4xl">👑</div>
-          <h2 class="text-lg font-extrabold text-teal-950">पहली बार एडमिन पासवर्ड सेट करें</h2>
-          <p class="text-xs text-slate-500">बिना पासवर्ड के यह ऐप नहीं खुलेगा। नीचे अपना एडमिन पासवर्ड और OTP के लिए मोबाइल नंबर सेट करें।</p>
-        </div>
-        <form id="mu-first-admin-form" class="space-y-2.5 text-xs">
-          <div class="grid grid-cols-2 gap-2">
-            <div><label class="block font-bold mb-1">एडमिन नाम*</label><input type="text" id="mu-setup-name" value="Ankit Sharma" required class="input-field py-2 text-xs font-semibold" /></div>
-            <div><label class="block font-bold mb-1">यूज़रनेम*</label><input type="text" id="mu-setup-uname" value="admin" required class="input-field py-2 text-xs font-semibold" /></div>
-          </div>
-          <div><label class="block font-bold mb-1">एडमिन मोबाइल नंबर (पासवर्ड OTP के लिए)*</label><input type="tel" id="mu-setup-phone" value="7500343487" required class="input-field py-2 text-xs font-bold" /></div>
-          <div class="grid grid-cols-2 gap-2">
-            <div><label class="block font-bold mb-1">पासवर्ड बनाएं*</label><input type="password" id="mu-setup-pass" required placeholder="कम से कम 4 अक्षर" class="input-field py-2 text-xs font-bold" /></div>
-            <div><label class="block font-bold mb-1">अधिकतम लॉगिन सीमा</label><input type="number" id="mu-setup-max" min="1" max="20" value="2" required class="input-field py-2 text-xs font-bold text-center" /></div>
-          </div>
-          <div id="mu-setup-err" class="hidden text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-xl p-2"></div>
-          <button type="submit" class="btn-primary w-full py-2.5 text-sm">🔐 एडमिन पासवर्ड सेव कर ऐप खोलें</button>
-        </form>
-      </div>
-
-      <!-- PANEL B: MANDATORY LOGIN SCREEN -->
+      <!-- PANEL B: ONLY LOGIN SCREEN ON APP OPEN -->
       <div id="mu-panel-login" class="space-y-3">
         <div class="text-center space-y-1">
           <div class="text-4xl">🔐</div>
-          <h2 class="text-lg font-extrabold text-teal-950">MahaIndustries — पासवर्ड लॉगिन</h2>
-          <p class="text-xs text-slate-500">ऐप खोलने के लिए अपना यूज़रनेम और पासवर्ड डालें</p>
+          <h2 class="text-lg font-extrabold text-teal-950">MahaIndustries — लॉगिन करें</h2>
+          <p class="text-xs text-slate-500">ऐप खोलने के लिए सही यूज़रनेम और पासवर्ड डालें</p>
         </div>
         <form id="mu-login-form" class="space-y-3 text-xs">
-          <div><label class="block font-bold mb-1">यूज़रनेम (Username)</label><input type="text" id="mu-login-user" required placeholder="जैसे: admin या staff1" class="input-field py-2.5 text-sm font-semibold" /></div>
+          <div><label class="block font-bold mb-1">यूज़रनेम (Username)</label><input type="text" id="mu-login-user" required placeholder="यूज़रनेम डालें" class="input-field py-2.5 text-sm font-semibold" /></div>
           <div><label class="block font-bold mb-1">पासवर्ड (Password)</label><input type="password" id="mu-login-pass" required placeholder="••••••" class="input-field py-2.5 text-sm font-semibold" /></div>
           <div id="mu-login-err" class="hidden text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-xl p-2.5"></div>
           <button type="submit" class="btn-primary w-full py-2.5 text-sm">🔓 लॉगिन करें</button>
         </form>
         <div class="text-center pt-2 border-t border-slate-100">
-          <button type="button" id="mu-open-otp-btn" class="text-xs font-bold text-amber-700 underline">🔑 पासवर्ड भूल गए / बदलें (Admin Phone OTP)</button>
+          <button type="button" id="mu-open-otp-btn" class="text-xs font-bold text-amber-700 underline">🔑 पासवर्ड भूल गए? (Admin Phone OTP से बदलें)</button>
         </div>
       </div>
 
-      <!-- PANEL C: ADMIN PHONE OTP FORGOT / CHANGE PASSWORD -->
+      <!-- PANEL C: 2-STEP ADMIN PHONE OTP -> VERIFY -> THEN CHANGE PASSWORD -->
       <div id="mu-panel-otp" class="hidden space-y-3 text-xs">
         <div class="flex items-center justify-between">
-          <h2 class="text-base font-extrabold text-amber-900">🔑 एडमिन फोन OTP से पासवर्ड बदलें</h2>
+          <h2 class="text-base font-extrabold text-amber-900">🔑 OTP सत्यापन से पासवर्ड बदलें</h2>
           <button type="button" id="mu-back-to-login-btn" class="text-xs font-bold text-slate-500 underline">← वापस लॉगिन</button>
         </div>
         <div class="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-amber-950">
-          पासवर्ड रीसेट करने के लिए पहले <b>एडमिन के रजिस्टर्ड नंबर (<span id="mu-otp-admin-phone-lbl">7500343487</span>)</b> पर OTP भेजें, फिर मिला हुआ 6-अंकों का OTP डालकर नया पासवर्ड सेट करें।
+          एडमिन के नंबर (<b><span id="mu-otp-admin-phone-lbl">7500343487</span></b>) पर OTP भेजें। OTP सत्यापित होने के बाद ही नया पासवर्ड बदलने का विकल्प खुलेगा।
         </div>
-        <div>
-          <label class="block font-bold mb-1">1. किस यूज़र का पासवर्ड बदलना है (Username)*</label>
-          <input type="text" id="mu-otp-uname" placeholder="जैसे: admin या staff1" class="input-field py-2 text-xs font-semibold" />
+
+        <!-- Step 1: Username & Generate OTP -->
+        <div id="mu-otp-step1" class="space-y-2.5">
+          <div>
+            <label class="block font-bold mb-1">1. यूज़रनेम (Username)*</label>
+            <input type="text" id="mu-otp-uname" placeholder="जैसे: admin या staff1" class="input-field py-2 text-xs font-semibold" />
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="mu-send-wa-otp-btn" class="btn-primary bg-emerald-600 hover:bg-emerald-700 text-xs py-2">📲 WhatsApp पर OTP भेजें</button>
+            <button type="button" id="mu-send-sms-otp-btn" class="btn-secondary border-blue-300 text-blue-900 text-xs py-2">💬 SMS पर OTP भेजें</button>
+          </div>
+          <div id="mu-otp-sent-box" class="hidden bg-teal-50 border border-teal-200 rounded-xl p-2.5 text-teal-950 space-y-2">
+            <div class="font-bold">✅ रिक्वेस्ट कोड: <code id="mu-otp-req-code" class="text-sm font-extrabold text-purple-900"></code></div>
+            <div>
+              <label class="block font-bold mb-1">2. एडमिन के फोन पर आया 6-अंकों का OTP डालें*</label>
+              <input type="text" inputmode="numeric" maxlength="6" id="mu-otp-code-inp" placeholder="6-digit OTP" class="input-field py-2 text-base font-extrabold tracking-widest text-center bg-white" />
+            </div>
+            <button type="button" id="mu-verify-otp-only-btn" class="btn-primary w-full bg-teal-700 hover:bg-teal-800 py-2 text-xs">✅ OTP सत्यापित करें (Verify OTP)</button>
+          </div>
         </div>
-        <div class="grid grid-cols-2 gap-2">
-          <button type="button" id="mu-send-wa-otp-btn" class="btn-primary bg-emerald-600 hover:bg-emerald-700 text-xs py-2">📲 WhatsApp से Admin OTP</button>
-          <button type="button" id="mu-send-sms-otp-btn" class="btn-secondary border-blue-300 text-blue-900 text-xs py-2">💬 SMS से Admin OTP</button>
+
+        <!-- Step 2: Shown ONLY AFTER OTP is Verified! -->
+        <div id="mu-otp-step2" class="hidden space-y-2.5 bg-emerald-50 border border-emerald-300 rounded-xl p-3">
+          <div class="font-extrabold text-emerald-900">✅ OTP सत्यापित हो गया! अब अपना नया पासवर्ड सेट करें:</div>
+          <div><label class="block font-bold mb-1">नया पासवर्ड (कम से कम 4 अक्षर/अंक)*</label><input type="password" id="mu-otp-new-pass" placeholder="नया पासवर्ड डालें" class="input-field py-2 text-xs font-bold bg-white" /></div>
+          <div><label class="block font-bold mb-1">नया पासवर्ड दोबारा लिखें (Confirm)*</label><input type="password" id="mu-otp-confirm-pass" placeholder="दोबारा वही पासवर्ड डालें" class="input-field py-2 text-xs font-bold bg-white" /></div>
+          <button type="button" id="mu-verify-otp-save-btn" class="btn-primary w-full bg-purple-700 hover:bg-purple-800 py-2.5 text-xs">💾 नया पासवर्ड सेव करें</button>
         </div>
-        <div id="mu-otp-sent-box" class="hidden bg-teal-50 border border-teal-200 rounded-xl p-2.5 text-teal-950 space-y-1">
-          <div class="font-bold">✅ रिक्वेस्ट कोड तैयार: <code id="mu-otp-req-code" class="text-sm font-extrabold text-purple-900"></code></div>
-          <div class="text-[11px]">एडमिन के नंबर पर संदेश भेजा जा रहा है। एडमिन से मिला <b>6-अंकों का OTP</b> नीचे डालें:</div>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div><label class="block font-bold mb-1">2. 6-अंकों का Admin OTP*</label><input type="text" inputmode="numeric" maxlength="6" id="mu-otp-code-inp" placeholder="6-digit OTP" class="input-field py-2 text-sm font-extrabold tracking-widest text-center" /></div>
-          <div><label class="block font-bold mb-1">3. नया पासवर्ड*</label><input type="password" id="mu-otp-new-pass" placeholder="नया पासवर्ड" class="input-field py-2 text-xs font-bold" /></div>
-        </div>
+
         <div id="mu-otp-err" class="hidden text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-xl p-2"></div>
-        <button type="button" id="mu-verify-otp-save-btn" class="btn-primary w-full bg-purple-700 hover:bg-purple-800 py-2.5 text-xs">✅ OTP सत्यापित करें व नया पासवर्ड सेव करें</button>
       </div>
     </div>
   </div>
@@ -1878,12 +1879,23 @@
     const sidebarExpanded = { house: false, parchuni: false, dairy: false };
 
     function closeMobileSidebar() {
-      document.getElementById("app-left-sidebar")?.classList.remove("drawer-open");
+      const sb = document.getElementById("app-left-sidebar");
+      if (sb) {
+        sb.classList.remove("drawer-open");
+        sb.classList.add("-translate-x-full");
+        sb.style.transform = "";
+      }
       document.getElementById("mobile-sidebar-backdrop")?.classList.add("hidden");
     }
 
     function openMobileSidebar() {
-      document.getElementById("app-left-sidebar")?.classList.add("drawer-open");
+      renderLeftAccordionSidebar();
+      const sb = document.getElementById("app-left-sidebar");
+      if (sb) {
+        sb.classList.remove("-translate-x-full");
+        sb.classList.add("drawer-open");
+        sb.style.transform = "translateX(0px)";
+      }
       document.getElementById("mobile-sidebar-backdrop")?.classList.remove("hidden");
     }
 
@@ -8163,15 +8175,47 @@
         this.updateUI();
         showToast("🔒 आप लॉगआउट हो गए — ऐप लॉक हो गया है।");
       },
+      ensureDefaultAdminExists() {
+        if (!Array.isArray(state.data.appUsers)) state.data.appUsers = [];
+        if (state.data.appUsers.length === 0) {
+          state.data.appUsers.push({
+            id: "usr_owner_admin",
+            name: "Ankit Sharma",
+            username: "admin",
+            password: this.getAdminPhone(),
+            role: "admin",
+            maxLogins: 2,
+            validUntil: "LIFETIME",
+            activeSessions: [],
+            createdAt: new Date().toISOString()
+          });
+          persistLocalDB();
+        }
+      },
+      verifyOtpOnly(enteredOtp) {
+        const req = this.pendingOtpReq;
+        if (!req) return { ok: false, error: "पहले WhatsApp या SMS से OTP भेजें।" };
+        if (Date.now() > req.expiresAt) return { ok: false, error: "OTP की समय-सीमा (10 मिनट) समाप्त हो गई। नया OTP भेजें।" };
+        if (String(enteredOtp || "").trim() !== req.expectedOtp) {
+          return { ok: false, error: "गलत 6-अंकों का OTP! कृपया सही OTP डालें।" };
+        }
+        req.verified = true;
+        return { ok: true };
+      },
       showPanel(panelName) {
-        ["setup", "login", "otp"].forEach(p => {
+        ["login", "otp"].forEach(p => {
           document.getElementById(`mu-panel-${p}`)?.classList.toggle("hidden", p !== panelName);
         });
+        if (panelName === "otp") {
+          document.getElementById("mu-otp-step1")?.classList.remove("hidden");
+          document.getElementById("mu-otp-step2")?.classList.add("hidden");
+          document.getElementById("mu-otp-err")?.classList.add("hidden");
+        }
         const phoneLbl = document.getElementById("mu-otp-admin-phone-lbl");
         if (phoneLbl) phoneLbl.textContent = this.getAdminPhone();
       },
       updateUI() {
-        const users = state.data.appUsers || [];
+        this.ensureDefaultAdminExists();
         const sess = this.getCurrentSession();
         const overlay = document.getElementById("multiuser-login-overlay");
         const hdrBtn = document.getElementById("header-user-btn");
@@ -8179,7 +8223,7 @@
         if (overlay) {
           if (!sess) {
             overlay.classList.remove("hidden");
-            this.showPanel(users.length === 0 ? "setup" : "login");
+            this.showPanel("login");
           } else {
             overlay.classList.add("hidden");
           }
@@ -9001,6 +9045,20 @@
       document.getElementById("mobile-sidebar-toggle")?.addEventListener("click", openMobileSidebar);
       document.getElementById("mobile-sidebar-close-btn")?.addEventListener("click", closeMobileSidebar);
       document.getElementById("mobile-sidebar-backdrop")?.addEventListener("click", closeMobileSidebar);
+      document.getElementById("rail-expand-btn")?.addEventListener("click", openMobileSidebar);
+      document.querySelectorAll("[data-rail-tab]").forEach(btn => btn.addEventListener("click", () => {
+        const id = btn.dataset.railTab;
+        if (id in sidebarExpanded) {
+          sidebarExpanded[id] = true;
+          state.activeMainTab = id;
+          renderCurrentView();
+          openMobileSidebar();
+        } else {
+          state.activeMainTab = id;
+          closeMobileSidebar();
+          renderCurrentView();
+        }
+      }));
       applyDiaryHiddenUI();
       let _logoTaps = 0, _logoTapTimer = null;
       MultiUserAuth.updateUI();
@@ -9067,7 +9125,35 @@ Request Code: ${req.reqCode}
       document.getElementById("mu-send-wa-otp-btn")?.addEventListener("click", () => dispatchAdminOtp("wa"));
       document.getElementById("mu-send-sms-otp-btn")?.addEventListener("click", () => dispatchAdminOtp("sms"));
 
+      document.getElementById("mu-verify-otp-only-btn")?.addEventListener("click", () => {
+        const otp = document.getElementById("mu-otp-code-inp").value;
+        const errEl = document.getElementById("mu-otp-err");
+        const res = MultiUserAuth.verifyOtpOnly(otp);
+        if (!res.ok) {
+          errEl.textContent = res.error;
+          errEl.classList.remove("hidden");
+          return;
+        }
+        errEl.classList.add("hidden");
+        document.getElementById("mu-otp-step1")?.classList.add("hidden");
+        document.getElementById("mu-otp-step2")?.classList.remove("hidden");
+        showToast("✅ OTP सत्यापित! अब अपना नया पासवर्ड सेट करें।");
+      });
+
       document.getElementById("mu-verify-otp-save-btn")?.addEventListener("click", async () => {
+        const npChk = document.getElementById("mu-otp-new-pass").value.trim();
+        const cfChk = document.getElementById("mu-otp-confirm-pass")?.value?.trim() || "";
+        const errElChk = document.getElementById("mu-otp-err");
+        if (!MultiUserAuth.pendingOtpReq?.verified) {
+          errElChk.textContent = "पहले OTP सत्यापित करें।";
+          errElChk.classList.remove("hidden");
+          return;
+        }
+        if (cfChk && npChk !== cfChk) {
+          errElChk.textContent = "दोनों पासवर्ड एक जैसे नहीं हैं!";
+          errElChk.classList.remove("hidden");
+          return;
+        }
         const otp = document.getElementById("mu-otp-code-inp").value;
         const np = document.getElementById("mu-otp-new-pass").value;
         const errEl = document.getElementById("mu-otp-err");
