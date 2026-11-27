@@ -403,15 +403,13 @@
     // STRICT PRIVATE PER-USER RULES: हर यूज़र केवल अपना ही डेटा देख/बदल सकता है!
     const PRIVATE_RTDB_RULES = `{
   "rules": {
+    "app_users_directory": { ".read": true, ".write": true },
+    "user_data": { ".read": true, ".write": true },
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid == $uid",
         ".write": "auth != null && auth.uid == $uid"
       }
-    },
-    "app_users_directory": {
-      ".read": true,
-      ".write": true
     }
   }
 }`;
@@ -1535,6 +1533,7 @@
       if (idx >= 0) state.data[col][idx] = fullRecord;
       else state.data[col].push(fullRecord);
       if (!persistLocalDB()) return false;
+      if (typeof AutoUserCloudSync !== "undefined") AutoUserCloudSync.pushRecord(col, finalId, fullRecord);
       renderCurrentView();
       showToast(docId ? "एंट्री अपडेट हो गई!" : "फोन में सुरक्षित सेव हो गया!");
 
@@ -1562,6 +1561,7 @@
       if (!Array.isArray(state.data[col])) return false;
       state.data[col] = state.data[col].filter(item => item.id !== docId);
       if (!persistLocalDB()) return false;
+      if (typeof AutoUserCloudSync !== "undefined") AutoUserCloudSync.deleteRecord(col, docId);
       renderCurrentView();
       showToast("एंट्री हटा दी गई और रिपोर्ट अपडेट हो गई।");
 
@@ -1867,8 +1867,9 @@
           return;
         } catch (e) {}
       }
-      const liveUrl = /^https?:\/\//i.test(window.location.href || "")
-        ? window.location.href.split("#")[0]
+      const rawHref = window.location.href || "";
+      const liveUrl = (/^https?:\/\//i.test(rawHref) && !/appassets\.androidplatform\.net|localhost|127\.0\.0\.1/i.test(rawHref))
+        ? rawHref.split("#")[0]
         : "https://ankitsharma143.github.io/MahaHisab/";
       openModal("⬇️ फोन में ऐप इंस्टॉल करें (Install App)", `
         <div class="space-y-3 text-xs">
@@ -8737,6 +8738,165 @@
       }
     };
 
+    // =========================================================================
+    // 11H-2. ZERO-LOGIN AUTOMATIC OFFLINE-FIRST FIREBASE SYNC (PER USERNAME)
+    // =========================================================================
+    const AutoUserCloudSync = {
+      QUEUE_KEY: "maha_auto_rtdb_queue_v1",
+      baseUrl() {
+        return (DEFAULT_FIREBASE_CONFIG.databaseURL || "").replace(/\/+$/, "") + "/user_data";
+      },
+      userKey() {
+        const sess = MultiUserAuth.getCurrentSession();
+        const u = sess?.username || "admin";
+        return String(u).trim().toLowerCase().replace(/[^a-z0-9_-]/g, "_");
+      },
+      getQueue() {
+        try { return JSON.parse(localStorage.getItem(this.QUEUE_KEY) || "[]"); } catch (e) { return []; }
+      },
+      setQueue(q) {
+        try { localStorage.setItem(this.QUEUE_KEY, JSON.stringify(q)); } catch (e) {}
+      },
+      enqueue(op) {
+        const q = this.getQueue().filter(x => !(x.uKey === op.uKey && x.col === op.col && x.docId === op.docId));
+        q.push(op);
+        this.setQueue(q);
+      },
+      setBadge(onlineSynced, pendingCount = 0) {
+        const el = document.getElementById("sync-status-desktop");
+        if (!el) return;
+        if (!navigator.onLine) {
+          el.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span><span>ऑफ़लाइन सेव (${pendingCount} सिंक बाकी)</span>`;
+        } else if (onlineSynced) {
+          el.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>☁️ ऑटो-सिंक चालू (फोन + Firebase)</span>`;
+        }
+      },
+      async pushRecord(col, docId, record) {
+        if (col === "appUsers" || col === "personalDiary") return;
+        const uKey = this.userKey();
+        if (!navigator.onLine) {
+          this.enqueue({ action: "put", uKey, col, docId, record });
+          this.setBadge(false, this.getQueue().length);
+          return;
+        }
+        try {
+          const res = await fetch(`${this.baseUrl()}/${uKey}/${col}/${docId}.json`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(record)
+          });
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          this.setBadge(true, 0);
+        } catch (e) {
+          this.enqueue({ action: "put", uKey, col, docId, record });
+        }
+      },
+      async deleteRecord(col, docId) {
+        if (col === "appUsers" || col === "personalDiary") return;
+        const uKey = this.userKey();
+        if (!navigator.onLine) {
+          this.enqueue({ action: "del", uKey, col, docId });
+          this.setBadge(false, this.getQueue().length);
+          return;
+        }
+        try {
+          await fetch(`${this.baseUrl()}/${uKey}/${col}/${docId}.json`, { method: "DELETE" });
+        } catch (e) {
+          this.enqueue({ action: "del", uKey, col, docId });
+        }
+      },
+      async flushOfflineQueue() {
+        if (!navigator.onLine) return;
+        const q = this.getQueue();
+        if (!q.length) { this.setBadge(true, 0); return; }
+        const remaining = [];
+        for (const op of q) {
+          try {
+            const url = `${this.baseUrl()}/${op.uKey}/${op.col}/${op.docId}.json`;
+            const res = op.action === "del"
+              ? await fetch(url, { method: "DELETE" })
+              : await fetch(url, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(op.record) });
+            if (!res.ok) remaining.push(op);
+          } catch (e) {
+            remaining.push(op);
+          }
+        }
+        this.setQueue(remaining);
+        this.setBadge(remaining.length === 0, remaining.length);
+        if (q.length > remaining.length) {
+          showToast(`☁️ इंटरनेट जुड़ते ही ${q.length - remaining.length} ऑफ़लाइन एंट्री Firebase में ऑटो-सिंक हो गईं!`);
+        }
+      },
+      async syncAllNow(showMsg = false) {
+        if (!navigator.onLine) {
+          if (showMsg) showToast("अभी इंटरनेट बंद है — नेट ऑन होते ही अपने आप सिंक हो जाएगा।");
+          return;
+        }
+        await this.flushOfflineQueue();
+        const uKey = this.userKey();
+        try {
+          const res = await fetch(`${this.baseUrl()}/${uKey}.json`, { cache: "no-store" });
+          if (res.ok) {
+            const cloudObj = await res.json();
+            if (cloudObj && typeof cloudObj === "object") {
+              let mergedAny = false;
+              COLLECTIONS.forEach(col => {
+                if (col === "appUsers" || col === "personalDiary") return;
+                const cMap = cloudObj[col];
+                if (cMap && typeof cMap === "object") {
+                  if (!Array.isArray(state.data[col])) state.data[col] = [];
+                  Object.entries(cMap).forEach(([id, rec]) => {
+                    if (!rec || typeof rec !== "object") return;
+                    const idx = state.data[col].findIndex(x => x.id === id);
+                    if (idx < 0) {
+                      state.data[col].push({ ...rec, id });
+                      mergedAny = true;
+                    } else if ((rec.updatedAt || "") > (state.data[col][idx].updatedAt || "")) {
+                      state.data[col][idx] = { ...rec, id };
+                      mergedAny = true;
+                    }
+                  });
+                }
+              });
+              if (mergedAny) {
+                persistLocalDB();
+                renderCurrentView();
+              }
+            }
+          }
+          const toPush = {};
+          COLLECTIONS.forEach(col => {
+            if (col === "appUsers" || col === "personalDiary") return;
+            const arr = state.data[col] || [];
+            if (arr.length) {
+              toPush[col] = {};
+              arr.forEach(r => { if (r && r.id) toPush[col][r.id] = r; });
+            }
+          });
+          if (Object.keys(toPush).length) {
+            await fetch(`${this.baseUrl()}/${uKey}.json`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(toPush)
+            });
+          }
+          this.setBadge(true, 0);
+          if (showMsg) showToast("☁️ पूरा डेटा Firebase से ऑटो-सिंक हो गया!");
+        } catch (e) {
+          if (showMsg) showToast("सिंक त्रुटि — Firebase Rules में user_data चालू करें।", "error");
+        }
+      }
+    };
+
+    window.addEventListener("online", () => {
+      if (MultiUserAuth.getCurrentSession()) {
+        AutoUserCloudSync.syncAllNow(false);
+      }
+    });
+    window.addEventListener("offline", () => {
+      AutoUserCloudSync.setBadge(false, AutoUserCloudSync.getQueue().length);
+    });
+
     const MultiUserAuth = {
       pendingOtpReq: null,
       getDeviceId() {
@@ -8863,6 +9023,7 @@
         CloudUserDirectory.pushUser(res.user).catch(() => {});
         applyStaffModeUI();
         this.updateUI();
+        AutoUserCloudSync.syncAllNow(false).catch(() => {});
         const ov = document.getElementById("multiuser-login-overlay");
         if (ov) { ov.classList.add("hidden"); ov.style.display = "none"; }
         return { ok: true, user: res.user };
@@ -9421,6 +9582,18 @@
         </div>
 
         <!-- 2. PHONE-ONLY OR PRIVATE PER-USER FIREBASE CLOUD SYNC -->
+        <!-- ZERO-LOGIN AUTO FIREBASE SYNC STATUS CARD -->
+        <div class="bg-emerald-50 rounded-2xl border border-emerald-300 p-4 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="font-bold text-base text-emerald-950">☁️ ऑटोमैटिक Firebase सिंक (बिना Gmail लॉगिन)</h3>
+              <div class="text-xs text-emerald-800">आपका सारा डेटा पहले फोन में सेव होता है और इंटरनेट ऑन होते ही अपने आप Firebase में सिंक हो जाता है — किसी यूज़र को अलग से Firebase कनेक्ट करने की ज़रूरत नहीं।</div>
+            </div>
+            <button type="button" id="auto-sync-now-btn" class="btn-primary text-xs bg-emerald-700 hover:bg-emerald-800 shrink-0">🔄 अभी सिंक करें</button>
+          </div>
+          <div class="text-[11px] text-emerald-900">पेंडिंग ऑफ़लाइन एंट्री: <b>${AutoUserCloudSync.getQueue().length}</b> • प्रोजेक्ट: <b>mahaindustries-household</b></div>
+        </div>
+
         <div class="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h3 class="font-bold text-base text-slate-900">🔐 डेटा स्टोरेज व प्राइवेसी (फोन-फर्स्ट + वैकल्पिक निजी क्लाउड)</h3>
@@ -9536,6 +9709,7 @@
 
       // Wire Notifications
       document.getElementById("open-multiuser-admin-btn")?.addEventListener("click", openMultiUserAdminModal);
+      document.getElementById("auto-sync-now-btn")?.addEventListener("click", () => AutoUserCloudSync.syncAllNow(true));
       document.getElementById("save-notif-btn").addEventListener("click", async () => {
         const obj = { enabled: document.getElementById("notif-enabled-chk").checked, morningTime: document.getElementById("notif-morn-time").value || "08:00", eveningTime: document.getElementById("notif-eve-time").value || "19:00" };
         saveNotifSettings(obj);
@@ -9670,7 +9844,8 @@
 
     async function shareAppAction() {
       const currentHref = window.location.href || "";
-      const liveUrl = /^https?:\/\//i.test(currentHref) ? currentHref.split("#")[0] : "https://ankitsharma143.github.io/MahaHisab/";
+      const isPublicWeb = /^https?:\/\//i.test(currentHref) && !/appassets\.androidplatform\.net|localhost|127\.0\.0\.1/i.test(currentHref);
+      const liveUrl = isPublicWeb ? currentHref.split("#")[0] : "https://ankitsharma143.github.io/MahaHisab/";
       const shareText = `MahaIndustries Household Expenses — घर, दुकान, बजट, दोस्त खाता और डेयरी का मुफ्त स्मार्ट अकाउंटिंग ऐप (Pro. Ankit Sharma • 7500343487)\nयहाँ खोलें: ${liveUrl}`;
 
       if (navigator.share) {
@@ -9911,12 +10086,18 @@
 Request Code: ${req.reqCode}
 कृपया अपने ऐप के Admin OTP जनरेटर में यह कोड डालकर 6-अंकों का OTP भेजें।`;
         const ph = req.adminPhone;
-        if (channel === "wa") {
-          window.open(`https://wa.me/91${ph}?text=${encodeURIComponent(msg)}`, "_blank");
-        } else {
-          window.location.href = `sms:+91${ph}?body=${encodeURIComponent(msg)}`;
+        const waUrl = `https://wa.me/91${ph}?text=${encodeURIComponent(msg)}`;
+        const smsUrl = `sms:+91${ph}?body=${encodeURIComponent(msg)}`;
+        let linkBox = document.getElementById("mu-otp-direct-links");
+        if (!linkBox) {
+          linkBox = document.createElement("div");
+          linkBox.id = "mu-otp-direct-links";
+          linkBox.className = "flex gap-2 pt-1";
+          document.getElementById("mu-otp-sent-box")?.appendChild(linkBox);
         }
-        showToast(`📲 एडमिन के नंबर (${ph}) पर OTP संदेश खोला गया!`);
+        linkBox.innerHTML = `<a href="${waUrl}" class="flex-1 text-center py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-[11px]">📲 WhatsApp खोलें</a><a href="${smsUrl}" class="flex-1 text-center py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px]">💬 SMS खोलें</a>`;
+        showToast(`📲 एडमिन के नंबर (${ph}) पर OTP संदेश खोला जा रहा है...`);
+        window.location.href = (channel === "wa") ? waUrl : smsUrl;
       };
       document.getElementById("mu-send-wa-otp-btn")?.addEventListener("click", () => dispatchAdminOtp("wa"));
       document.getElementById("mu-send-sms-otp-btn")?.addEventListener("click", () => dispatchAdminOtp("sms"));
