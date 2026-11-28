@@ -239,7 +239,7 @@
             <button type="button" id="header-diary-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-purple-300 text-purple-800 bg-purple-50" title="निजी डायरी (बोलकर लिखें व सुनें)">📓 <span class="hidden lg:inline">डायरी</span></button>
             <button type="button" id="header-sms-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-indigo-300 text-indigo-800 bg-indigo-50" title="SMS / UPI मैसेज से ऑटो-एंट्री">📲 <span class="hidden lg:inline">SMS</span></button>
             <button type="button" id="header-staff-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-amber-300 text-amber-900 bg-amber-50" title="Owner / Staff लॉक मोड">👑 <span class="hidden lg:inline">Owner</span></button>
-            <button type="button" id="header-user-btn" class="hidden shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-teal-300 text-teal-900 bg-teal-50" title="यूज़र अकाउंट / लॉगआउट">👤 <span id="header-user-label">User</span></button>
+            <button type="button" id="header-pro-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-amber-400 text-amber-900 bg-amber-50 font-extrabold" title="विज्ञापन हटाएं — MahaHisab Pro (₹199/माह या ₹599 Lifetime)">👑 <span id="header-pro-label">No Ads</span></button>
             <button type="button" id="header-calc-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px]" title="स्मार्ट कैलकुलेटर">🧮</button>
             <button type="button" id="header-voice-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px] border-amber-300 text-amber-800 bg-amber-50" title="बोलकर एंट्री करें">🎙️ <span class="hidden sm:inline">बोलकर लिखें</span></button>
             <button type="button" id="quick-search-open-btn" class="shrink-0 btn-secondary text-xs px-2.5 py-1.5 min-h-[36px]" title="पूरे ऐप में खोजें">🔍 <span class="hidden sm:inline">खोजें</span></button>
@@ -266,86 +266,7 @@
   </div>
 
   <!-- Generic Form / View Modal -->
-    <!-- Strict Password Login & 2-Step Admin Phone OTP Verification Overlay -->
-  <div id="multiuser-login-overlay" class="fixed inset-0 z-[95] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-teal-200 my-auto">
-      <!-- PANEL B: ONLY LOGIN SCREEN ON APP OPEN -->
-      <div id="mu-panel-login" class="space-y-3">
-        <div class="text-center space-y-1">
-          <div class="text-4xl">🔐</div>
-          <h2 class="text-lg font-extrabold text-teal-950">MahaIndustries — लॉगिन करें</h2>
-          <p class="text-xs text-slate-500">ऐप खोलने के लिए सही यूज़रनेम और पासवर्ड डालें</p>
-        </div>
-        <div id="mu-login-form" class="space-y-3 text-xs">
-          <div><label class="block font-bold mb-1">यूज़रनेम (Username)</label><input type="text" id="mu-login-user" autocomplete="off" autocorrect="off" autocapitalize="none" placeholder="जैसे: admin" class="input-field py-2.5 text-sm font-semibold" /></div>
-          <div><label class="block font-bold mb-1">पासवर्ड (Password)</label><input type="password" id="mu-login-pass" autocomplete="new-password" placeholder="••••••" class="input-field py-2.5 text-sm font-semibold" /></div>
-          <div id="mu-login-err" class="hidden text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-xl p-2.5"></div>
-          <button type="button" id="mu-login-submit-btn" onclick="window.__mahaDoLogin && window.__mahaDoLogin()" class="btn-primary w-full py-2.5 text-sm">🔓 लॉगिन करें</button>
-        </div>
-        <div class="flex flex-col gap-2 text-center pt-2 border-t border-slate-100">
-          <button type="button" id="mu-open-key-btn" class="btn-secondary w-full text-xs py-2 border-teal-300 text-teal-900 bg-teal-50 font-bold">🎟️ दूसरे फोन पर लॉगिन? Admin Access Key डालें</button>
-          <button type="button" id="mu-open-otp-btn" class="text-xs font-bold text-amber-700 underline">🔑 पासवर्ड भूल गए? (Admin Phone OTP से बदलें)</button>
-        </div>
-      </div>
-
-      <!-- PANEL C: 2-STEP ADMIN PHONE OTP -> VERIFY -> THEN CHANGE PASSWORD -->
-      <div id="mu-panel-otp" class="hidden space-y-3 text-xs">
-        <div class="flex items-center justify-between">
-          <h2 class="text-base font-extrabold text-amber-900">🔑 OTP सत्यापन से पासवर्ड बदलें</h2>
-          <button type="button" id="mu-back-to-login-btn" class="text-xs font-bold text-slate-500 underline">← वापस लॉगिन</button>
-        </div>
-        <div class="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-amber-950">
-          एडमिन के नंबर (<b><span id="mu-otp-admin-phone-lbl">7500343487</span></b>) पर OTP भेजें। OTP सत्यापित होने के बाद ही नया पासवर्ड बदलने का विकल्प खुलेगा।
-        </div>
-
-        <!-- Step 1: Username & Generate OTP -->
-        <div id="mu-otp-step1" class="space-y-2.5">
-          <div>
-            <label class="block font-bold mb-1">1. यूज़रनेम (Username)*</label>
-            <input type="text" id="mu-otp-uname" placeholder="जैसे: admin या staff1" class="input-field py-2 text-xs font-semibold" />
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" id="mu-send-wa-otp-btn" class="btn-primary bg-emerald-600 hover:bg-emerald-700 text-xs py-2">📲 WhatsApp पर OTP भेजें</button>
-            <button type="button" id="mu-send-sms-otp-btn" class="btn-secondary border-blue-300 text-blue-900 text-xs py-2">💬 SMS पर OTP भेजें</button>
-          </div>
-          <div id="mu-otp-sent-box" class="hidden bg-teal-50 border border-teal-200 rounded-xl p-2.5 text-teal-950 space-y-2">
-            <div class="font-bold">✅ रिक्वेस्ट कोड: <code id="mu-otp-req-code" class="text-sm font-extrabold text-purple-900"></code></div>
-            <div>
-              <label class="block font-bold mb-1">2. एडमिन के फोन पर आया 6-अंकों का OTP डालें*</label>
-              <input type="text" inputmode="numeric" maxlength="6" id="mu-otp-code-inp" placeholder="6-digit OTP" class="input-field py-2 text-base font-extrabold tracking-widest text-center bg-white" />
-            </div>
-            <button type="button" id="mu-verify-otp-only-btn" class="btn-primary w-full bg-teal-700 hover:bg-teal-800 py-2 text-xs">✅ OTP सत्यापित करें (Verify OTP)</button>
-          </div>
-        </div>
-
-        <!-- Step 2: Shown ONLY AFTER OTP is Verified! -->
-        <div id="mu-otp-step2" class="hidden space-y-2.5 bg-emerald-50 border border-emerald-300 rounded-xl p-3">
-          <div class="font-extrabold text-emerald-900">✅ OTP सत्यापित हो गया! अब अपना नया पासवर्ड सेट करें:</div>
-          <div><label class="block font-bold mb-1">नया पासवर्ड (कम से कम 4 अक्षर/अंक)*</label><input type="password" id="mu-otp-new-pass" placeholder="नया पासवर्ड डालें" class="input-field py-2 text-xs font-bold bg-white" /></div>
-          <div><label class="block font-bold mb-1">नया पासवर्ड दोबारा लिखें (Confirm)*</label><input type="password" id="mu-otp-confirm-pass" placeholder="दोबारा वही पासवर्ड डालें" class="input-field py-2 text-xs font-bold bg-white" /></div>
-          <button type="button" id="mu-verify-otp-save-btn" class="btn-primary w-full bg-purple-700 hover:bg-purple-800 py-2.5 text-xs">💾 नया पासवर्ड सेव करें</button>
-        </div>
-
-        <div id="mu-otp-err" class="hidden text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-xl p-2"></div>
-      </div>
-
-      <!-- PANEL D: ACTIVATE USER ACCOUNT ON ANOTHER PHONE VIA ADMIN ACCESS KEY -->
-      <div id="mu-panel-key" class="hidden space-y-3 text-xs">
-        <div class="flex items-center justify-between">
-          <h2 class="text-base font-extrabold text-teal-950">🎟️ Admin Access Key से यूज़र चालू करें</h2>
-          <button type="button" id="mu-key-back-btn" class="text-xs font-bold text-slate-500 underline">← वापस लॉगिन</button>
-        </div>
-        <div class="bg-teal-50 border border-teal-200 rounded-xl p-2.5 text-teal-950">
-          जब Admin अपने फोन में नया यूज़र बनाता है, तो वहां से मिली <b>MAHA-KEY</b> को यहाँ पेस्ट करें — आपका यूज़रनेम, पासवर्ड और वैधता इस फोन पर तुरंत चालू हो जाएगी!
-        </div>
-        <textarea id="mu-key-inp" rows="3" placeholder="Admin द्वारा भेजी गई MAHA-KEY:... यहाँ पेस्ट करें" class="input-field text-xs font-mono"></textarea>
-        <div id="mu-key-err" class="hidden text-xs font-bold text-red-700 bg-red-50 border border-red-200 rounded-xl p-2"></div>
-        <button type="button" id="mu-apply-key-btn" class="btn-primary w-full py-2.5 text-xs">✅ Key एक्टिवेट कर लॉगिन करें</button>
-      </div>
-    </div>
-  </div>
-
-<div id="app-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+  <div id="app-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
     <div class="modal-box">
       <div class="sticky top-0 bg-white border-b border-slate-200 px-5 py-3.5 flex items-center justify-between z-10">
         <h3 id="modal-title" class="font-bold text-base text-slate-900">एंट्री</h3>
@@ -2063,6 +1984,7 @@
       lastRouteSnap = curSnap;
       updateBackButtonUI();
       renderLeftAccordionSidebar();
+      try { if (window.AndroidBilling && window.AndroidBilling.notifyAdOpportunity) window.AndroidBilling.notifyAdOpportunity(); } catch (e) {}
     }
 
     function destroyCharts() {
@@ -7929,6 +7851,8 @@
         const next = isDiaryHidden() ? "0" : "1";
         localStorage.setItem("maha_diary_hidden_v1", next);
         applyDiaryHiddenUI();
+      document.getElementById("header-pro-btn")?.addEventListener("click", () => PlayBillingUI.openPlansModal());
+      PlayBillingUI.refreshBadge();
         renderCurrentView();
         showToast(next === "1" ? "🕵️ डायरी ऐप से छिपा दी गई! दोबारा खोलने के लिए लोगो पर 5 बार टैप करें।" : "👁️ डायरी अब फिर से ऐप में दिखने लगी है।");
       });
@@ -8917,6 +8841,7 @@
       },
       _memSession: null,
       getCurrentSession() {
+        return { id: "owner", username: "owner", name: "Owner", role: "admin" };
         if (this._memSession) return this._memSession;
         try {
           const s = JSON.parse(sessionStorage.getItem("maha_active_session_v2") || "null");
@@ -9118,6 +9043,9 @@
         if (phoneLbl) phoneLbl.textContent = this.getAdminPhone();
       },
       updateUI() {
+        document.body.classList.remove("non-admin-user");
+        if (typeof PlayBillingUI !== "undefined") PlayBillingUI.refreshBadge();
+        return;
         this.ensureDefaultAdminExists();
         const sess = this.getCurrentSession();
         const overlay = document.getElementById("multiuser-login-overlay");
@@ -9561,6 +9489,143 @@
     }
 
     // =========================================================================
+    // 11J. GOOGLE PLAY BILLING + ADMOB FREE/PRO + OWNER LIFETIME FREE UNLOCK
+    // =========================================================================
+    const PlayBillingUI = {
+      STORAGE_KEY: "maha_pro_plan_v1",
+      OWNER_PROMO_CODE: "MAHA-OWNER-7500",
+      getStatus() {
+        try {
+          if (window.AndroidBilling && typeof window.AndroidBilling.getProStatus === "function") {
+            const nativeSt = String(window.AndroidBilling.getProStatus() || "");
+            if (nativeSt === "LIFETIME") return { isPro: true, plan: "LIFETIME", label: "👑 Pro Lifetime (विज्ञापन-मुक्त)" };
+            if (nativeSt === "MONTHLY") return { isPro: true, plan: "MONTHLY", label: "👑 Pro Monthly (₹199/माह • विज्ञापन-मुक्त)" };
+          }
+        } catch (e) {}
+        try {
+          const saved = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || "null");
+          if (saved && saved.isPro) return saved;
+        } catch (e) {}
+        return { isPro: false, plan: "FREE_ADS", label: "फ्री प्लान (विज्ञापनों के साथ)" };
+      },
+      refreshBadge() {
+        const st = this.getStatus();
+        const lbl = document.getElementById("header-pro-label");
+        if (lbl) lbl.textContent = st.isPro ? "PRO ✓" : "No Ads";
+        const setSt = document.getElementById("settings-pro-status");
+        if (setSt) {
+          setSt.innerHTML = st.isPro
+            ? `स्थिति: <b class="text-emerald-700">✅ ${escHtml(st.label)} सक्रिय है</b>`
+            : `स्थिति: <b class="text-amber-800">फ्री प्लान (सभी फीचर्स चालू • विज्ञापनों के साथ)</b>`;
+        }
+      },
+      openPlansModal() {
+        const st = this.getStatus();
+        openModal("👑 विज्ञापन हटाएं — MahaHisab Pro", `
+          <div class="space-y-3 text-xs">
+            <div class="bg-teal-50 border border-teal-200 rounded-xl p-3 text-teal-950">
+              <div class="font-extrabold text-sm">पूरा ऐप फ्री में चलता है (विज्ञापनों के साथ) — बिना विज्ञापन (Ad-Free) चलाने के लिए Pro चुनें:</div>
+              <div class="text-[11px] mt-1">• वर्तमान स्थिति: <b>${escHtml(st.label)}</b></div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Monthly ₹199 Plan -->
+              <div class="bg-white border-2 border-teal-300 rounded-2xl p-4 space-y-2.5 shadow-sm">
+                <div class="flex items-center justify-between">
+                  <span class="font-extrabold text-sm text-teal-950">📅 मासिक प्लान</span>
+                  <span class="px-2 py-0.5 rounded-full bg-teal-100 text-teal-900 font-bold text-[10px]">Monthly</span>
+                </div>
+                <div class="text-2xl font-extrabold text-teal-800">₹199 <span class="text-xs font-normal text-slate-500">/ महीना</span></div>
+                <ul class="space-y-1 text-[11px] text-slate-600">
+                  <li>✓ 100% विज्ञापन-मुक्त (Zero Ads)</li>
+                  <li>✓ सभी घर, दुकान, डेयरी व डायरी फीचर्स</li>
+                  <li>✓ कभी भी Play Store से कैंसल करें</li>
+                </ul>
+                <button type="button" id="pb-buy-monthly-btn" class="btn-primary w-full py-2.5 text-xs">₹199 / माह चुनें</button>
+              </div>
+
+              <!-- One-Time ₹599 Lifetime Plan -->
+              <div class="bg-gradient-to-b from-amber-50 to-white border-2 border-amber-400 rounded-2xl p-4 space-y-2.5 shadow-sm">
+                <div class="flex items-center justify-between">
+                  <span class="font-extrabold text-sm text-amber-950">👑 लाइफटाइम प्लान</span>
+                  <span class="px-2 py-0.5 rounded-full bg-amber-400 text-amber-950 font-extrabold text-[10px]">सबसे बेस्ट</span>
+                </div>
+                <div class="text-2xl font-extrabold text-amber-700">₹599 <span class="text-xs font-normal text-slate-500">/ सिर्फ एक बार</span></div>
+                <ul class="space-y-1 text-[11px] text-slate-700">
+                  <li>✓ हमेशा के लिए विज्ञापन-मुक्त (Zero Ads)</li>
+                  <li>✓ कोई मासिक रिचार्ज या रिन्यूअल नहीं</li>
+                  <li>✓ भविष्य के सभी अपडेट बिल्कुल मुफ्त</li>
+                </ul>
+                <button type="button" id="pb-buy-lifetime-btn" class="btn-primary w-full py-2.5 text-xs bg-amber-600 hover:bg-amber-700">👑 ₹599 एक बार में खरीदें</button>
+              </div>
+            </div>
+
+            <!-- Promo / Owner Redeem Code Box -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 space-y-1.5">
+              <div class="font-bold text-slate-700">🎟️ प्रोमो / ओनर रिडीम कोड (यदि आपके पास है)</div>
+              <div class="flex gap-2">
+                <input type="text" id="pb-promo-inp" placeholder="कोड डालें..." class="input-field py-1.5 text-xs uppercase font-bold" />
+                <button type="button" id="pb-promo-apply-btn" class="btn-secondary text-xs py-1.5 px-3 shrink-0 border-teal-400 text-teal-900">अप्लाई करें</button>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100">
+              <button type="button" id="pb-restore-btn" class="text-xs font-bold text-teal-800 underline">🔄 पहले खरीदा है? Restore Purchase</button>
+              <span class="text-[10px] text-slate-400">सुरक्षित भुगतान: Google Play Billing</span>
+            </div>
+          </div>`);
+
+        document.getElementById("pb-buy-monthly-btn")?.addEventListener("click", () => {
+          if (window.AndroidBilling && typeof window.AndroidBilling.buyMonthly199 === "function") {
+            window.AndroidBilling.buyMonthly199();
+          } else {
+            showToast("यह भुगतान Google Play Store से इंस्टॉल किए गए Android ऐप में खुलेगा।");
+          }
+        });
+        document.getElementById("pb-buy-lifetime-btn")?.addEventListener("click", () => {
+          if (window.AndroidBilling && typeof window.AndroidBilling.buyLifetime599 === "function") {
+            window.AndroidBilling.buyLifetime599();
+          } else {
+            showToast("यह भुगतान Google Play Store से इंस्टॉल किए गए Android ऐप में खुलेगा।");
+          }
+        });
+        document.getElementById("pb-promo-apply-btn")?.addEventListener("click", () => {
+          const code = (document.getElementById("pb-promo-inp")?.value || "").trim().toUpperCase();
+          if (code === PlayBillingUI.OWNER_PROMO_CODE) {
+            if (window.AndroidBilling && typeof window.AndroidBilling.activateOwnerPro === "function") {
+              window.AndroidBilling.activateOwnerPro(code);
+            }
+            window.onPlayBillingStatusChanged("LIFETIME");
+          } else {
+            showToast("अमान्य प्रोमो कोड!", "error");
+          }
+        });
+        document.getElementById("pb-restore-btn")?.addEventListener("click", () => {
+          if (window.AndroidBilling && typeof window.AndroidBilling.restorePurchases === "function") {
+            window.AndroidBilling.restorePurchases();
+            showToast("🔄 Google Play से आपकी खरीद जांची जा रही है...");
+          } else {
+            showToast("Restore Purchase केवल Google Play Android ऐप में चलता है।");
+          }
+        });
+      }
+    };
+
+    window.onPlayBillingStatusChanged = (planCode) => {
+      if (planCode === "LIFETIME") {
+        localStorage.setItem(PlayBillingUI.STORAGE_KEY, JSON.stringify({ isPro: true, plan: "LIFETIME", label: "👑 Pro Lifetime (विज्ञापन-मुक्त)" }));
+        showToast("🎉 बधाई हो! MahaHisab Lifetime Pro (विज्ञापन-मुक्त) चालू हो गया!");
+      } else if (planCode === "MONTHLY") {
+        localStorage.setItem(PlayBillingUI.STORAGE_KEY, JSON.stringify({ isPro: true, plan: "MONTHLY", label: "👑 Pro Monthly (₹199/माह • विज्ञापन-मुक्त)" }));
+        showToast("🎉 बधाई हो! MahaHisab Monthly Pro (विज्ञापन-मुक्त) चालू हो गया!");
+      } else {
+        localStorage.removeItem(PlayBillingUI.STORAGE_KEY);
+      }
+      PlayBillingUI.refreshBadge();
+      try { closeModal(true); } catch (e) {}
+    };
+
+    // =========================================================================
     // 12. GLOBAL SEARCH MODAL
     // =========================================================================
     function openGlobalSearchModal() {
@@ -9590,13 +9655,13 @@
       const cloudOn = isCloudSyncEnabled();
 
       container.innerHTML = `
-        <!-- 0. MULTI-USER ADMIN & LOGIN LIMIT CONTROL -->
-        <div id="settings-multiuser-card" class="admin-only bg-white rounded-2xl border border-teal-200 p-4 flex flex-wrap items-center justify-between gap-3">
+        <!-- 0. MAHAHISAB PRO AD-FREE PLANS (₹199/MO & ₹599 LIFETIME) -->
+        <div class="bg-gradient-to-r from-amber-50 to-teal-50 rounded-2xl border-2 border-amber-300 p-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 class="font-bold text-base text-teal-950">👥 मल्टी-यूज़र व लॉगिन लिमिट कंट्रोल (Admin)</h3>
-            <div class="text-xs text-slate-500">नए यूज़र व पासवर्ड बनाएं और तय करें कि एक पासवर्ड से एक समय में कितने यूज़र (जैसे 2) लॉगिन कर सकते हैं।</div>
+            <h3 class="font-bold text-base text-amber-950">👑 विज्ञापन हटाएं — MahaHisab Pro (₹199/माह या ₹599 Lifetime)</h3>
+            <div id="settings-pro-status" class="text-xs text-slate-700">स्थिति: <b>फ्री प्लान (विज्ञापनों के साथ सभी फीचर्स चालू)</b></div>
           </div>
-          <button type="button" id="open-multiuser-admin-btn" class="btn-primary text-xs">👥 यूज़र व लिमिट मैनेज करें (${(state.data.appUsers || []).length})</button>
+          <button type="button" id="open-pro-plan-btn" class="btn-primary text-xs bg-amber-600 hover:bg-amber-700">👑 विज्ञापन हटाएं / Pro</button>
         </div>
 
         <!-- 1. DAILY 8:00 AM & 7:00 PM NOTIFICATIONS -->
@@ -9748,7 +9813,7 @@
         </div>`;
 
       // Wire Notifications
-      document.getElementById("open-multiuser-admin-btn")?.addEventListener("click", openMultiUserAdminModal);
+      document.getElementById("open-pro-plan-btn")?.addEventListener("click", () => PlayBillingUI.openPlansModal());
       document.getElementById("auto-sync-now-btn")?.addEventListener("click", () => AutoUserCloudSync.syncAllNow(true));
       document.getElementById("save-notif-btn").addEventListener("click", async () => {
         const obj = { enabled: document.getElementById("notif-enabled-chk").checked, morningTime: document.getElementById("notif-morn-time").value || "08:00", eveningTime: document.getElementById("notif-eve-time").value || "19:00" };
@@ -10292,5 +10357,37 @@
       } catch (e) {}
     });
   </script>
+
+<script>
+(function() {
+  if (!window.AndroidBridge) return;
+  const origClick = HTMLAnchorElement.prototype.click;
+  HTMLAnchorElement.prototype.click = function() {
+    try {
+      const href = this.getAttribute("href") || "";
+      const dlName = this.getAttribute("download") || ("MahaHisab_" + Date.now() + ".pdf");
+      if (href.startsWith("blob:") && window.AndroidBridge && window.AndroidBridge.saveBase64File) {
+        fetch(href).then(r => r.blob()).then(blob => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const b64 = String(reader.result || "").split(",")[1] || "";
+            window.AndroidBridge.saveBase64File(b64, dlName, blob.type || "application/octet-stream");
+          };
+          reader.readAsDataURL(blob);
+        }).catch(() => {});
+        return;
+      }
+      if (href.startsWith("data:") && this.hasAttribute("download") && window.AndroidBridge && window.AndroidBridge.saveBase64File) {
+        const mime = (href.match(/^data:([^;]+);/) || [])[1] || "application/octet-stream";
+        const b64 = href.split(",")[1] || "";
+        window.AndroidBridge.saveBase64File(b64, dlName, mime);
+        return;
+      }
+    } catch (e) {}
+    return origClick.apply(this, arguments);
+  };
+})();
+</script>
+
 </body>
 </html>
